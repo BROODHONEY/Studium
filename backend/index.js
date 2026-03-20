@@ -5,6 +5,7 @@ const { Server } = require('socket.io');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
+const groupRoutes = require('./routes/groups');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,6 +17,7 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/groups', groupRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studium API is running' });
