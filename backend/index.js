@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const groupRoutes = require('./routes/groups');
 const messageRoutes = require('./routes/messages');
+const fileRoutes = require('./routes/files');
 const initSocket = require('./config/socket');
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/files', fileRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studium API is running' });
