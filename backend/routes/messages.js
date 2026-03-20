@@ -25,15 +25,15 @@ router.get('/:groupId', async (req, res) => {
     }
 
     let query = supabase
-      .from('messages')
-      .select(`
-        id, content, type, created_at,
-        sender:sender_id (id, name, avatar_url),
-        file:file_id (id, filename, file_url, file_type, size_bytes)
-      `)
-      .eq('group_id', groupId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+        .from('messages')
+        .select(`
+            id, content, type, created_at,
+            users!sender_id (id, name, avatar_url),
+            files!file_id (id, filename, file_url, file_type, size_bytes)
+        `)
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
     // If a cursor is provided, only fetch messages before that timestamp
     if (before) {

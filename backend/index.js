@@ -6,6 +6,8 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const groupRoutes = require('./routes/groups');
+const messageRoutes = require('./routes/messages');
+const initSocket = require('./config/socket');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,17 +20,14 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studium API is running' });
 });
 
-io.on('connection', (socket) => {
-  console.log('a user connected:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('user disconnected:', socket.id);
-  });
-});
+// Initialize Socket.io
+initSocket(io);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
