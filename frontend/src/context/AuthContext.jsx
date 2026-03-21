@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  
   useEffect(() => {
     // Restore session from localStorage on page refresh
     const savedToken = localStorage.getItem('token');
@@ -18,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (token, user) => {
+  const login = (token, user) => { 
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     setToken(token);
@@ -39,4 +40,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
