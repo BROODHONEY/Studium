@@ -32,7 +32,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="auth-card">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-white">studium</h1>
+          <h1 className="text-2xl font-semibold text-white">Studium</h1>
           <p className="text-gray-400 text-sm mt-1">Welcome back — sign in to continue</p>
         </div>
 
