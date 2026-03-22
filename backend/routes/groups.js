@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
     await supabase.from('group_members').insert({
       group_id: group.id,
       user_id: req.user.id,
-      role: 'teacher'
+      role: 'admin'
     });
 
     res.status(201).json(group);
