@@ -65,7 +65,7 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
 
     // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
-      .from('Studium-files')
+      .from('studium-files')
       .upload(storagePath, buffer, {
         contentType: mimetype,
         upsert: false
@@ -75,7 +75,7 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
 
     // Get a signed URL valid for 1 year (files are semi-permanent)
     const { data: signedData, error: signedError } = await supabase.storage
-      .from('Studium-files')
+      .from('studium-files')
       .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
 
     if (signedError) throw signedError;
@@ -166,7 +166,7 @@ router.delete('/:groupId/:fileId', async (req, res) => {
 
     // Delete from Supabase Storage
     await supabase.storage
-      .from('Studium-files')
+      .from('studium-files')
       .remove([file.storage_path]);
 
     // Delete from DB

@@ -5,6 +5,8 @@ import GroupList   from '../components/GroupList';
 import ChatPanel   from '../components/ChatPanel';
 import ChatHeader  from '../components/ChatHeader';
 import GroupModal  from '../components/GroupModal';
+import FilesPanel   from '../components/FilesPanel';
+import MembersPanel from '../components/MembersPanel';
 
 export default function DashboardPage() {
   const { logout } = useAuth();
@@ -69,16 +71,8 @@ export default function DashboardPage() {
                 onTabChange={setActiveTab}
               />
               {activeTab === 'Chat' && <ChatPanel group={activeGroup} />}
-              {activeTab === 'Files' && (
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-gray-600 text-sm">Files panel — coming in step 9</p>
-                </div>
-              )}
-              {activeTab === 'Members' && (
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-gray-600 text-sm">Members panel — coming in step 9</p>
-                </div>
-              )}
+                {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
+                {activeTab === 'Members' && <MembersPanel group={activeGroup} />}
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
