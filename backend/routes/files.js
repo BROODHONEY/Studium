@@ -51,9 +51,13 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
-    // Only teachers can upload files
-    if (membership.role !== 'teacher') {
-      return res.status(403).json({ error: 'Only teachers can upload files' });
+    const studentAllowed = ['application/pdf', 'image/jpeg', 'image/png'];
+    const isAdmin  = membership.role === 'admin';
+    const isTeacher = membership.role === 'teacher';
+    const isStudent = membership.role === 'student';
+
+    if (isStudent && !studentAllowed.includes(mimetype)) {
+      return res.status(403).json({ error: 'Students can only upload images and PDFs' });
     }
 
     const { originalname, mimetype, buffer, size } = req.file;
@@ -90,7 +94,8 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
         file_url: signedData.signedUrl,
         file_type: mimetype,
         size_bytes: size,
-        storage_path: storagePath
+        storage_path: storagePath,
+        uploaded_by_role: membership.role
       })
       .select(`
         id, filename, file_url, file_type, size_bytes, created_at,
