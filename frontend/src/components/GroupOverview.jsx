@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
 import { announcementsAPI, duesAPI } from '../services/api';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const formatDate = (d) =>
   new Date(d).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
@@ -140,6 +142,7 @@ function DueForm({ groupId, onCreated }) {
 export default function GroupOverview({ group }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
+  const { addToast } = useToast();
 
   const myRole    = group?.my_role;
   const isTeacher = myRole === 'admin' || myRole === 'teacher';
@@ -148,6 +151,10 @@ export default function GroupOverview({ group }) {
   const [dues, setDues]                   = useState([]);
   const [loadingA, setLoadingA]           = useState(true);
   const [loadingD, setLoadingD]           = useState(true);
+
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { type, id }
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (!group) return;
@@ -186,29 +193,69 @@ export default function GroupOverview({ group }) {
     };
   }, [group?.id, socket]);
 
-  const deleteAnnouncement = async (id) => {
-    if (!confirm('Delete this announcement?')) return;
-    try {
-      await announcementsAPI.delete(group.id, id);
-      setAnnouncements(prev => prev.filter(a => a.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+  const deleteAnnouncement = (id) => {
+    setDeleteConfirm({ type: 'announcement', id });
   };
 
-  const deleteDue = async (id) => {
-    if (!confirm('Delete this due date?')) return;
+  const deleteDue = (id) => {
+    setDeleteConfirm({ type: 'due', id });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm || !group) return;
+    const { type, id } = deleteConfirm;
+
+    setDeleteConfirm(null);
+    setConfirmingDelete(true);
+    setDeleteError('');
+
     try {
-      await duesAPI.delete(group.id, id);
-      setDues(prev => prev.filter(d => d.id !== id));
+      if (type === 'announcement') {
+        await announcementsAPI.delete(group.id, id);
+        setAnnouncements(prev => prev.filter(a => a.id !== id));
+        addToast({ type: 'success', message: 'Announcement deleted.' });
+        return;
+      }
+
+      if (type === 'due') {
+        await duesAPI.delete(group.id, id);
+        setDues(prev => prev.filter(d => d.id !== id));
+        addToast({ type: 'success', message: 'Due date deleted.' });
+      }
     } catch (err) {
       console.error(err);
+      addToast({ type: 'error', message: err.response?.data?.error || 'Could not delete item' });
+    } finally {
+      setConfirmingDelete(false);
     }
   };
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-950">
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
+        <ConfirmDialog
+          open={!!deleteConfirm}
+          danger={true}
+          title={
+            deleteConfirm?.type === 'announcement'
+              ? 'Delete this announcement?'
+              : 'Delete this due date?'
+          }
+          description="This action will remove it for everyone."
+          confirmText="Delete"
+          onCancel={() => {
+            if (confirmingDelete) return;
+            setDeleteConfirm(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          disabled={confirmingDelete}
+        />
+
+        {deleteError ? (
+          <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+            {deleteError}
+          </div>
+        ) : null}
 
         {/* Group header */}
         <div className="border-b border-gray-800 pb-6">

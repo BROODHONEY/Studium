@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { groupsAPI } from '../services/api';
 import QRCode from 'qrcode';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const initials = (name) =>
   name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -14,6 +16,7 @@ const avatarColor = (name) => COLORS[name?.charCodeAt(0) % COLORS.length];
 
 export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDeleted }) {
   const { user }  = useAuth();
+  const { addToast } = useToast();
   const myRole    = group?.my_role;
   const isAdmin   = myRole === 'admin';
   const isCreator = group?.created_by?.id
@@ -39,6 +42,10 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   // Delete group confirmation
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting]           = useState(false);
+
+  // Member actions confirmation (kick/promote/demote)
+  const [memberConfirm, setMemberConfirm] = useState(null); // { action, userId, name }
+  const [confirmingMember, setConfirmingMember] = useState(false);
 
   // QR code modal
   const [showQR, setShowQR]   = useState(false);
@@ -99,36 +106,64 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   };
 
   const handleKick = async (userId, name) => {
-    if (!confirm(`Remove ${name} from the group?`)) return;
-    try {
-      await groupsAPI.kickMember(group.id, userId);
-      setMembers(prev => prev.filter(m => m.users?.id !== userId));
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not remove member');
-    }
+    setMemberConfirm({ action: 'kick', userId, name });
   };
 
   const handlePromote = async (userId, name) => {
-    if (!confirm(`Grant admin access to ${name}?`)) return;
-    try {
-      await groupsAPI.promoteMember(group.id, userId);
-      setMembers(prev => prev.map(m =>
-        m.users?.id === userId ? { ...m, role: 'admin' } : m
-      ));
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not promote member');
-    }
+    setMemberConfirm({ action: 'promote', userId, name });
   };
 
   const handleDemote = async (userId, name) => {
-    if (!confirm(`Revoke admin access from ${name}?`)) return;
+    setMemberConfirm({ action: 'demote', userId, name });
+  };
+
+  const handleConfirmMemberAction = async () => {
+    if (!memberConfirm || !group) return;
+
+    const { action, userId, name } = memberConfirm;
+    setMemberConfirm(null);
+    setConfirmingMember(true);
+    setError('');
+
     try {
-      await groupsAPI.demoteMember(group.id, userId);
-      setMembers(prev => prev.map(m =>
-        m.users?.id === userId ? { ...m, role: 'teacher' } : m
-      ));
+      if (action === 'kick') {
+        await groupsAPI.kickMember(group.id, userId);
+        setMembers(prev => prev.filter(m => m.users?.id !== userId));
+        addToast({ type: 'success', message: `Removed ${name} from the group.` });
+        return;
+      }
+
+      if (action === 'promote') {
+        await groupsAPI.promoteMember(group.id, userId);
+        setMembers(prev => prev.map(m => (
+          m.users?.id === userId ? { ...m, role: 'admin' } : m
+        )));
+        addToast({ type: 'success', message: `Granted admin access to ${name}.` });
+        return;
+      }
+
+      if (action === 'demote') {
+        await groupsAPI.demoteMember(group.id, userId);
+        setMembers(prev => prev.map(m => (
+          m.users?.id === userId ? { ...m, role: 'teacher' } : m
+        )));
+        addToast({ type: 'success', message: `Revoked admin access from ${name}.` });
+        return;
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not revoke admin access');
+      const fallback =
+        action === 'kick'
+          ? 'Could not remove member'
+          : action === 'promote'
+            ? 'Could not promote member'
+            : 'Could not revoke admin access';
+
+      addToast({
+        type: 'error',
+        message: err.response?.data?.error || fallback,
+      });
+    } finally {
+      setConfirmingMember(false);
     }
   };
 
@@ -339,6 +374,32 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
     </div>
 
     {/* QR Code Modal */}
+    <ConfirmDialog
+      open={!!memberConfirm}
+      danger={memberConfirm?.action === 'kick' || memberConfirm?.action === 'demote'}
+      title={
+        memberConfirm?.action === 'kick'
+          ? `Remove ${memberConfirm?.name} from the group?`
+          : memberConfirm?.action === 'promote'
+            ? `Grant admin access to ${memberConfirm?.name}?`
+            : `Revoke admin access from ${memberConfirm?.name}?`
+      }
+      description="This action will update the group membership immediately."
+      confirmText={
+        memberConfirm?.action === 'kick'
+          ? 'Remove'
+          : memberConfirm?.action === 'promote'
+            ? 'Make admin'
+            : 'Revoke admin'
+      }
+      onCancel={() => {
+        if (confirmingMember) return;
+        setMemberConfirm(null);
+      }}
+      onConfirm={handleConfirmMemberAction}
+      disabled={confirmingMember}
+    />
+
     {showQR && (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4"
         onClick={() => setShowQR(false)}>

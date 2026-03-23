@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { filesAPI } from '../services/api';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const FILE_ICONS = {
   'application/pdf': '📄',
@@ -81,6 +83,7 @@ function FileRow({ file, canDelete, onDelete }) {
 
 export default function FilesPanel({ group }) {
   const { user }  = useAuth();
+  const { addToast } = useToast();
   const myRole    = group?.my_role;
   const isAdmin   = myRole === 'admin';
   const isTeacher = myRole === 'teacher';
@@ -96,6 +99,12 @@ export default function FilesPanel({ group }) {
   const [uploading, setUploading]   = useState(false);
   const [error, setError]           = useState('');
   const [pendingFile, setPendingFile] = useState(null); // file awaiting confirm
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [deletingFile, setDeletingFile] = useState(false);
+
+  const confirmDeleteFile = confirmDeleteId
+    ? files.find(f => f.id === confirmDeleteId)
+    : null;
 
   useEffect(() => {
     if (!group) return;
@@ -133,12 +142,27 @@ export default function FilesPanel({ group }) {
     }
   };
 
-  const handleDelete = async (fileId) => {
+  const handleRequestDelete = (fileId) => setConfirmDeleteId(fileId);
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteId || !group) return;
+    const fileToDelete = confirmDeleteFile;
+    const fileId = confirmDeleteId;
+    setConfirmDeleteId(null);
+    setDeletingFile(true);
+    setError('');
+
     try {
       await filesAPI.delete(group.id, fileId);
       setFiles(prev => prev.filter(f => f.id !== fileId));
+      addToast({
+        type: 'success',
+        message: fileToDelete?.filename ? `File deleted: ${fileToDelete.filename}` : 'File deleted',
+      });
     } catch {
-      setError('Could not delete file');
+      addToast({ type: 'error', message: 'Could not delete file' });
+    } finally {
+      setDeletingFile(false);
     }
   };
 
@@ -189,7 +213,7 @@ export default function FilesPanel({ group }) {
               {teacherFiles.map(file => (
                 <FileRow key={file.id} file={file}
                   canDelete={isAdmin || file.users?.id === user?.id}
-                  onDelete={handleDelete}/>
+                  onDelete={handleRequestDelete}/>
               ))}
             </div>
           )}
@@ -229,7 +253,7 @@ export default function FilesPanel({ group }) {
                 {studentFiles.map(file => (
                   <FileRow key={file.id} file={file}
                     canDelete={isAdmin || file.users?.id === user?.id}
-                    onDelete={handleDelete}/>
+                    onDelete={handleRequestDelete}/>
                 ))}
               </div>
             )}
@@ -245,6 +269,30 @@ export default function FilesPanel({ group }) {
           onCancel={() => setPendingFile(null)}
         />
       )}
+
+      {/* Confirm delete modal */}
+      <ConfirmDialog
+        open={!!confirmDeleteFile}
+        danger={true}
+        icon={confirmDeleteFile ? (FILE_ICONS[confirmDeleteFile.file_type] || '📎') : null}
+        title={
+          confirmDeleteFile
+            ? `Delete "${confirmDeleteFile.filename}"?`
+            : 'Delete this file?'
+        }
+        description={
+          confirmDeleteFile
+            ? `This will remove it from the group for everyone. (${formatSize(confirmDeleteFile.size_bytes)})`
+            : ''
+        }
+        confirmText="Delete"
+        onCancel={() => {
+          if (deletingFile) return;
+          setConfirmDeleteId(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        disabled={deletingFile}
+      />
     </div>
   );
 }

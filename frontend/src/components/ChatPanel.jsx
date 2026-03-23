@@ -5,7 +5,7 @@ import { messagesAPI, groupsAPI } from '../services/api';
 
 export default function ChatPanel({ group }) {
   const { user }   = useAuth();
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket();
 
   const [messages, setMessages]     = useState([]);
   const [text, setText]             = useState('');
@@ -162,7 +162,7 @@ export default function ChatPanel({ group }) {
   }, [timeline.length]);
 
   const sendMessage = () => {
-    if (!text.trim() || !socket || !canSend) return;
+    if (!text.trim() || !socket || !connected || !canSend) return;
     socket.emit('send_message', {
       groupId: group.id,
       content: text.trim(),
@@ -212,7 +212,7 @@ export default function ChatPanel({ group }) {
 
   const handleTextChange = (e) => {
     setText(e.target.value);
-    if (!socket || !group) return;
+    if (!socket || !group || !connected) return;
     if (!isTypingRef.current) {
       isTypingRef.current = true;
       socket.emit('typing_start', { groupId: group.id });
@@ -286,6 +286,13 @@ export default function ChatPanel({ group }) {
       {adminsOnly && (
         <div className="mx-4 mt-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-400 text-xs text-center flex-shrink-0">
           Admins only mode is on — only admins can send messages
+        </div>
+      )}
+
+      {/* Connection status */}
+      {socket && !connected && (
+        <div className="mx-4 mt-2 px-4 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-gray-300 text-xs text-center flex-shrink-0">
+          Reconnecting... messages may be delayed
         </div>
       )}
 
@@ -520,15 +527,16 @@ export default function ChatPanel({ group }) {
               onChange={handleTextChange}
               onKeyDown={handleKeyDown}
               rows={1}
-              placeholder="Type a message... (Enter to send)"
+              placeholder={connected ? 'Type a message... (Enter to send)' : 'Disconnected... reconnecting'}
               className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5
                 text-sm text-white placeholder-gray-500
                 focus:outline-none focus:ring-2 focus:ring-indigo-500
                 resize-none transition"
+              disabled={!connected}
             />
             <button
               onClick={sendMessage}
-              disabled={!text.trim()}
+              disabled={!text.trim() || !connected}
               className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40
                 disabled:cursor-not-allowed text-white px-5 py-2.5
                 rounded-xl text-sm font-medium transition">

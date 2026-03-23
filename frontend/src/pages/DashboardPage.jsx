@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
       {/* Top nav */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 flex-shrink-0">
-        <span className="text-sm font-semibold text-white">Stu+</span>
+        <span className="text-sm font-semibold text-white">Studi+</span>
         <button onClick={logout}
           className="text-xs text-gray-600 hover:text-red-400 transition">
           Sign out
