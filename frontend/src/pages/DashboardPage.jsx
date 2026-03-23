@@ -2,39 +2,52 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
-import GroupList     from '../components/GroupList';
-import ChatPanel     from '../components/ChatPanel';
-import ChatHeader    from '../components/ChatHeader';
-import GroupModal    from '../components/GroupModal';
-import FilesPanel    from '../components/FilesPanel';
-import MembersPanel  from '../components/MembersPanel';
-import GroupOverview from '../components/GroupOverview';
+import GroupList        from '../components/GroupList';
+import DMList           from '../components/DMList';
+import ChatPanel        from '../components/ChatPanel';
+import DMPanel          from '../components/DMPanel';
+import ChatHeader       from '../components/ChatHeader';
+import GroupModal       from '../components/GroupModal';
+import FilesPanel       from '../components/FilesPanel';
+import MembersPanel     from '../components/MembersPanel';
+import GroupOverview    from '../components/GroupOverview';
 import KickNotification from '../components/KickNotification';
 import { NotificationProvider } from '../context/NotificationContext';
 
 export default function DashboardPage() {
   const { logout, user } = useAuth();
   const { socket } = useSocket();
-  const [groups, setGroups]           = useState([]);
-  const [activeGroup, setActiveGroup] = useState(null);
-  const [activeTab, setActiveTab]     = useState('Overview');
-  const [showModal, setShowModal]     = useState(false);
+
+  // Sidebar tab
+  const [sidebarTab, setSidebarTab] = useState('groups');
+
+  // Groups state
+  const [groups, setGroups]               = useState([]);
+  const [activeGroup, setActiveGroup]     = useState(null);
+  const [activeTab, setActiveTab]         = useState('Overview');
+  const [showModal, setShowModal]         = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
-  const [kickNotice, setKickNotice]   = useState(null);
+  const [kickNotice, setKickNotice]       = useState(null);
+
+  // DMs state
+  const [activeConvo, setActiveConvo] = useState(null);
 
   useEffect(() => {
     groupsAPI.list()
-      .then(res => {
-        setGroups(res.data);
-        // ← no auto-select here
-      })
+      .then(res => setGroups(res.data))
       .catch(console.error)
       .finally(() => setLoadingGroups(false));
   }, []);
 
   const handleSelectGroup = (group) => {
     setActiveGroup(group);
+    setActiveConvo(null);
     setActiveTab('Overview');
+  };
+
+  const handleSelectConvo = (convo) => {
+    setActiveConvo(convo);
+    setActiveGroup(null);
   };
 
   const handleGroupAdded = (group) => {
@@ -43,7 +56,9 @@ export default function DashboardPage() {
       return [group, ...prev];
     });
     setActiveGroup(group);
+    setActiveConvo(null);
     setActiveTab('Overview');
+    setSidebarTab('groups');
   };
 
   const handleLeft = (groupId) => {
@@ -55,6 +70,11 @@ export default function DashboardPage() {
     setGroups(prev => prev.filter(g => g.id !== groupId));
     setActiveGroup(prev => prev?.id === groupId ? null : prev);
     setKickNotice({ groupName });
+  };
+
+  const handleNewDMMessage = () => { //conversationId, message
+    // If the active convo is this one, unread stays 0
+    // Otherwise the DMList handles its own unread count internally
   };
 
   // Stable ref so the socket listener never captures stale state
@@ -69,6 +89,9 @@ export default function DashboardPage() {
     socket.on('member_kicked', onKicked);
     return () => socket.off('member_kicked', onKicked);
   }, [socket, user?.id]);
+
+  const showGroup = activeGroup && !activeConvo;
+  const showDM    = activeConvo && !activeGroup;
 
   return (
     <NotificationProvider activeGroupId={activeGroup?.id}>
@@ -87,33 +110,68 @@ export default function DashboardPage() {
       <div className="flex flex-1 min-h-0">
 
         {/* Sidebar */}
-        <div className="w-64 flex-shrink-0 min-h-0 h-full">
-          <GroupList
-            groups={groups}
-            activeGroupId={activeGroup?.id}
-            onSelect={handleSelectGroup}
-            onOpenModal={() => setShowModal(true)}
-            loading={loadingGroups}
-          />
+        <div className="w-64 flex-shrink-0 min-h-0 h-full flex flex-col border-r border-gray-800">
+
+          {/* Sidebar tab switcher */}
+          <div className="flex p-2 gap-1 border-b border-gray-800 flex-shrink-0">
+            <button onClick={() => setSidebarTab('groups')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition
+                ${sidebarTab === 'groups'
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-500 hover:text-gray-300'}`}>
+              Groups
+            </button>
+            <button onClick={() => setSidebarTab('dms')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition
+                ${sidebarTab === 'dms'
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-500 hover:text-gray-300'}`}>
+              Messages
+            </button>
+          </div>
+
+          {/* Sidebar content */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {sidebarTab === 'groups' ? (
+              <GroupList
+                groups={groups}
+                activeGroupId={activeGroup?.id}
+                onSelect={handleSelectGroup}
+                onOpenModal={() => setShowModal(true)}
+                loading={loadingGroups}
+              />
+            ) : (
+              <DMList
+                activeConvoId={activeConvo?.id}
+                onSelect={handleSelectConvo}
+              />
+            )}
+          </div>
         </div>
 
         {/* Main content */}
         <div className="flex-1 flex flex-col min-w-0">
-          {activeGroup ? (
+
+          {/* Group view — preserves all your existing tabs */}
+          {showGroup && (
             <>
               <ChatHeader
                 group={activeGroup}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
               />
-              {activeTab === 'Overview' && <GroupOverview group={activeGroup} />}
-              {activeTab === 'Chat'     && (
+              {activeTab === 'Overview' && (
+                <GroupOverview group={activeGroup} />
+              )}
+              {activeTab === 'Chat' && (
                 <div className="flex-1 min-h-0">
                   <ChatPanel group={activeGroup} />
                 </div>
               )}
-              {activeTab === 'Files'    && <FilesPanel group={activeGroup} />}
-              {activeTab === 'Members'  && (
+              {activeTab === 'Files' && (
+                <FilesPanel group={activeGroup} />
+              )}
+              {activeTab === 'Members' && (
                 <div className="flex-1 flex flex-col min-h-0">
                   <MembersPanel
                     group={activeGroup}
@@ -127,22 +185,50 @@ export default function DashboardPage() {
                 </div>
               )}
             </>
-          ) : (
-            /* Empty state when no group is selected */
+          )}
+
+          {/* DM view */}
+          {showDM && (
+            <DMPanel
+              conversation={activeConvo}
+              onNewMessage={handleNewDMMessage}
+            />
+          )}
+
+          {/* Empty state */}
+          {!showGroup && !showDM && (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gray-900 border border-gray-800
                   flex items-center justify-center mx-auto">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                    stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                  </svg>
+                  {sidebarTab === 'groups' ? (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                      stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                    </svg>
+                  ) : (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                      stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                      <path d="M8 10h8M8 14h5"/>
+                    </svg>
+                  )}
                 </div>
-                <p className="text-gray-500 text-sm">Select a group to get started</p>
-                {groups.length === 0 && !loadingGroups && (
+                <p className="text-gray-500 text-sm">
+                  {sidebarTab === 'groups'
+                    ? 'Select a group to get started'
+                    : 'Search for someone to message'}
+                </p>
+                {sidebarTab === 'groups' && groups.length === 0 && !loadingGroups && (
                   <button onClick={() => setShowModal(true)}
                     className="text-indigo-400 hover:text-indigo-300 text-sm transition">
                     Create or join your first group →
+                  </button>
+                )}
+                {sidebarTab === 'dms' && (
+                  <button onClick={() => setSidebarTab('dms')}
+                    className="text-indigo-400 hover:text-indigo-300 text-sm transition">
+                    Search by email in the sidebar →
                   </button>
                 )}
               </div>

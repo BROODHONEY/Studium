@@ -73,4 +73,12 @@ export const duesAPI = {
   delete: (groupId, id)   => api.delete(`/dues/${groupId}/${id}`)
 };
 
+export const dmAPI = {
+  search:          (email)          => api.get('/dm/search', { params: { email } }),
+  getConversations:()               => api.get('/dm/conversations'),
+  startConversation:(userId)        => api.post('/dm/conversations', { userId }),
+  getMessages:     (conversationId) => api.get(`/dm/conversations/${conversationId}/messages`),
+  getOnlineStatus: (userIds)        => api.post('/dm/online-status', { userIds })
+};
+
 export default api;

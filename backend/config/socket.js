@@ -18,7 +18,7 @@ module.exports = (io) => {
     }
   });
 
-    io.on('connection', (socket) => {
+  io.on('connection', (socket) => {
     console.log(`User connected: ${socket.user.id}`);
 
     // Track user's socket by userId for direct messaging
@@ -50,7 +50,90 @@ module.exports = (io) => {
       console.error(err);
       socket.emit('error', { message: 'Could not join room' });
     }
-  });
+
+    // ── DM: join personal room ─────────────────────────────
+    // Each user joins a room named after their own ID
+    // so they can receive DMs from anyone
+    socket.join(`user:${socket.user.id}`);
+
+    // Track online users
+    const onlineUsers = io.onlineUsers || (io.onlineUsers = new Map());
+    onlineUsers.set(socket.user.id, socket.id);
+    io.emit('user_online', { userId: socket.user.id });
+
+    // ── DM: send a direct message ──────────────────────────
+    socket.on('send_dm', async ({ conversationId, content }) => {
+      if (!content?.trim()) return;
+
+      try {
+        // Verify sender is part of this conversation
+        const { data: convo } = await supabase
+          .from('conversations')
+          .select('user1_id, user2_id')
+          .eq('id', conversationId)
+          .single();
+
+        if (!convo ||
+          (convo.user1_id !== socket.user.id &&
+          convo.user2_id !== socket.user.id)) {
+          socket.emit('error', { message: 'Not your conversation' });
+          return;
+        }
+
+        // Save to DB
+        const { data: message, error } = await supabase
+          .from('direct_messages')
+          .insert({
+            conversation_id: conversationId,
+            sender_id: socket.user.id,
+            content: content.trim()
+          })
+          .select(`
+            id, content, read, created_at,
+            sender:sender_id (id, name, avatar_url)
+          `)
+          .single();
+
+        if (error) throw error;
+
+        // Send to the other user's personal room
+        const otherId = convo.user1_id === socket.user.id
+          ? convo.user2_id
+          : convo.user1_id;
+
+        // Deliver to both sender and receiver
+        io.to(`user:${socket.user.id}`)
+          .to(`user:${otherId}`)
+          .emit('new_dm', { conversationId, message });
+
+      } catch (err) {
+        console.error(err);
+        socket.emit('error', { message: 'Could not send message' });
+      }
+    });
+
+    // ── DM: typing indicators ──────────────────────────────
+    socket.on('dm_typing_start', ({ conversationId, otherId }) => {
+      io.to(`user:${otherId}`).emit('dm_user_typing', {
+        conversationId,
+        userId: socket.user.id
+      });
+    });
+
+    socket.on('dm_typing_stop', ({ conversationId, otherId }) => {
+      io.to(`user:${otherId}`).emit('dm_user_stopped_typing', {
+        conversationId,
+        userId: socket.user.id
+      });
+    });
+
+    // ── Handle disconnect — mark offline ──────────────────
+    socket.on('disconnect', () => {
+        onlineUsers.delete(socket.user.id);
+        io.emit('user_offline', { userId: socket.user.id });
+        console.log(`User disconnected: ${socket.user.id}`);
+      });
+    });
 
     // ── Leave a group room ─────────────────────────────
     socket.on('leave_group', (groupId) => {
