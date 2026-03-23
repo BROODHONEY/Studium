@@ -56,7 +56,7 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
     const isTeacher = membership.role === 'teacher';
     const isStudent = membership.role === 'student';
 
-    if (isStudent && !studentAllowed.includes(mimetype)) {
+    if (isStudent && !studentAllowed.includes(req.file.mimetype)) {
       return res.status(403).json({ error: 'Students can only upload images and PDFs' });
     }
 
@@ -98,7 +98,7 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
         uploaded_by_role: membership.role
       })
       .select(`
-        id, filename, file_url, file_type, size_bytes, created_at,
+        id, filename, file_url, file_type, size_bytes, created_at, uploaded_by_role,
         users!uploaded_by (id, name)
       `)
       .single();
@@ -132,7 +132,7 @@ router.get('/:groupId', async (req, res) => {
     const { data: files, error } = await supabase
       .from('files')
       .select(`
-        id, filename, file_url, file_type, size_bytes, created_at,
+        id, filename, file_url, file_type, size_bytes, created_at, uploaded_by_role,
         users!uploaded_by (id, name)
       `)
       .eq('group_id', groupId)

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
 import GroupList     from '../components/GroupList';
 import ChatPanel     from '../components/ChatPanel';
@@ -11,12 +12,14 @@ import GroupOverview from '../components/GroupOverview';
 import KickNotification from '../components/KickNotification';
 
 export default function DashboardPage() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { socket } = useSocket();
   const [groups, setGroups]           = useState([]);
-  const [activeGroup, setActiveGroup] = useState(null);  // ← null by default
+  const [activeGroup, setActiveGroup] = useState(null);
   const [activeTab, setActiveTab]     = useState('Overview');
   const [showModal, setShowModal]     = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
+  const [kickNotice, setKickNotice]   = useState(null);
 
   useEffect(() => {
     groupsAPI.list()
@@ -30,7 +33,7 @@ export default function DashboardPage() {
 
   const handleSelectGroup = (group) => {
     setActiveGroup(group);
-    setActiveTab('Overview'); // always land on Overview when clicking a group
+    setActiveTab('Overview');
   };
 
   const handleGroupAdded = (group) => {
@@ -42,17 +45,36 @@ export default function DashboardPage() {
     setActiveTab('Overview');
   };
 
-  const handleKicked = (groupId) => {
+  const handleLeft = (groupId) => {
     setGroups(prev => prev.filter(g => g.id !== groupId));
     setActiveGroup(prev => prev?.id === groupId ? null : prev);
   };
+
+  const handleKicked = (groupId, groupName) => {
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setActiveGroup(prev => prev?.id === groupId ? null : prev);
+    setKickNotice({ groupName });
+  };
+
+  // Stable ref so the socket listener never captures stale state
+  const handleKickedRef = useRef(handleKicked);
+  useEffect(() => { handleKickedRef.current = handleKicked; });
+
+  useEffect(() => {
+    if (!socket || !user?.id) return;
+    const onKicked = ({ kickedUserId, groupId, groupName }) => {
+      if (kickedUserId === user.id) handleKickedRef.current(groupId, groupName);
+    };
+    socket.on('member_kicked', onKicked);
+    return () => socket.off('member_kicked', onKicked);
+  }, [socket, user?.id]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-950">
 
       {/* Top nav */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 flex-shrink-0">
-        <span className="text-sm font-semibold text-white">Acadex</span>
+        <span className="text-sm font-semibold text-white">Stu+</span>
         <button onClick={logout}
           className="text-xs text-gray-600 hover:text-red-400 transition">
           Sign out
@@ -83,16 +105,20 @@ export default function DashboardPage() {
                 onTabChange={setActiveTab}
               />
               {activeTab === 'Overview' && <GroupOverview group={activeGroup} />}
-              {activeTab === 'Chat'     && <ChatPanel group={activeGroup} onKicked={handleKicked} />}
+              {activeTab === 'Chat'     && <ChatPanel group={activeGroup} />}
               {activeTab === 'Files'    && <FilesPanel group={activeGroup} />}
               {activeTab === 'Members'  && (
-                <MembersPanel
-                  group={activeGroup}
-                  onGroupUpdate={(updated) => {
-                    setActiveGroup(updated);
-                    setGroups(prev => prev.map(g => g.id === updated.id ? updated : g));
-                  }}
-                />
+                <div className="flex-1 flex flex-col min-h-0">
+                  <MembersPanel
+                    group={activeGroup}
+                    onGroupUpdate={(updated) => {
+                      setActiveGroup(updated);
+                      setGroups(prev => prev.map(g => g.id === updated.id ? updated : g));
+                    }}
+                    onLeft={handleLeft}
+                    onGroupDeleted={handleLeft}
+                  />
+                </div>
               )}
             </>
           ) : (
@@ -126,7 +152,7 @@ export default function DashboardPage() {
         />
       )}
 
-      <KickNotification />
+      <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
     </div>
   );
 }

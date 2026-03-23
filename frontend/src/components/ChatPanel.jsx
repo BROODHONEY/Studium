@@ -117,13 +117,14 @@ export default function ChatPanel({ group }) {
     setText('');
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   const handleDeleteMessage = async (messageId) => {
-    // Optimistic removal
+    setConfirmDeleteId(null);
     setMessages(prev => prev.filter(m => m.id !== messageId));
     try {
       await messagesAPI.delete(messageId);
     } catch {
-      // If it fails, re-fetch to restore state
       messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
     }
   };
@@ -245,9 +246,20 @@ export default function ChatPanel({ group }) {
                         : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
                       {item.content}
                     </div>
-                    {canDelete && (
+                    {canDelete && confirmDeleteId === item.id ? (
+                      <div className="flex items-center gap-1 mb-1 flex-shrink-0">
+                        <button onClick={() => handleDeleteMessage(item.id)}
+                          className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white transition">
+                          Delete
+                        </button>
+                        <button onClick={() => setConfirmDeleteId(null)}
+                          className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
+                          Cancel
+                        </button>
+                      </div>
+                    ) : canDelete && (
                       <button
-                        onClick={() => handleDeleteMessage(item.id)}
+                        onClick={() => setConfirmDeleteId(item.id)}
                         className="opacity-0 group-hover/msg:opacity-100 transition p-1 rounded text-gray-600 hover:text-red-400 flex-shrink-0 mb-1">
                         <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
                           <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>

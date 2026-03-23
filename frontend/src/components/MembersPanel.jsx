@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI } from '../services/api';
+import QRCode from 'qrcode';
 
 const initials = (name) =>
   name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -11,7 +12,7 @@ const COLORS = [
 ];
 const avatarColor = (name) => COLORS[name?.charCodeAt(0) % COLORS.length];
 
-export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
+export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDeleted }) {
   const { user }  = useAuth();
   const myRole    = group?.my_role;
   const isAdmin   = myRole === 'admin';
@@ -35,6 +36,15 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [leaving, setLeaving]           = useState(false);
 
+  // Delete group confirmation
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting]           = useState(false);
+
+  // QR code modal
+  const [showQR, setShowQR]   = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const qrCanvasRef = useRef(null);
+
   useEffect(() => {
     if (!group) return;
     setDescValue(group.description || '');
@@ -47,6 +57,14 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [group?.id]);
+
+  // Generate QR whenever modal opens
+  useEffect(() => {
+    if (!showQR || !group?.invite_code) return;
+    QRCode.toDataURL(group.invite_code, { width: 240, margin: 2, color: { dark: '#ffffff', light: '#111827' } })
+      .then(url => setQrDataUrl(url))
+      .catch(console.error);
+  }, [showQR, group?.invite_code]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.invite_code);
@@ -127,6 +145,19 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    setDeleting(true);
+    try {
+      await groupsAPI.delete(group.id);
+      onGroupDeleted?.(group.id);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not delete group');
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const admins   = members.filter(m => m.role === 'admin');
   const teachers = members.filter(m => m.role === 'teacher');
   const students = members.filter(m => m.role === 'student');
@@ -156,6 +187,10 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
                 <button onClick={copyCode}
                   className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
                   {copied ? 'Copied!' : 'Copy'}
+                </button>
+                <button onClick={() => setShowQR(true)}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
+                  QR
                 </button>
               </div>
             </div>
@@ -272,8 +307,57 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
             )}
           </div>
         )}
+
+        {/* Delete group — only for the creator */}
+        {isCreator && (
+          <div className="pt-4 border-t border-gray-800">
+            {confirmDelete ? (
+              <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
+                <p className="text-sm text-red-400 font-medium">Delete "{group.name}"?</p>
+                <p className="text-xs text-gray-500">This will permanently delete the group, all messages, and all files. This cannot be undone.</p>
+                <div className="flex gap-2">
+                  <button onClick={handleDeleteGroup} disabled={deleting}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white transition">
+                    {deleting ? 'Deleting...' : 'Yes, delete'}
+                  </button>
+                  <button onClick={() => setConfirmDelete(false)}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 transition">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmDelete(true)}
+                className="text-xs text-red-400/70 hover:text-red-400 transition">
+                Delete group
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
+
+    {/* QR Code Modal */}
+    {showQR && (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4"
+        onClick={() => setShowQR(false)}>
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 text-center space-y-4"
+          onClick={e => e.stopPropagation()}>
+          <p className="text-sm font-semibold text-white">Scan to join</p>
+          {qrDataUrl
+            ? <img src={qrDataUrl} alt="QR code" className="w-48 h-48 mx-auto rounded-xl"/>
+            : <div className="w-48 h-48 mx-auto rounded-xl bg-gray-800 animate-pulse"/>
+          }
+          <p className="font-mono text-xl font-bold text-indigo-400 tracking-widest">
+            {group.invite_code}
+          </p>
+          <button onClick={() => setShowQR(false)}
+            className="w-full py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg transition">
+            Close
+          </button>
+        </div>
+      </div>
+    )}
   );
 }
 
