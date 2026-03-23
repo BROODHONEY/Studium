@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
 
-export default function ChatPanel({ group, onKicked }) {
+export default function ChatPanel({ group }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
 
@@ -65,7 +65,6 @@ export default function ChatPanel({ group, onKicked }) {
     socket.off('new_message');
     socket.off('system_message');
     socket.off('admins_only_changed');
-    socket.off('member_kicked');
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
@@ -91,17 +90,10 @@ export default function ChatPanel({ group, onKicked }) {
       setAdminsOnly(enabled);
     });
 
-    socket.on('member_kicked', ({ kickedUserId, groupId, groupName }) => {
-      if (kickedUserId === user?.id) {
-        onKicked?.(groupId, groupName);
-      }
-    });
-
     return () => {
       socket.off('new_message');
       socket.off('system_message');
       socket.off('admins_only_changed');
-      socket.off('member_kicked');
     };
   }, [group?.id, socket]);
 
@@ -196,8 +188,10 @@ export default function ChatPanel({ group, onKicked }) {
             }
 
             // ── Regular message ─────────────────────────────
+            console.log(item)
             const isOwn = item.sender?.id === user?.id;
             const senderName = item.sender?.name || 'Unknown';
+            const senderRole = item.sender?.my_role || 'Member';
 
             return (
               <div key={item.id}
@@ -219,7 +213,7 @@ export default function ChatPanel({ group, onKicked }) {
                   {/* Sender name — only for others */}
                   {!isOwn && (
                     <span className="text-xs text-gray-500 mb-1 px-1">
-                      {senderName}
+                      {senderName} - {senderRole}
                     </span>
                   )}
 

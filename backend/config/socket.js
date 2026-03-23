@@ -21,6 +21,15 @@ module.exports = (io) => {
     io.on('connection', (socket) => {
     console.log(`User connected: ${socket.user.id}`);
 
+    // Track user's socket by userId for direct messaging
+    io.userSockets = io.userSockets || new Map();
+    io.userSockets.set(socket.user.id, socket.id);
+
+    socket.on('disconnect', () => {
+      console.log(`User disconnected: ${socket.user.id}`);
+      io.userSockets?.delete(socket.user.id);
+    });
+
    socket.on('join_group', async (groupId) => {
     try {
       const { data: membership } = await supabase
@@ -118,9 +127,5 @@ module.exports = (io) => {
       socket.to(groupId).emit('user_stopped_typing', { userId: socket.user.id });
     });
 
-    // ── Disconnect ─────────────────────────────────────
-    socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.user.id}`);
-    });
   });
 };

@@ -289,11 +289,18 @@ router.delete('/:id/members/:userId', async (req, res) => {
         timestamp: savedMsg.created_at
       });
 
-      io.to(req.params.id).emit('member_kicked', {
+      // Emit directly to the kicked user's socket so they get it regardless of which room they're in
+      const kickedSocketId = io.userSockets?.get(req.params.userId);
+      const kickPayload = {
         kickedUserId: req.params.userId,
         groupId: req.params.id,
         groupName: group?.name
-      });
+      };
+      if (kickedSocketId) {
+        io.to(kickedSocketId).emit('member_kicked', kickPayload);
+      }
+      // Also emit to the room so others' member lists can update
+      io.to(req.params.id).emit('member_kicked', kickPayload);
     }
 
     res.json({ message: 'Member removed' });

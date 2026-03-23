@@ -87,16 +87,20 @@ export default function DashboardPage() {
     setActiveGroup(prev => prev?.id === groupId ? null : prev);
   };
 
+  // Keep a stable ref to handleKicked so the socket listener never goes stale
+  const handleKickedRef = useRef(handleKicked);
+  useEffect(() => { handleKickedRef.current = handleKicked; });
+
   // Listen for kick events at the top level so it works regardless of active tab
   useEffect(() => {
     if (!socket) return;
-    const handleKickedEvent = ({ kickedUserId, groupId, groupName }) => {
+    const onKicked = ({ kickedUserId, groupId, groupName }) => {
       if (kickedUserId === user?.id) {
-        handleKicked(groupId, groupName);
+        handleKickedRef.current(groupId, groupName);
       }
     };
-    socket.on('member_kicked', handleKickedEvent);
-    return () => socket.off('member_kicked', handleKickedEvent);
+    socket.on('member_kicked', onKicked);
+    return () => socket.off('member_kicked', onKicked);
   }, [socket, user?.id]);
 
   return (
@@ -135,7 +139,7 @@ export default function DashboardPage() {
                 onTabChange={setActiveTab}
               />
                 {activeTab === 'Chat' && (
-                  <ChatPanel group={activeGroup} onKicked={handleKicked} onLeft={handleLeft} />
+                  <ChatPanel group={activeGroup} />
                 )}
                 {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
                 {activeTab === 'Members' && (
