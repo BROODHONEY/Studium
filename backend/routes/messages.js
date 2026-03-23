@@ -51,4 +51,55 @@ router.get('/:groupId', async (req, res) => {
   }
 });
 
+// ── Delete a message ──────────────────────────────────
+router.delete('/:messageId', async (req, res) => {
+  const { messageId } = req.params;
+
+  try {
+    // Fetch the message to check ownership and get group_id
+    const { data: message, error: fetchErr } = await supabase
+      .from('messages')
+      .select('id, sender_id, group_id')
+      .eq('id', messageId)
+      .single();
+
+    if (fetchErr || !message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Check requester is a member of the group
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', message.group_id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!membership) {
+      return res.status(403).json({ error: 'You are not a member of this group' });
+    }
+
+    // Only the sender or an admin can delete
+    const isOwner = message.sender_id === req.user.id;
+    const isAdmin = membership.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'You can only delete your own messages' });
+    }
+
+    await supabase.from('messages').delete().eq('id', messageId);
+
+    // Notify everyone in the room
+    const io = req.app.get('io');
+    if (io) {
+      io.to(message.group_id).emit('message_deleted', { messageId, groupId: message.group_id });
+    }
+
+    res.json({ message: 'Message deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not delete message' });
+  }
+});
+
 module.exports = router;

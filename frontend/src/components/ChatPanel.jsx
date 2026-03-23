@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
-
 export default function ChatPanel({ group }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
@@ -65,6 +64,7 @@ export default function ChatPanel({ group }) {
     socket.off('new_message');
     socket.off('system_message');
     socket.off('admins_only_changed');
+    socket.off('message_deleted');
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
@@ -90,10 +90,15 @@ export default function ChatPanel({ group }) {
       setAdminsOnly(enabled);
     });
 
+    socket.on('message_deleted', ({ messageId }) => {
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    });
+
     return () => {
       socket.off('new_message');
       socket.off('system_message');
       socket.off('admins_only_changed');
+      socket.off('message_deleted');
     };
   }, [group?.id, socket]);
 
@@ -110,6 +115,17 @@ export default function ChatPanel({ group }) {
       type: 'text'
     });
     setText('');
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    // Optimistic removal
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+    try {
+      await messagesAPI.delete(messageId);
+    } catch {
+      // If it fails, re-fetch to restore state
+      messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -195,10 +211,11 @@ export default function ChatPanel({ group }) {
             const senderName = sender?.name
               ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}`
               : 'Unknown';
+            const canDelete = isOwn || myRole === 'admin';
 
             return (
               <div key={item.id}
-                className={`flex gap-2.5 items-end ${isOwn ? 'flex-row-reverse' : ''}`}>
+                className={`flex gap-2.5 items-end group/msg ${isOwn ? 'flex-row-reverse' : ''}`}>
 
                 {/* Avatar */}
                 {!isOwn && (
@@ -220,12 +237,23 @@ export default function ChatPanel({ group }) {
                     </span>
                   )}
 
-                  {/* Bubble */}
-                  <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
-                    ${isOwn
-                      ? 'bg-indigo-600 text-white rounded-br-sm'
-                      : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
-                    {item.content}
+                  {/* Bubble + delete button */}
+                  <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
+                    <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
+                      ${isOwn
+                        ? 'bg-indigo-600 text-white rounded-br-sm'
+                        : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
+                      {item.content}
+                    </div>
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDeleteMessage(item.id)}
+                        className="opacity-0 group-hover/msg:opacity-100 transition p-1 rounded text-gray-600 hover:text-red-400 flex-shrink-0 mb-1">
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
 
                   {/* Timestamp */}

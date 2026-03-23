@@ -44,7 +44,8 @@ export const groupsAPI = {
 };
 
 export const messagesAPI = {
-  list: (groupId, params) => api.get(`/messages/${groupId}`, { params })
+  list:   (groupId, params) => api.get(`/messages/${groupId}`, { params }),
+  delete: (messageId)       => api.delete(`/messages/${messageId}`)
 };
 
 export const filesAPI = {
