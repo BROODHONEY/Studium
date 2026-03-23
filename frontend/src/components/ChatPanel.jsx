@@ -17,6 +17,17 @@ export default function ChatPanel({ group }) {
   const [showSearch, setShowSearch]   = useState(false);
   const [typingUsers, setTypingUsers] = useState({}); // { userId: { name, timer } }
 
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  const highlightTimeoutRef = useRef(null);
+  const messageRefs = useRef(new Map()); // messageId -> HTMLElement
+
+  const [pinTimeModal, setPinTimeModal] = useState({
+    open: false,
+    messageId: null,
+    pin_ttl_minutes: '',
+    content: ''
+  });
+
   const typingTimersRef = useRef({});
 
   const bottomRef        = useRef(null);
@@ -117,13 +128,22 @@ export default function ChatPanel({ group }) {
       setMessages(prev => prev.filter(m => m.id !== messageId));
     });
 
-    socket.on('message_pinned', ({ messageId, content }) => {
-      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: true } : m));
-      setPinnedMsgs(prev => prev.find(m => m.id === messageId) ? prev : [{ id: messageId, content }, ...prev]);
+    socket.on('message_pinned', ({ messageId, content, pin_time }) => {
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: true, pin_time } : m));
+      setPinnedMsgs(prev => {
+        const exists = prev.find(m => m.id === messageId);
+        const next = { id: messageId, content, pin_time: pin_time ?? null };
+
+        if (exists) {
+          return prev.map(m => m.id === messageId ? { ...m, content: content ?? m.content, pin_time: pin_time ?? null } : m);
+        }
+
+        return [next, ...prev];
+      });
     });
 
     socket.on('message_unpinned', ({ messageId }) => {
-      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: false } : m));
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: false, pin_time: null } : m));
       setPinnedMsgs(prev => prev.filter(m => m.id !== messageId));
     });
 
@@ -161,6 +181,25 @@ export default function ChatPanel({ group }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [timeline.length]);
 
+  const scrollToMessage = (messageId) => {
+    if (!messageId) return;
+
+    const attempt = (remainingAttempts) => {
+      const el = messageRefs.current.get(messageId) || document.getElementById(`message-${messageId}`);
+      if (!el) {
+        if (remainingAttempts > 0) setTimeout(() => attempt(remainingAttempts - 1), 250);
+        return;
+      }
+
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedMessageId(messageId);
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+      highlightTimeoutRef.current = setTimeout(() => setHighlightedMessageId(null), 1800);
+    };
+
+    attempt(2);
+  };
+
   const sendMessage = () => {
     if (!text.trim() || !socket || !connected || !canSend) return;
     socket.emit('send_message', {
@@ -187,20 +226,56 @@ export default function ChatPanel({ group }) {
     }
   };
 
-  const handleTogglePin = async (msg) => {
+  const handleUnpinMessage = async (messageId) => {
     try {
-      if (msg.pinned) {
-        await messagesAPI.unpin(msg.id);
-        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, pinned: false } : m));
-        setPinnedMsgs(prev => prev.filter(m => m.id !== msg.id));
-      } else {
-        await messagesAPI.pin(msg.id);
-        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, pinned: true } : m));
-        setPinnedMsgs(prev => prev.find(m => m.id === msg.id) ? prev : [{ id: msg.id, content: msg.content }, ...prev]);
-      }
+      await messagesAPI.unpin(messageId);
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: false, pin_time: null } : m));
+      setPinnedMsgs(prev => prev.filter(m => m.id !== messageId));
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handlePinWithTime = async (messageId, pinTtlMinutes, content) => {
+    try {
+      const ttlNum = pinTtlMinutes === '' ? null : Number(pinTtlMinutes);
+      const resp = await messagesAPI.pin(messageId, { pin_ttl_minutes: ttlNum });
+      const serverPinTime = resp?.data?.pin_time ?? null;
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: true, pin_time: serverPinTime } : m));
+      setPinnedMsgs(prev => {
+        const exists = prev.find(m => m.id === messageId);
+        const next = { id: messageId, content, pin_time: serverPinTime };
+        if (exists) {
+          return prev.map(m => m.id === messageId ? { ...m, content: content ?? m.content, pin_time: serverPinTime } : m);
+        }
+        return [next, ...prev];
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getPinExpiry = (pinTime) => {
+    if (!pinTime) return null;
+    const d = new Date(pinTime);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const getRemainingMinutes = (pinTime) => {
+    const d = getPinExpiry(pinTime);
+    if (!d) return null;
+    const diffMs = d.getTime() - Date.now();
+    if (diffMs <= 0) return 0;
+    return Math.ceil(diffMs / 60000);
+  };
+
+  const formatPinLabel = (pinTime) => {
+    const remaining = getRemainingMinutes(pinTime);
+    if (remaining === null) return null;
+    if (remaining === 0) return 'Auto-unpin now';
+    if (remaining < 60) return `Auto-unpin in ${remaining}m`;
+    const hours = Math.ceil(remaining / 60);
+    return `Auto-unpin in ${hours}h`;
   };
 
   const handleKeyDown = (e) => {
@@ -282,6 +357,51 @@ export default function ChatPanel({ group }) {
   return (
     <div className="flex flex-col h-full bg-gray-950">
 
+      {/* Pin time modal (teacher only) */}
+      {pinTimeModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl w-full max-w-sm mx-4 p-4">
+            <div className="text-sm text-white font-semibold">Pin message</div>
+            <div className="text-xs text-gray-400 mt-1">
+              Choose how long before the pin disappears.
+            </div>
+
+            <div className="mt-3">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={pinTimeModal.pin_ttl_minutes}
+                onChange={(e) => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: e.target.value }))}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Minutes"
+              />
+            </div>
+
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}
+                className="text-xs px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition text-gray-300 border border-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const { messageId, pin_ttl_minutes, content } = pinTimeModal;
+                  setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' });
+                  await handlePinWithTime(messageId, pin_ttl_minutes, content);
+                  scrollToMessage(messageId);
+                }}
+                className="text-xs px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-medium"
+                disabled={!pinTimeModal.messageId}
+              >
+                Pin
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Admins only banner */}
       {adminsOnly && (
         <div className="mx-4 mt-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-400 text-xs text-center flex-shrink-0">
@@ -299,28 +419,81 @@ export default function ChatPanel({ group }) {
       {/* Pinned messages banner */}
       {pinnedMsgs.length > 0 && (
         <div className="mx-4 mt-2 flex-shrink-0">
-          <button onClick={() => setShowPinned(v => !v)}
-            className="w-full flex items-center gap-2 px-3 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-400 text-xs hover:bg-indigo-500/15 transition">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => scrollToMessage(pinnedMsgs[0]?.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') scrollToMessage(pinnedMsgs[0]?.id);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800/70 rounded-lg text-indigo-300 text-xs hover:bg-gray-900/80 transition cursor-pointer"
+          >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
             </svg>
-            <span className="flex-1 text-left truncate">
-              {pinnedMsgs[0]?.content}
+            <span className="flex-1 min-w-0 text-left">
+              <span className="block truncate">
+                {pinnedMsgs[0]?.content}
+              </span>
+              {pinnedMsgs[0]?.pin_time && (
+                <span className="block text-[11px] text-gray-400 mt-0.5">
+                  {formatPinLabel(pinnedMsgs[0]?.pin_time)}
+                </span>
+              )}
             </span>
-            <span className="text-indigo-400/60">{pinnedMsgs.length} pinned</span>
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
-              className={`transition-transform ${showPinned ? 'rotate-180' : ''}`}>
-              <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-            </svg>
-          </button>
+            <span className="text-indigo-400/60 flex-shrink-0">{pinnedMsgs.length} pinned</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowPinned(v => !v); }}
+              className="p-1 rounded hover:bg-gray-800/60 transition flex-shrink-0"
+              title={showPinned ? 'Hide pinned' : 'Show pinned'}
+            >
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
+                className={`transition-transform ${showPinned ? 'rotate-180' : ''}`}>
+                <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+              </svg>
+            </button>
+          </div>
           {showPinned && (
             <div className="mt-1 bg-gray-900 border border-gray-800 rounded-lg divide-y divide-gray-800 overflow-hidden">
               {pinnedMsgs.map(pm => (
-                <div key={pm.id} className="px-3 py-2 text-xs text-gray-300 flex items-start gap-2">
-                  <span className="flex-1 leading-relaxed">{pm.content}</span>
+                <div
+                  key={pm.id}
+                  className="px-3 py-2 text-xs text-gray-300 flex items-start gap-2 hover:bg-gray-800/20 transition cursor-pointer"
+                  onClick={() => scrollToMessage(pm.id)}
+                >
+                  <span className="flex-1 min-w-0 leading-relaxed">
+                    <span className="block truncate">{pm.content}</span>
+                    {pm.pin_time && (
+                      <span className="block text-[11px] text-gray-500 mt-0.5">
+                        {formatPinLabel(pm.pin_time)}
+                      </span>
+                    )}
+                  </span>
                   {myRole === 'admin' && (
-                    <button onClick={() => handleTogglePin({ ...pm, pinned: true })}
-                      className="text-gray-600 hover:text-red-400 transition flex-shrink-0 mt-0.5">✕</button>
+                    <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => {
+                          const remaining = getRemainingMinutes(pm.pin_time);
+                          setPinTimeModal({
+                            open: true,
+                            messageId: pm.id,
+                            pin_ttl_minutes: remaining === null ? '' : String(remaining),
+                            content: pm.content
+                          });
+                        }}
+                        className="text-gray-300 hover:text-white transition text-[11px] px-2 py-1 rounded bg-gray-800/50 border border-gray-700"
+                        title="Set expiry duration"
+                      >
+                        Set
+                      </button>
+                      <button
+                        onClick={() => handleUnpinMessage(pm.id)}
+                        className="text-gray-600 hover:text-red-400 transition flex-shrink-0 mt-0.5"
+                        title="Unpin"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -359,7 +532,7 @@ export default function ChatPanel({ group }) {
       )}
 
       {/* Timeline */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
@@ -408,8 +581,15 @@ export default function ChatPanel({ group }) {
             const canDelete = isOwn || myRole === 'admin';
 
             return (
-              <div key={item.id}
-                className={`flex gap-2.5 items-end group/msg ${isOwn ? 'flex-row-reverse' : ''}`}>
+              <div
+                key={item.id}
+                id={`message-${item.id}`}
+                ref={(el) => {
+                  if (el) messageRefs.current.set(item.id, el);
+                  else messageRefs.current.delete(item.id);
+                }}
+                className={`flex gap-2.5 items-end group/msg ${isOwn ? 'flex-row-reverse' : ''}`}
+              >
 
                 {/* Avatar */}
                 {!isOwn && (
@@ -433,10 +613,11 @@ export default function ChatPanel({ group }) {
 
                   {/* Bubble + delete button */}
                   <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                    <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
+                    <div className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed break-words
                       ${isOwn
                         ? 'bg-indigo-600 text-white rounded-br-sm'
-                        : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
+                        : 'bg-gray-800 text-gray-100 rounded-bl-sm'}
+                      ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(99,102,241,0.15)]' : ''}`}>
                       {item.content}
                       {item.files && <FilePreview file={item.files} />}
                     </div>
@@ -454,7 +635,16 @@ export default function ChatPanel({ group }) {
                     ) : (
                       <div className={`flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
                         {myRole === 'admin' && (
-                          <button onClick={() => handleTogglePin(item)}
+                          <button
+                            onClick={() => {
+                              if (item.pinned) return handleUnpinMessage(item.id);
+                              setPinTimeModal({
+                                open: true,
+                                messageId: item.id,
+                                pin_ttl_minutes: '10',
+                                content: item.content
+                              });
+                            }}
                             className={`p-1 rounded transition ${item.pinned ? 'text-indigo-400' : 'text-gray-600 hover:text-indigo-400'}`}
                             title={item.pinned ? 'Unpin' : 'Pin'}>
                             <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">

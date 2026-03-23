@@ -87,7 +87,7 @@ export default function DashboardPage() {
       <div className="flex flex-1 min-h-0">
 
         {/* Sidebar */}
-        <div className="w-64 flex-shrink-0">
+        <div className="w-64 flex-shrink-0 min-h-0 h-full">
           <GroupList
             groups={groups}
             activeGroupId={activeGroup?.id}
@@ -107,7 +107,11 @@ export default function DashboardPage() {
                 onTabChange={setActiveTab}
               />
               {activeTab === 'Overview' && <GroupOverview group={activeGroup} />}
-              {activeTab === 'Chat'     && <ChatPanel group={activeGroup} />}
+              {activeTab === 'Chat'     && (
+                <div className="flex-1 min-h-0">
+                  <ChatPanel group={activeGroup} />
+                </div>
+              )}
               {activeTab === 'Files'    && <FilesPanel group={activeGroup} />}
               {activeTab === 'Members'  && (
                 <div className="flex-1 flex flex-col min-h-0">

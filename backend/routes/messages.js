@@ -18,16 +18,55 @@ router.get('/:groupId/pinned', async (req, res) => {
 
     if (!membership) return res.status(403).json({ error: 'Not a member' });
 
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`id, content, type, created_at, pinned,
-        users!sender_id (id, name, role, roll_no)`)
-      .eq('group_id', groupId)
-      .eq('pinned', true)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`id, content, type, created_at, pinned, pin_time,
+          users!sender_id (id, name, role, roll_no)`)
+        .eq('group_id', groupId)
+        .eq('pinned', true)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    res.json(data);
+      if (error) throw error;
+
+      const nowMs = Date.now();
+      const expiredIds = [];
+      const filtered = (data || []).filter((m) => {
+        if (!m.pin_time) return true;
+        const exp = new Date(m.pin_time);
+        if (isNaN(exp.getTime())) return true; // unknown format => don't auto-expire
+        if (exp.getTime() <= nowMs) {
+          expiredIds.push(m.id);
+          return false;
+        }
+        return true;
+      });
+
+      if (expiredIds.length > 0) {
+        try {
+          await supabase
+            .from('messages')
+            .update({ pinned: false, pin_time: null })
+            .in('id', expiredIds);
+        } catch (cleanupErr) {
+          // Best-effort cleanup; still return filtered data.
+        }
+      }
+
+      return res.json(filtered);
+    } catch {
+      // Backward-compatible fallback (schema without `pin_time`)
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`id, content, type, created_at, pinned,
+          users!sender_id (id, name, role, roll_no)`)
+        .eq('group_id', groupId)
+        .eq('pinned', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return res.json(data);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not fetch pinned messages' });
@@ -84,6 +123,8 @@ router.get('/:groupId', async (req, res) => {
 router.patch('/:messageId/pin', async (req, res) => {
   const { messageId } = req.params;
   try {
+    const { pin_ttl_minutes, pin_time } = req.body || {};
+
     const { data: message } = await supabase
       .from('messages')
       .select('id, group_id, content, created_at, sender_id')
@@ -103,12 +144,138 @@ router.patch('/:messageId/pin', async (req, res) => {
       return res.status(403).json({ error: 'Only admins can pin messages' });
     }
 
-    await supabase.from('messages').update({ pinned: true }).eq('id', messageId);
+    const updatePayload = { pinned: true };
+
+    // `pin_time` (legacy) may be either:
+    // - an ISO expiry timestamp
+    // - a HH:MM duration string (relative to now)
+    // New clients should send `pin_ttl_minutes` (duration in minutes).
+    let expiresAtIso = null;
+    if (pin_ttl_minutes !== undefined) {
+      const ttlNum = Number(pin_ttl_minutes);
+      if (Number.isFinite(ttlNum) && ttlNum > 0) {
+        expiresAtIso = new Date(Date.now() + ttlNum * 60000).toISOString();
+      }
+    } else if (pin_time !== undefined) {
+      // ISO?
+      const maybeDate = new Date(pin_time);
+      if (typeof pin_time === 'string' && !isNaN(maybeDate.getTime())) {
+        expiresAtIso = maybeDate.toISOString();
+      } else if (typeof pin_time === 'string') {
+        // HH:MM duration?
+        const match = pin_time.match(/^(\d{1,2}):(\d{2})$/);
+        if (match) {
+          const hh = Number(match[1]);
+          const mm = Number(match[2]);
+          const totalMinutes = hh * 60 + mm;
+          if (Number.isFinite(totalMinutes) && totalMinutes > 0) {
+            expiresAtIso = new Date(Date.now() + totalMinutes * 60000).toISOString();
+          }
+        }
+      } else if (typeof pin_time === 'number' && Number.isFinite(pin_time) && pin_time > 0) {
+        // Treat numeric as minutes.
+        expiresAtIso = new Date(Date.now() + pin_time * 60000).toISOString();
+      }
+    }
+
+    if (pin_ttl_minutes !== undefined || pin_time !== undefined) {
+      updatePayload.pin_time = expiresAtIso;
+    }
+
+    try {
+      await supabase.from('messages').update(updatePayload).eq('id', messageId);
+    } catch (updateErr) {
+      // Fallback for schemas without `pin_time`
+      if (pin_ttl_minutes !== undefined || pin_time !== undefined) {
+        await supabase.from('messages').update({ pinned: true }).eq('id', messageId);
+      } else {
+        throw updateErr;
+      }
+    }
 
     const io = req.app.get('io');
-    if (io) io.to(message.group_id).emit('message_pinned', { messageId, groupId: message.group_id, content: message.content });
+    // Auto-unpin after expiry (best-effort, server-memory based).
+    if (io && expiresAtIso) {
+      const scheduleExpiry = () => {
+        const expiresAtMs = new Date(expiresAtIso).getTime();
+        const remainingMs = expiresAtMs - Date.now();
+        if (remainingMs <= 0) return;
 
-    res.json({ message: 'Message pinned' });
+        const maxTimeoutMs = 2147483000; // ~24.8 days (setTimeout limit)
+        const delayMs = Math.min(remainingMs, maxTimeoutMs);
+
+        setTimeout(async () => {
+          try {
+            let currentPinned = null;
+            let currentPinTime = null;
+
+            try {
+              const { data: current } = await supabase
+                .from('messages')
+                .select('pinned, pin_time')
+                .eq('id', messageId)
+                .single();
+              currentPinned = current?.pinned;
+              currentPinTime = current?.pin_time;
+            } catch {
+              // Schema without `pin_time`
+              const { data: current } = await supabase
+                .from('messages')
+                .select('pinned')
+                .eq('id', messageId)
+                .single();
+              currentPinned = current?.pinned;
+            }
+
+            const shouldUnpin = (() => {
+              if (currentPinned !== true) return false;
+              if (!currentPinTime) return true;
+              const curr = new Date(currentPinTime);
+              const exp = new Date(expiresAtIso);
+              if (isNaN(curr.getTime()) || isNaN(exp.getTime())) return true;
+              return curr.getTime() === exp.getTime();
+            })();
+
+            if (!shouldUnpin) return;
+
+            try {
+              await supabase
+                .from('messages')
+                .update({ pinned: false, pin_time: null })
+                .eq('id', messageId);
+            } catch {
+              await supabase
+                .from('messages')
+                .update({ pinned: false })
+                .eq('id', messageId);
+            }
+
+            io.to(message.group_id).emit('message_unpinned', {
+              messageId,
+              groupId: message.group_id
+            });
+          } catch {
+            // Ignore; pinned list endpoint will still filter expired pins.
+          }
+
+          // If we hit setTimeout cap, re-schedule until it's actually time.
+          if (new Date(expiresAtIso).getTime() - Date.now() > 0) {
+            scheduleExpiry();
+          }
+        }, delayMs);
+      };
+
+      scheduleExpiry();
+    }
+
+    if (io) io.to(message.group_id).emit('message_pinned', {
+      messageId,
+      groupId: message.group_id,
+      content: message.content,
+      pin_time: expiresAtIso
+    });
+
+    res.json({ message: 'Message pinned', pin_time: expiresAtIso });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not pin message' });
@@ -138,7 +305,11 @@ router.patch('/:messageId/unpin', async (req, res) => {
       return res.status(403).json({ error: 'Only admins can unpin messages' });
     }
 
-    await supabase.from('messages').update({ pinned: false }).eq('id', messageId);
+    try {
+      await supabase.from('messages').update({ pinned: false, pin_time: null }).eq('id', messageId);
+    } catch {
+      await supabase.from('messages').update({ pinned: false }).eq('id', messageId);
+    }
 
     const io = req.app.get('io');
     if (io) io.to(message.group_id).emit('message_unpinned', { messageId, groupId: message.group_id });
