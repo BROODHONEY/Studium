@@ -13,6 +13,8 @@ export default function ChatPanel({ group }) {
   const [adminsOnly, setAdminsOnly] = useState(false);
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
   const [showPinned, setShowPinned] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch]   = useState(false);
 
   const bottomRef        = useRef(null);
   const joinedRoomsRef   = useRef(new Set());
@@ -22,10 +24,14 @@ export default function ChatPanel({ group }) {
   const canSend = adminsOnly ? myRole === 'admin' : true;
 
   // Build timeline from messages — system messages are already in the same array
-  const timeline = messages.map(m => ({
-    ...m,
-    _kind: m.type === 'system' ? 'system' : 'message'
-  }));
+  const timeline = messages
+    .map(m => ({ ...m, _kind: m.type === 'system' ? 'system' : 'message' }))
+    .filter(m => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return m.content?.toLowerCase().includes(q) ||
+        (m.users || m.sender)?.name?.toLowerCase().includes(q);
+    });
 
   // Leave old room when switching groups
   useEffect(() => {
@@ -272,6 +278,35 @@ export default function ChatPanel({ group }) {
         </div>
       )}
 
+      {/* Search bar */}
+      {showSearch && (
+        <div className="mx-4 mt-2 flex-shrink-0">
+          <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="#6b7280">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            </svg>
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search messages..."
+              className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="text-gray-600 hover:text-gray-400 transition text-xs">✕</button>
+            )}
+            <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
+              className="text-gray-600 hover:text-gray-400 transition text-xs ml-1">Close</button>
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-gray-600 mt-1 px-1">
+              {timeline.filter(m => m._kind !== 'system').length} result{timeline.filter(m => m._kind !== 'system').length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Timeline */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {loading ? (
@@ -412,7 +447,14 @@ export default function ChatPanel({ group }) {
       {/* Input area */}
       <div className="px-4 py-3 border-t border-gray-800 flex-shrink-0">
         {canSend ? (
-          <div className="flex gap-3 items-end">
+          <div className="flex gap-2 items-end">
+            <button onClick={() => { setShowSearch(v => !v); setSearchQuery(''); }}
+              className={`p-2.5 rounded-xl transition flex-shrink-0 ${showSearch ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-500 hover:text-gray-300'}`}
+              title="Search messages">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+              </svg>
+            </button>
             <textarea
               value={text}
               onChange={e => setText(e.target.value)}
