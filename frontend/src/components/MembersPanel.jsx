@@ -163,6 +163,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   const students = members.filter(m => m.role === 'student');
 
   return (
+    <>
     <div className="flex-1 flex flex-col min-h-0 bg-gray-950 overflow-y-auto">
       <div className="p-5 space-y-6">
 
@@ -358,6 +359,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
         </div>
       </div>
     )}
+    </>
   );
 }
 
