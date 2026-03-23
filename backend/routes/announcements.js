@@ -89,6 +89,64 @@ router.post('/:groupId', async (req, res) => {
   }
 });
 
+// ── Update an announcement (admin/creator only) ──────
+router.put('/:groupId/:id', async (req, res) => {
+  const { title, content } = req.body;
+
+  if (!title || !content) {
+    return res.status(400).json({ error: 'Title and content are required' });
+  }
+
+  try {
+    const { data: announcement } = await supabase
+      .from('announcements')
+      .select('created_by')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!announcement) {
+      return res.status(404).json({ error: 'Announcement not found' });
+    }
+
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.groupId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    const isAdmin   = membership?.role === 'admin';
+    const isCreator = announcement.created_by === req.user.id;
+
+    if (!isAdmin && !isCreator) {
+      return res.status(403).json({ error: 'Not authorised to edit this announcement' });
+    }
+
+    const { data, error } = await supabase
+      .from('announcements')
+      .update({ title, content })
+      .eq('id', req.params.id)
+      .select(`
+        id, title, content, created_at,
+        users!created_by (id, name)
+      `)
+      .single();
+
+    if (error) throw error;
+
+    // Broadcast update to group via socket
+    const io = req.app.get('io');
+    if (io) {
+      io.to(req.params.groupId).emit('update_announcement', data);
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update announcement' });
+  }
+});
+
 // ── Delete an announcement (admin/creator only) ────────
 router.delete('/:groupId/:id', async (req, res) => {
   try {

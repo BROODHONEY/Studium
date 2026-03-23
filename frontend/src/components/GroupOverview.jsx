@@ -22,19 +22,32 @@ const dueBadge = (days) => {
 };
 
 // ── Announcement form ──────────────────────────────────
-function AnnouncementForm({ groupId, onCreated }) {
+function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const [form, setForm]       = useState({ title: '', content: '' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(false);
+
+  useEffect(() => {
+    if (editing) {
+      setForm({ title: editing.title, content: editing.content });
+      setOpen(true);
+    } else {
+      setForm({ title: '', content: '' });
+      setOpen(false);
+    }
+  }, [editing]);
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await announcementsAPI.create(groupId, form);
+      const res = editing
+        ? await announcementsAPI.update(groupId, editing.id, form)
+        : await announcementsAPI.create(groupId, form);
       onCreated(res.data);
       setForm({ title: '', content: '' });
       setOpen(false);
+      if (onCancel) onCancel();
     } catch (err) {
       console.error(err);
     } finally {
@@ -42,7 +55,13 @@ function AnnouncementForm({ groupId, onCreated }) {
     }
   };
 
-  if (!open) return (
+  const handleCancel = () => {
+    setOpen(false);
+    setForm({ title: '', content: '' });
+    if (onCancel) onCancel();
+  };
+
+  if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
       className="w-full py-2.5 border border-dashed border-gray-700 rounded-xl
         text-gray-500 hover:text-gray-300 hover:border-gray-500 text-sm transition">
@@ -65,9 +84,9 @@ function AnnouncementForm({ groupId, onCreated }) {
         <button type="submit" disabled={loading}
           className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50
             text-white text-sm font-medium rounded-lg transition">
-          {loading ? 'Posting...' : 'Post'}
+          {loading ? (editing ? 'Updating...' : 'Posting...') : (editing ? 'Update' : 'Post')}
         </button>
-        <button type="button" onClick={() => setOpen(false)}
+        <button type="button" onClick={handleCancel}
           className="flex-1 py-2 bg-gray-800 hover:bg-gray-700
             text-gray-400 text-sm rounded-lg transition">
           Cancel
@@ -78,19 +97,36 @@ function AnnouncementForm({ groupId, onCreated }) {
 }
 
 // ── Due form ───────────────────────────────────────────
-function DueForm({ groupId, onCreated }) {
+function DueForm({ groupId, onCreated, editing, onCancel }) {
   const [form, setForm]       = useState({ title: '', description: '', due_date: '' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(false);
+
+  useEffect(() => {
+    if (editing) {
+      setForm({
+        title: editing.title,
+        description: editing.description || '',
+        due_date: editing.due_date
+      });
+      setOpen(true);
+    } else {
+      setForm({ title: '', description: '', due_date: '' });
+      setOpen(false);
+    }
+  }, [editing]);
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await duesAPI.create(groupId, form);
+      const res = editing
+        ? await duesAPI.update(groupId, editing.id, form)
+        : await duesAPI.create(groupId, form);
       onCreated(res.data);
       setForm({ title: '', description: '', due_date: '' });
       setOpen(false);
+      if (onCancel) onCancel();
     } catch (err) {
       console.error(err);
     } finally {
@@ -98,7 +134,13 @@ function DueForm({ groupId, onCreated }) {
     }
   };
 
-  if (!open) return (
+  const handleCancel = () => {
+    setOpen(false);
+    setForm({ title: '', description: '', due_date: '' });
+    if (onCancel) onCancel();
+  };
+
+  if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
       className="w-full py-2.5 border border-dashed border-gray-700 rounded-xl
         text-gray-500 hover:text-gray-300 hover:border-gray-500 text-sm transition">
@@ -126,9 +168,9 @@ function DueForm({ groupId, onCreated }) {
         <button type="submit" disabled={loading}
           className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50
             text-white text-sm font-medium rounded-lg transition">
-          {loading ? 'Adding...' : 'Add'}
+          {loading ? (editing ? 'Updating...' : 'Adding...') : (editing ? 'Update' : 'Add')}
         </button>
-        <button type="button" onClick={() => setOpen(false)}
+        <button type="button" onClick={handleCancel}
           className="flex-1 py-2 bg-gray-800 hover:bg-gray-700
             text-gray-400 text-sm rounded-lg transition">
           Cancel
@@ -156,6 +198,9 @@ export default function GroupOverview({ group }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [editingDue, setEditingDue] = useState(null);
+
   useEffect(() => {
     if (!group) return;
 
@@ -179,17 +224,25 @@ export default function GroupOverview({ group }) {
           return [a, ...prev];
         });
       });
+      socket.on('update_announcement', (a) => {
+        setAnnouncements(prev => prev.map(x => x.id === a.id ? a : x));
+      });
       socket.on('new_due', (d) => {
         setDues(prev => {
           if (prev.find(x => x.id === d.id)) return prev;
           return [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
         });
       });
+      socket.on('update_due', (d) => {
+        setDues(prev => prev.map(x => x.id === d.id ? d : x).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+      });
     }
 
     return () => {
       socket?.off('new_announcement');
+      socket?.off('update_announcement');
       socket?.off('new_due');
+      socket?.off('update_due');
     };
   }, [group?.id, socket]);
 
@@ -199,6 +252,26 @@ export default function GroupOverview({ group }) {
 
   const deleteDue = (id) => {
     setDeleteConfirm({ type: 'due', id });
+  };
+
+  const editAnnouncement = (announcement) => {
+    setEditingAnnouncement(announcement);
+  };
+
+  const editDue = (due) => {
+    setEditingDue(due);
+  };
+
+  const handleAnnouncementUpdate = (updatedAnnouncement) => {
+    setAnnouncements(prev => prev.map(a => a.id === updatedAnnouncement.id ? updatedAnnouncement : a));
+    setEditingAnnouncement(null);
+    addToast({ type: 'success', message: 'Announcement updated.' });
+  };
+
+  const handleDueUpdate = (updatedDue) => {
+    setDues(prev => prev.map(d => d.id === updatedDue.id ? updatedDue : d).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+    setEditingDue(null);
+    addToast({ type: 'success', message: 'Due date updated.' });
   };
 
   const handleConfirmDelete = async () => {
@@ -295,7 +368,9 @@ export default function GroupOverview({ group }) {
             {isTeacher && (
               <AnnouncementForm
                 groupId={group.id}
-                onCreated={a => setAnnouncements(prev => [a, ...prev])}
+                onCreated={editingAnnouncement ? handleAnnouncementUpdate : (a => setAnnouncements(prev => [a, ...prev]))}
+                editing={editingAnnouncement}
+                onCancel={() => setEditingAnnouncement(null)}
               />
             )}
 
@@ -320,11 +395,16 @@ export default function GroupOverview({ group }) {
                       </p>
                     </div>
                     {(isTeacher || a.users?.id === user?.id) && (
-                      <button onClick={() => deleteAnnouncement(a.id)}
-                        className="text-gray-700 hover:text-red-400 text-xs transition
-                          opacity-0 group-hover:opacity-100 flex-shrink-0">
-                        Delete
-                      </button>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <button onClick={() => editAnnouncement(a)}
+                          className="text-gray-700 hover:text-blue-400 text-xs transition">
+                          Edit
+                        </button>
+                        <button onClick={() => deleteAnnouncement(a.id)}
+                          className="text-gray-700 hover:text-red-400 text-xs transition">
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </div>
                   <p className="text-sm text-gray-300 mt-3 leading-relaxed whitespace-pre-wrap">
@@ -349,11 +429,13 @@ export default function GroupOverview({ group }) {
             {isTeacher && (
               <DueForm
                 groupId={group.id}
-                onCreated={d =>
+                onCreated={editingDue ? handleDueUpdate : (d =>
                   setDues(prev =>
                     [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
                   )
-                }
+                )}
+                editing={editingDue}
+                onCancel={() => setEditingDue(null)}
               />
             )}
 
@@ -394,17 +476,22 @@ export default function GroupOverview({ group }) {
                       )}
                     </div>
 
-                    {/* Badge + delete */}
+                    {/* Badge + actions */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`text-xs px-2.5 py-1 rounded-full border ${badge.cls}`}>
                         {badge.label}
                       </span>
                       {(isTeacher || d.users?.id === user?.id) && (
-                        <button onClick={() => deleteDue(d.id)}
-                          className="text-gray-700 hover:text-red-400 text-xs transition
-                            opacity-0 group-hover:opacity-100">
-                          Delete
-                        </button>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                          <button onClick={() => editDue(d)}
+                            className="text-gray-700 hover:text-blue-400 text-xs transition">
+                            Edit
+                          </button>
+                          <button onClick={() => deleteDue(d.id)}
+                            className="text-gray-700 hover:text-red-400 text-xs transition">
+                            Delete
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>

@@ -62,12 +62,14 @@ export const filesAPI = {
 export const announcementsAPI = {
   list:   (groupId)     => api.get(`/announcements/${groupId}`),
   create: (groupId, data) => api.post(`/announcements/${groupId}`, data),
+  update: (groupId, id, data) => api.put(`/announcements/${groupId}/${id}`, data),
   delete: (groupId, id) => api.delete(`/announcements/${groupId}/${id}`)
 };
 
 export const duesAPI = {
   list:   (groupId)       => api.get(`/dues/${groupId}`),
   create: (groupId, data) => api.post(`/dues/${groupId}`, data),
+  update: (groupId, id, data) => api.put(`/dues/${groupId}/${id}`, data),
   delete: (groupId, id)   => api.delete(`/dues/${groupId}/${id}`)
 };
 
