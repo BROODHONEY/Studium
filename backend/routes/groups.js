@@ -94,6 +94,32 @@ router.post('/join', async (req, res) => {
       role: req.user.role
     });
 
+    // Notify the room that a new member joined
+    const io = req.app.get('io');
+    if (io) {
+      const { data: userData } = await supabase
+        .from('users').select('name').eq('id', req.user.id).single();
+
+      const { data: savedMsg } = await supabase
+        .from('messages')
+        .insert({
+          group_id: group.id,
+          sender_id: null,
+          content: `${userData?.name} joined the group`,
+          type: 'system'
+        })
+        .select('id, content, type, created_at')
+        .single();
+
+      io.to(group.id).emit('system_message', {
+        id: savedMsg.id,
+        type: 'system',
+        subtype: 'join',
+        text: savedMsg.content,
+        timestamp: savedMsg.created_at
+      });
+    }
+
     res.json({ message: 'Joined successfully', group });
   } catch (err) {
     console.error(err);
@@ -132,11 +158,71 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ── Leave a group (any member) ─────────────────────────
+router.delete('/:id/members/me', async (req, res) => {
+  try {
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!membership) return res.status(404).json({ error: 'You are not in this group' });
+
+    // Check if this user is the group creator — creators cannot leave, they must delete
+    const { data: group } = await supabase
+      .from('groups')
+      .select('created_by, name')
+      .eq('id', req.params.id)
+      .single();
+
+    if (group?.created_by === req.user.id) {
+      return res.status(403).json({ error: 'Group creator cannot leave. Delete the group instead.' });
+    }
+
+    await supabase
+      .from('group_members')
+      .delete()
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id);
+
+    // Notify the room
+    const io = req.app.get('io');
+    const { data: userData } = await supabase
+      .from('users').select('name').eq('id', req.user.id).single();
+
+    if (io) {
+      const { data: savedMsg } = await supabase
+        .from('messages')
+        .insert({
+          group_id: req.params.id,
+          sender_id: null,
+          content: `${userData?.name} left the group`,
+          type: 'system'
+        })
+        .select('id, content, type, created_at')
+        .single();
+
+      io.to(req.params.id).emit('system_message', {
+        id: savedMsg.id,
+        type: 'system',
+        subtype: 'leave',
+        text: savedMsg.content,
+        timestamp: savedMsg.created_at
+      });
+    }
+
+    res.json({ message: 'Left group successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not leave group' });
+  }
+});
 
 // ── Kick a member (admin only) ─────────────────────────
 router.delete('/:id/members/:userId', async (req, res) => {
   try {
-    // Verify the requester is an admin
     const { data: requester } = await supabase
       .from('group_members')
       .select('role')
@@ -148,7 +234,6 @@ router.delete('/:id/members/:userId', async (req, res) => {
       return res.status(403).json({ error: 'Only admins can remove members' });
     }
 
-    // Prevent kicking another admin
     const { data: target } = await supabase
       .from('group_members')
       .select('role')
@@ -156,19 +241,60 @@ router.delete('/:id/members/:userId', async (req, res) => {
       .eq('user_id', req.params.userId)
       .single();
 
-    if (!target) {
-      return res.status(404).json({ error: 'Member not found' });
-    }
-
+    if (!target) return res.status(404).json({ error: 'Member not found' });
     if (target.role === 'admin') {
       return res.status(403).json({ error: 'Cannot kick another admin' });
     }
+
+    // Get names for the system message
+    const { data: targetUser } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', req.params.userId)
+      .single();
 
     await supabase
       .from('group_members')
       .delete()
       .eq('group_id', req.params.id)
       .eq('user_id', req.params.userId);
+
+    // Get group name for the popup
+    const { data: group } = await supabase
+      .from('groups')
+      .select('name')
+      .eq('id', req.params.id)
+      .single();
+
+    // Emit system message to the room
+    const io = req.app.get('io');
+    // Inside the kick route, after deleting the member
+    const { data: savedMsg } = await supabase
+      .from('messages')
+      .insert({
+        group_id: req.params.id,
+        sender_id: null,
+        content: `${targetUser?.name} was removed from the group`,
+        type: 'system'
+      })
+      .select('id, content, type, created_at')
+      .single();
+
+    if (io) {
+      io.to(req.params.id).emit('system_message', {
+        id: savedMsg.id,
+        type: 'system',
+        subtype: 'kick',
+        text: savedMsg.content,
+        timestamp: savedMsg.created_at
+      });
+
+      io.to(req.params.id).emit('member_kicked', {
+        kickedUserId: req.params.userId,
+        groupId: req.params.id,
+        groupName: group?.name
+      });
+    }
 
     res.json({ message: 'Member removed' });
   } catch (err) {
@@ -221,6 +347,80 @@ router.patch('/:id/members/:userId/promote', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not promote member' });
+  }
+});
+
+// ── Edit group description (admin only) ───────────────
+router.patch('/:id', async (req, res) => {
+  try {
+    const { data: requester } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!requester || requester.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can edit the group' });
+    }
+
+    const { description } = req.body;
+
+    const { data, error } = await supabase
+      .from('groups')
+      .update({ description })
+      .eq('id', req.params.id)
+      .select('id, name, subject, description, invite_code, admins_only, created_at')
+      .single();
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update group' });
+  }
+});
+
+// ── Revoke admin (demote back to teacher) (admin only) ─
+router.patch('/:id/members/:userId/demote', async (req, res) => {
+  try {
+    const { data: requester } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!requester || requester.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can revoke admin access' });
+    }
+
+    // Cannot demote yourself
+    if (req.params.userId === req.user.id) {
+      return res.status(403).json({ error: 'You cannot revoke your own admin access' });
+    }
+
+    const { data: target } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.params.userId)
+      .single();
+
+    if (!target) return res.status(404).json({ error: 'Member not found' });
+    if (target.role !== 'admin') return res.status(409).json({ error: 'Member is not an admin' });
+
+    await supabase
+      .from('group_members')
+      .update({ role: 'teacher' })
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.params.userId);
+
+    res.json({ message: 'Admin access revoked' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not revoke admin access' });
   }
 });
 

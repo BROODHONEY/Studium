@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
 import GroupList   from '../components/GroupList';
 import ChatPanel   from '../components/ChatPanel';
@@ -7,14 +8,21 @@ import ChatHeader  from '../components/ChatHeader';
 import GroupModal  from '../components/GroupModal';
 import FilesPanel   from '../components/FilesPanel';
 import MembersPanel from '../components/MembersPanel';
+import KickNotification from '../components/KickNotification';
 
 export default function DashboardPage() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { socket } = useSocket();
   const [groups, setGroups]           = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [activeTab, setActiveTab]     = useState('Chat');
   const [showModal, setShowModal]     = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
+  const [kickNotice, setKickNotice]   = useState(null); // { groupName }
+
+  // Track joined rooms to prevent duplicate join events
+  const joinedRoomsRef = useRef(new Set());
+  const previousGroupRef = useRef(null);
 
   useEffect(() => {
     groupsAPI.list()
@@ -26,6 +34,39 @@ export default function DashboardPage() {
       .finally(() => setLoadingGroups(false));
   }, []);
 
+  // Handle socket room joining/leaving when active group changes
+  useEffect(() => {
+    if (!activeGroup || !socket) return;
+
+    // Join the new group room if not already joined
+    if (!joinedRoomsRef.current.has(activeGroup.id)) {
+      socket.emit('join_group', activeGroup.id);
+      joinedRoomsRef.current.add(activeGroup.id);
+    }
+  }, [activeGroup?.id, socket]);
+
+  // Handle leaving rooms when switching groups or unmounting
+  useEffect(() => {
+    const prevId = previousGroupRef.current;
+    previousGroupRef.current = activeGroup?.id;
+
+    // Leave the previous room when switching groups
+    if (prevId && socket && prevId !== activeGroup?.id) {
+      socket.emit('leave_group', prevId);
+      joinedRoomsRef.current.delete(prevId);
+    }
+
+    // Cleanup function to leave all rooms when component unmounts
+    return () => {
+      if (socket) {
+        joinedRoomsRef.current.forEach(groupId => {
+          socket.emit('leave_group', groupId);
+        });
+        joinedRoomsRef.current.clear();
+      }
+    };
+  }, [activeGroup?.id, socket]);
+
   const handleGroupAdded = (group) => {
     setGroups(prev => {
       const exists = prev.find(g => g.id === group.id);
@@ -34,6 +75,29 @@ export default function DashboardPage() {
     });
     setActiveGroup(group);
   };
+
+  const handleKicked = (groupId, groupName) => {
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setActiveGroup(prev => prev?.id === groupId ? null : prev);
+    setKickNotice({ groupName });
+  };
+
+  const handleLeft = (groupId) => {
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setActiveGroup(prev => prev?.id === groupId ? null : prev);
+  };
+
+  // Listen for kick events at the top level so it works regardless of active tab
+  useEffect(() => {
+    if (!socket) return;
+    const handleKickedEvent = ({ kickedUserId, groupId, groupName }) => {
+      if (kickedUserId === user?.id) {
+        handleKicked(groupId, groupName);
+      }
+    };
+    socket.on('member_kicked', handleKickedEvent);
+    return () => socket.off('member_kicked', handleKickedEvent);
+  }, [socket, user?.id]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-950">
@@ -70,7 +134,9 @@ export default function DashboardPage() {
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
               />
-              {activeTab === 'Chat' && <ChatPanel group={activeGroup} />}
+                {activeTab === 'Chat' && (
+                  <ChatPanel group={activeGroup} onKicked={handleKicked} onLeft={handleLeft} />
+                )}
                 {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
                 {activeTab === 'Members' && (
                     <MembersPanel
@@ -79,6 +145,7 @@ export default function DashboardPage() {
                             setActiveGroup(updated);
                             setGroups(prev => prev.map(g => g.id === updated.id ? updated : g));
                             }}
+                        onLeft={handleLeft}
                         />
                     )}
             </>
@@ -102,6 +169,8 @@ export default function DashboardPage() {
           onSuccess={handleGroupAdded}
         />
       )}
+
+      <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
     </div>
   );
 }

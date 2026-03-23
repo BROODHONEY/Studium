@@ -11,10 +11,13 @@ const COLORS = [
 ];
 const avatarColor = (name) => COLORS[name?.charCodeAt(0) % COLORS.length];
 
-export default function MembersPanel({ group, onGroupUpdate }) {
+export default function MembersPanel({ group, onGroupUpdate, onLeft }) {
   const { user }  = useAuth();
   const myRole    = group?.my_role;
   const isAdmin   = myRole === 'admin';
+  const isCreator = group?.created_by?.id
+    ? group.created_by.id === user?.id
+    : group?.created_by === user?.id;
 
   const [members, setMembers]       = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -23,17 +26,27 @@ export default function MembersPanel({ group, onGroupUpdate }) {
   const [toggling, setToggling]     = useState(false);
   const [error, setError]           = useState('');
 
+  // Edit description state
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descValue, setDescValue]     = useState(group?.description || '');
+  const [savingDesc, setSavingDesc]   = useState(false);
+
+  // Leave confirmation
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [leaving, setLeaving]           = useState(false);
+
   useEffect(() => {
     if (!group) return;
+    setDescValue(group.description || '');
     setLoading(true);
     groupsAPI.get(group.id)
-        .then(res => {
+      .then(res => {
         setMembers(res.data.members || []);
         setAdminsOnly(res.data.admins_only || false);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }, [group?.id]);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [group?.id]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.invite_code);
@@ -54,6 +67,19 @@ export default function MembersPanel({ group, onGroupUpdate }) {
     }
   };
 
+  const handleSaveDescription = async () => {
+    setSavingDesc(true);
+    try {
+      const res = await groupsAPI.update(group.id, { description: descValue });
+      setEditingDesc(false);
+      onGroupUpdate?.({ ...group, description: res.data.description });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not update description');
+    } finally {
+      setSavingDesc(false);
+    }
+  };
+
   const handleKick = async (userId, name) => {
     if (!confirm(`Remove ${name} from the group?`)) return;
     try {
@@ -65,7 +91,7 @@ export default function MembersPanel({ group, onGroupUpdate }) {
   };
 
   const handlePromote = async (userId, name) => {
-    if (!confirm(`Promote ${name} to admin?`)) return;
+    if (!confirm(`Grant admin access to ${name}?`)) return;
     try {
       await groupsAPI.promoteMember(group.id, userId);
       setMembers(prev => prev.map(m =>
@@ -73,6 +99,31 @@ export default function MembersPanel({ group, onGroupUpdate }) {
       ));
     } catch (err) {
       setError(err.response?.data?.error || 'Could not promote member');
+    }
+  };
+
+  const handleDemote = async (userId, name) => {
+    if (!confirm(`Revoke admin access from ${name}?`)) return;
+    try {
+      await groupsAPI.demoteMember(group.id, userId);
+      setMembers(prev => prev.map(m =>
+        m.users?.id === userId ? { ...m, role: 'teacher' } : m
+      ));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not revoke admin access');
+    }
+  };
+
+  const handleLeave = async () => {
+    setLeaving(true);
+    try {
+      await groupsAPI.leave(group.id);
+      onLeft?.(group.id);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not leave group');
+      setConfirmLeave(false);
+    } finally {
+      setLeaving(false);
     }
   };
 
@@ -85,27 +136,70 @@ export default function MembersPanel({ group, onGroupUpdate }) {
       <div className="p-5 space-y-6">
 
         {error && (
-          <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+          <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs flex items-center justify-between">
             {error}
+            <button onClick={() => setError('')} className="ml-2 text-red-400/60 hover:text-red-400">✕</button>
           </div>
         )}
 
-        {/* Invite code — admins only */}
+        {/* Admin panel */}
         {isAdmin && (
-          <div className="p-4 bg-gray-900 border border-gray-800 rounded-xl space-y-3">
-            <p className="text-xs text-gray-500">Invite code</p>
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-2xl font-semibold text-indigo-400 tracking-widest">
-                {group.invite_code}
-              </span>
-              <button onClick={copyCode}
-                className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
+          <div className="p-4 bg-gray-900 border border-gray-800 rounded-xl space-y-4">
+
+            {/* Invite code */}
+            <div className="space-y-1">
+              <p className="text-xs text-gray-500">Invite code</p>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-2xl font-semibold text-indigo-400 tracking-widest">
+                  {group.invite_code}
+                </span>
+                <button onClick={copyCode}
+                  className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            {/* Edit description */}
+            <div className="pt-3 border-t border-gray-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-gray-300 font-medium">Description</p>
+                {!editingDesc && (
+                  <button onClick={() => setEditingDesc(true)}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition">
+                    Edit
+                  </button>
+                )}
+              </div>
+              {editingDesc ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={descValue}
+                    onChange={e => setDescValue(e.target.value)}
+                    rows={3}
+                    placeholder="Add a description..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={handleSaveDescription} disabled={savingDesc}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white transition">
+                      {savingDesc ? 'Saving...' : 'Save'}
+                    </button>
+                    <button onClick={() => { setEditingDesc(false); setDescValue(group.description || ''); }}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 transition">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500">
+                  {group.description || <span className="italic">No description</span>}
+                </p>
+              )}
             </div>
 
             {/* Admins only toggle */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-800">
+            <div className="flex items-center justify-between pt-3 border-t border-gray-800">
               <div>
                 <p className="text-xs text-gray-300 font-medium">Admins only mode</p>
                 <p className="text-xs text-gray-600 mt-0.5">Only admins can send messages</p>
@@ -120,7 +214,7 @@ export default function MembersPanel({ group, onGroupUpdate }) {
           </div>
         )}
 
-        {/* Members sections */}
+        {/* Members list */}
         {loading ? (
           <div className="space-y-3">
             {[1,2,3,4].map(i => (
@@ -135,29 +229,55 @@ export default function MembersPanel({ group, onGroupUpdate }) {
             {admins.length > 0 && (
               <MemberSection title="Admins" members={admins}
                 currentUserId={user?.id} isAdmin={isAdmin}
-                canKick={false} canPromote={false}
-                onKick={handleKick} onPromote={handlePromote}/>
+                canKick={false} canPromote={false} canDemote={true}
+                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}/>
             )}
             {teachers.length > 0 && (
               <MemberSection title="Teachers" members={teachers}
                 currentUserId={user?.id} isAdmin={isAdmin}
-                canKick={true} canPromote={true}
-                onKick={handleKick} onPromote={handlePromote}/>
+                canKick={true} canPromote={true} canDemote={false}
+                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}/>
             )}
             {students.length > 0 && (
               <MemberSection title="Students" members={students}
                 currentUserId={user?.id} isAdmin={isAdmin}
-                canKick={true} canPromote={false}
-                onKick={handleKick} onPromote={handlePromote}/>
+                canKick={true} canPromote={false} canDemote={false}
+                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}/>
             )}
           </>
+        )}
+
+        {/* Leave group — not shown to the group creator */}
+        {!isCreator && (
+          <div className="pt-4 border-t border-gray-800">
+            {confirmLeave ? (
+              <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
+                <p className="text-sm text-red-400">Are you sure you want to leave this group?</p>
+                <div className="flex gap-2">
+                  <button onClick={handleLeave} disabled={leaving}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white transition">
+                    {leaving ? 'Leaving...' : 'Yes, leave'}
+                  </button>
+                  <button onClick={() => setConfirmLeave(false)}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 transition">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmLeave(true)}
+                className="text-xs text-red-400/70 hover:text-red-400 transition">
+                Leave group
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPromote, onKick, onPromote }) {
+function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPromote, canDemote, onKick, onPromote, onDemote }) {
   return (
     <div>
       <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
@@ -183,6 +303,12 @@ function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPro
               </div>
               {isAdmin && !isMe && (
                 <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition">
+                  {canDemote && (
+                    <button onClick={() => onDemote(u.id, u.name)}
+                      className="text-xs px-2 py-1 rounded bg-gray-800 hover:bg-amber-600 text-gray-400 hover:text-white transition">
+                      Revoke admin
+                    </button>
+                  )}
                   {canPromote && (
                     <button onClick={() => onPromote(u.id, u.name)}
                       className="text-xs px-2 py-1 rounded bg-gray-800 hover:bg-indigo-600 text-gray-400 hover:text-white transition">

@@ -35,9 +35,12 @@ export const groupsAPI = {
   list:    ()        => api.get('/groups'),
   get:     (id)      => api.get(`/groups/${id}`),
   delete:  (id)      => api.delete(`/groups/${id}`),
+  update:  (id, data) => api.patch(`/groups/${id}`, data),
+  leave:   (id)      => api.delete(`/groups/${id}/members/me`),
   toggleAdminsOnly: (id, enabled) => api.patch(`/groups/${id}/admins-only`, { enabled }),
   kickMember:       (id, userId)  => api.delete(`/groups/${id}/members/${userId}`),
   promoteMember:    (id, userId)  => api.patch(`/groups/${id}/members/${userId}/promote`),
+  demoteMember:     (id, userId)  => api.patch(`/groups/${id}/members/${userId}/demote`),
 };
 
 export const messagesAPI = {

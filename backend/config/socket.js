@@ -18,37 +18,30 @@ module.exports = (io) => {
     }
   });
 
-  io.on('connection', (socket) => {
+    io.on('connection', (socket) => {
     console.log(`User connected: ${socket.user.id}`);
 
-    // ── Join a group room ──────────────────────────────
-    socket.on('join_group', async (groupId) => {
-      try {
-        // Verify membership before allowing them into the room
-        const { data: membership } = await supabase
-          .from('group_members')
-          .select('role')
-          .eq('group_id', groupId)
-          .eq('user_id', socket.user.id)
-          .single();
+   socket.on('join_group', async (groupId) => {
+    try {
+      const { data: membership } = await supabase
+        .from('group_members')
+        .select('role')
+        .eq('group_id', groupId)
+        .eq('user_id', socket.user.id)
+        .single();
 
-        if (!membership) {
-          socket.emit('error', { message: 'You are not a member of this group' });
-          return;
-        }
-
-        socket.join(groupId);
-        console.log(`User ${socket.user.id} joined room ${groupId}`);
-
-        // Tell the room someone came online
-        socket.to(groupId).emit('user_joined', {
-          userId: socket.user.id,
-          timestamp: new Date().toISOString()
-        });
-      } catch (err) {
-        socket.emit('error', { message: 'Could not join room' });
+      if (!membership) {
+        socket.emit('error', { message: 'You are not a member of this group' });
+        return;
       }
-    });
+
+      socket.join(groupId);
+
+    } catch (err) {
+      console.error(err);
+      socket.emit('error', { message: 'Could not join room' });
+    }
+  });
 
     // ── Leave a group room ─────────────────────────────
     socket.on('leave_group', (groupId) => {
