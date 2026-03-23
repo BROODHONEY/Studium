@@ -102,7 +102,7 @@ module.exports = (io) => {
                 file_id: fileId
             })
             .select(`
-                id, content, type, pinned, created_at,
+                id, content, type, created_at,
                 users!sender_id (id, name, role, roll_no, avatar_url),
                 files!file_id (id, filename, file_url, file_type, size_bytes)
             `)

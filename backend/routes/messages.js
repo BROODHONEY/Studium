@@ -5,6 +5,35 @@ const authMiddleware = require('../middleware/auth');
 const router = express.Router();
 router.use(authMiddleware);
 
+// ── Get pinned messages for a group ───────────────────
+router.get('/:groupId/pinned', async (req, res) => {
+  const { groupId } = req.params;
+  try {
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', groupId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!membership) return res.status(403).json({ error: 'Not a member' });
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select(`id, content, type, created_at, pinned,
+        users!sender_id (id, name, role, roll_no)`)
+      .eq('group_id', groupId)
+      .eq('pinned', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not fetch pinned messages' });
+  }
+});
+
 // ── Get message history for a group ───────────────────
 router.get('/:groupId', async (req, res) => {
   const { groupId } = req.params;
@@ -27,7 +56,7 @@ router.get('/:groupId', async (req, res) => {
     let query = supabase
         .from('messages')
         .select(`
-            id, content, type, pinned, created_at,
+            id, content, type, created_at,
             users!sender_id (id, name, role, roll_no, avatar_url),
             files!file_id (id, filename, file_url, file_type, size_bytes)
         `)
@@ -118,35 +147,6 @@ router.patch('/:messageId/unpin', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not unpin message' });
-  }
-});
-
-// ── Get pinned messages for a group ───────────────────
-router.get('/:groupId/pinned', async (req, res) => {
-  const { groupId } = req.params;
-  try {
-    const { data: membership } = await supabase
-      .from('group_members')
-      .select('role')
-      .eq('group_id', groupId)
-      .eq('user_id', req.user.id)
-      .single();
-
-    if (!membership) return res.status(403).json({ error: 'Not a member' });
-
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`id, content, type, created_at, pinned,
-        users!sender_id (id, name, role, roll_no)`)
-      .eq('group_id', groupId)
-      .eq('pinned', true)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Could not fetch pinned messages' });
   }
 });
 
