@@ -103,7 +103,7 @@ module.exports = (io) => {
             })
             .select(`
                 id, content, type, created_at,
-                users!sender_id (id, name, avatar_url),
+                users!sender_id (id, name, role, roll_no, avatar_url),
                 files!file_id (id, filename, file_url, file_type, size_bytes)
             `)
             .single();

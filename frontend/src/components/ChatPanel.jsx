@@ -188,10 +188,13 @@ export default function ChatPanel({ group }) {
             }
 
             // ── Regular message ─────────────────────────────
-            console.log(item)
-            const isOwn = item.sender?.id === user?.id;
-            const senderName = item.sender?.name || 'Unknown';
-            const senderRole = item.sender?.my_role || 'Member';
+            const sender  = item.users || item.sender;
+            const isOwn   = sender?.id === user?.id;
+            const roll    = sender?.roll_no;
+            const rollSuffix = roll ? ` · ${String(roll).slice(-3)}` : '';
+            const senderName = sender?.name
+              ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}`
+              : 'Unknown';
 
             return (
               <div key={item.id}
@@ -202,7 +205,7 @@ export default function ChatPanel({ group }) {
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center
                     text-xs font-semibold text-white flex-shrink-0 mb-1
                     ${avatarColor(senderName)}`}>
-                    {initials(senderName)}
+                    {initials(sender?.name)}
                   </div>
                 )}
 
@@ -213,7 +216,7 @@ export default function ChatPanel({ group }) {
                   {/* Sender name — only for others */}
                   {!isOwn && (
                     <span className="text-xs text-gray-500 mb-1 px-1">
-                      {senderName} - {senderRole}
+                      {senderName}
                     </span>
                   )}
 
