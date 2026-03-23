@@ -47,9 +47,8 @@ export default function MembersPanel({ group, onGroupUpdate }) {
       await groupsAPI.toggleAdminsOnly(group.id, !adminsOnly);
       setAdminsOnly(prev => !prev);
       onGroupUpdate?.({ ...group, admins_only: !adminsOnly });
-    } catch (error) {
+    } catch {
       setError('Could not update setting');
-      console.log(error);
     } finally {
       setToggling(false);
     }
