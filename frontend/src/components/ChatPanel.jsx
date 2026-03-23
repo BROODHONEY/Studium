@@ -15,10 +15,15 @@ export default function ChatPanel({ group }) {
   const [showPinned, setShowPinned] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch]   = useState(false);
+  const [typingUsers, setTypingUsers] = useState({}); // { userId: { name, timer } }
+
+  const typingTimersRef = useRef({});
 
   const bottomRef        = useRef(null);
   const joinedRoomsRef   = useRef(new Set());
   const previousGroupRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef      = useRef(false);
 
   const myRole  = group?.my_role;
   const canSend = adminsOnly ? myRole === 'admin' : true;
@@ -81,6 +86,8 @@ export default function ChatPanel({ group }) {
     socket.off('message_deleted');
     socket.off('message_pinned');
     socket.off('message_unpinned');
+    socket.off('user_typing');
+    socket.off('user_stopped_typing');
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
@@ -120,6 +127,23 @@ export default function ChatPanel({ group }) {
       setPinnedMsgs(prev => prev.filter(m => m.id !== messageId));
     });
 
+    socket.on('user_typing', ({ userId, userName }) => {
+      // Clear any existing auto-stop timer for this user
+      if (typingTimersRef.current[userId]) clearTimeout(typingTimersRef.current[userId]);
+      setTypingUsers(prev => ({ ...prev, [userId]: userName || 'Someone' }));
+      // Auto-clear after 3s in case stop event is missed
+      typingTimersRef.current[userId] = setTimeout(() => {
+        setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n; });
+        delete typingTimersRef.current[userId];
+      }, 3000);
+    });
+
+    socket.on('user_stopped_typing', ({ userId }) => {
+      if (typingTimersRef.current[userId]) clearTimeout(typingTimersRef.current[userId]);
+      delete typingTimersRef.current[userId];
+      setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n; });
+    });
+
     return () => {
       socket.off('new_message');
       socket.off('system_message');
@@ -127,6 +151,8 @@ export default function ChatPanel({ group }) {
       socket.off('message_deleted');
       socket.off('message_pinned');
       socket.off('message_unpinned');
+      socket.off('user_typing');
+      socket.off('user_stopped_typing');
     };
   }, [group?.id, socket]);
 
@@ -143,6 +169,10 @@ export default function ChatPanel({ group }) {
       type: 'text'
     });
     setText('');
+    // Stop typing indicator
+    clearTimeout(typingTimeoutRef.current);
+    isTypingRef.current = false;
+    socket.emit('typing_stop', { groupId: group.id });
   };
 
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -178,6 +208,20 @@ export default function ChatPanel({ group }) {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    if (!socket || !group) return;
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      socket.emit('typing_start', { groupId: group.id });
+    }
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      socket.emit('typing_stop', { groupId: group.id });
+    }, 2000);
   };
 
   const formatTime = (ts) =>
@@ -444,6 +488,22 @@ export default function ChatPanel({ group }) {
         <div ref={bottomRef}/>
       </div>
 
+      {/* Typing indicator */}
+      {Object.keys(typingUsers).length > 0 && (
+        <div className="px-5 pb-1 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5">
+              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
+              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
+              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+            </div>
+            <span className="text-xs text-gray-500">
+              {Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} typing
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Input area */}
       <div className="px-4 py-3 border-t border-gray-800 flex-shrink-0">
         {canSend ? (
@@ -457,7 +517,7 @@ export default function ChatPanel({ group }) {
             </button>
             <textarea
               value={text}
-              onChange={e => setText(e.target.value)}
+              onChange={handleTextChange}
               onKeyDown={handleKeyDown}
               rows={1}
               placeholder="Type a message... (Enter to send)"

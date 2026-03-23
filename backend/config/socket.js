@@ -120,7 +120,7 @@ module.exports = (io) => {
 
     // ── Typing indicators ──────────────────────────────
     socket.on('typing_start', ({ groupId }) => {
-      socket.to(groupId).emit('user_typing', { userId: socket.user.id });
+      socket.to(groupId).emit('user_typing', { userId: socket.user.id, userName: socket.user.name });
     });
 
     socket.on('typing_stop', ({ groupId }) => {
