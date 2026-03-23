@@ -34,7 +34,10 @@ export const groupsAPI = {
   join:    (code)    => api.post('/groups/join', { invite_code: code }),
   list:    ()        => api.get('/groups'),
   get:     (id)      => api.get(`/groups/${id}`),
-  delete:  (id)      => api.delete(`/groups/${id}`)
+  delete:  (id)      => api.delete(`/groups/${id}`),
+  toggleAdminsOnly: (id, enabled) => api.patch(`/groups/${id}/admins-only`, { enabled }),
+  kickMember:       (id, userId)  => api.delete(`/groups/${id}/members/${userId}`),
+  promoteMember:    (id, userId)  => api.patch(`/groups/${id}/members/${userId}/promote`),
 };
 
 export const messagesAPI = {

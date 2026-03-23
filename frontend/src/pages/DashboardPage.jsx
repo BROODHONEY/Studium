@@ -72,7 +72,15 @@ export default function DashboardPage() {
               />
               {activeTab === 'Chat' && <ChatPanel group={activeGroup} />}
                 {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
-                {activeTab === 'Members' && <MembersPanel group={activeGroup} />}
+                {activeTab === 'Members' && (
+                    <MembersPanel
+                        group={activeGroup}
+                        onGroupUpdate={(updated) => {
+                            setActiveGroup(updated);
+                            setGroups(prev => prev.map(g => g.id === updated.id ? updated : g));
+                            }}
+                        />
+                    )}
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">

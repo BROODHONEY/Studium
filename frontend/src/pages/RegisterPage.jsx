@@ -3,14 +3,25 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+const DEPARTMENTS = [
+  'B. Tech Artificial Intelligence and Machine Learning',
+  'B. Tech Artificial Intelligence and Data Science',
+  'B. Tech Computer Science',
+];
+
 export default function RegisterPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
+
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', password: '', role: 'student'
+    name: '', email: '', phone: '',
+    password: '', role: 'student',
+    roll_no: '', department: ''
   });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
+
+  const isStudent = form.role === 'student';
 
   const handleChange = e =>
     setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -18,12 +29,26 @@ export default function RegisterPage() {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+
+    // Client-side validation for students
+    if (isStudent && !form.roll_no.trim()) {
+      setError('Roll number is required');
+      return;
+    }
+    if (isStudent && !form.department) {
+      setError('Please select your department');
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
-        name: form.name, password: form.password, role: form.role,
+        name:     form.name,
+        password: form.password,
+        role:     form.role,
         ...(form.email ? { email: form.email } : {}),
-        ...(form.phone ? { phone: form.phone } : {})
+        ...(form.phone ? { phone: form.phone } : {}),
+        ...(isStudent  ? { roll_no: form.roll_no, department: form.department } : {})
       };
       const res = await authAPI.register(payload);
       login(res.data.token, res.data.user);
@@ -46,34 +71,8 @@ export default function RegisterPage() {
         {error && <div className="error-box mb-6">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="form-label">Full name</label>
-            <input className="form-input" type="text" name="name"
-              value={form.name} onChange={handleChange}
-              placeholder="Ravi Kumar" required />
-          </div>
-          <div>
-            <label className="form-label">Email</label>
-            <input className="form-input" type="email" name="email"
-              value={form.email} onChange={handleChange}
-              placeholder="you@example.com" />
-          </div>
-          <div>
-            <label className="form-label">
-              Phone
-              <span className="text-gray-600 ml-1">(optional if email given)</span>
-            </label>
-            <input className="form-input" type="tel" name="phone"
-              value={form.phone} onChange={handleChange}
-              placeholder="+91 98765 43210" />
-          </div>
-          <div>
-            <label className="form-label">Password</label>
-            <input className="form-input" type="password" name="password"
-              value={form.password} onChange={handleChange}
-              placeholder="••••••••" required />
-          </div>
 
+          {/* Role selector — first so fields below react immediately */}
           <div>
             <label className="form-label">I am a</label>
             <div className="grid grid-cols-2 gap-3">
@@ -88,6 +87,70 @@ export default function RegisterPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Full name */}
+          <div>
+            <label className="form-label">Full name</label>
+            <input className="form-input" type="text" name="name"
+              value={form.name} onChange={handleChange}
+              placeholder="Ravi Kumar" required />
+          </div>
+
+          {/* Student-only fields */}
+          {isStudent && (
+            <>
+              <div>
+                <label className="form-label">
+                  Roll number
+                  <span className="ml-1 text-red-400">*</span>
+                </label>
+                <input className="form-input" type="text" name="roll_no"
+                  value={form.roll_no} onChange={handleChange}
+                  placeholder="21BD1A0512" required />
+              </div>
+
+              <div>
+                <label className="form-label">
+                  Department
+                  <span className="ml-1 text-red-400">*</span>
+                </label>
+                <select className="form-input" name="department"
+                  value={form.department} onChange={handleChange} required>
+                  <option value="" disabled>Select your department</option>
+                  {DEPARTMENTS.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* Email */}
+          <div>
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" name="email"
+              value={form.email} onChange={handleChange}
+              placeholder="you@example.com" />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="form-label">
+              Phone
+              <span className="text-gray-600 ml-1">(optional if email given)</span>
+            </label>
+            <input className="form-input" type="tel" name="phone"
+              value={form.phone} onChange={handleChange}
+              placeholder="+91 98765 43210" />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="form-label">Password</label>
+            <input className="form-input" type="password" name="password"
+              value={form.password} onChange={handleChange}
+              placeholder="••••••••" required />
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary">

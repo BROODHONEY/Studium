@@ -5,9 +5,9 @@ const supabase = require('../config/db');
 
 const router = express.Router();
 
-// ── Register ──────────────────────────────────────────
+// Register
 router.post('/register', async (req, res) => {
-  const { name, email, phone, password, role } = req.body;
+  const { name, email, phone, password, role, roll_no, department } = req.body;
 
   if (!name || !password || (!email && !phone)) {
     return res.status(400).json({ error: 'Name, password, and email or phone are required' });
@@ -17,8 +17,17 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Role must be teacher or student' });
   }
 
+  // Students must provide roll number and department
+  if (role === 'student') {
+    if (!roll_no || !roll_no.trim()) {
+      return res.status(400).json({ error: 'Roll number is required for students' });
+    }
+    if (!department || !department.trim()) {
+      return res.status(400).json({ error: 'Department is required for students' });
+    }
+  }
+
   try {
-    // Check if user already exists
     const query = email
       ? supabase.from('users').select('id').eq('email', email)
       : supabase.from('users').select('id').eq('phone', phone);
@@ -28,19 +37,19 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'User already exists with this email or phone' });
     }
 
-    // Hash the password
     const password_hash = await bcrypt.hash(password, 10);
 
-    // Insert new user
     const { data: user, error } = await supabase
       .from('users')
-      .insert({ name, email, phone, password_hash, role })
-      .select('id, name, email, phone, role, created_at')
+      .insert({
+        name, email, phone, password_hash, role,
+        ...(role === 'student' ? { roll_no, department } : {})
+      })
+      .select('id, name, email, phone, role, roll_no, department, created_at')
       .single();
 
     if (error) throw error;
 
-    // Sign a JWT
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,

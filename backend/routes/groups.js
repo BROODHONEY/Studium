@@ -132,6 +132,130 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+// ── Kick a member (admin only) ─────────────────────────
+router.delete('/:id/members/:userId', async (req, res) => {
+  try {
+    // Verify the requester is an admin
+    const { data: requester } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!requester || requester.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can remove members' });
+    }
+
+    // Prevent kicking another admin
+    const { data: target } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.params.userId)
+      .single();
+
+    if (!target) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    if (target.role === 'admin') {
+      return res.status(403).json({ error: 'Cannot kick another admin' });
+    }
+
+    await supabase
+      .from('group_members')
+      .delete()
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.params.userId);
+
+    res.json({ message: 'Member removed' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not remove member' });
+  }
+});
+
+// ── Promote teacher to admin (admin only) ──────────────
+router.patch('/:id/members/:userId/promote', async (req, res) => {
+  try {
+    const { data: requester } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!requester || requester.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can promote members' });
+    }
+
+    // Only teachers can be promoted, not students
+    const { data: target } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.params.userId)
+      .single();
+
+    if (!target) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    if (target.role === 'student') {
+      return res.status(403).json({ error: 'Students cannot be promoted to admin' });
+    }
+
+    if (target.role === 'admin') {
+      return res.status(409).json({ error: 'Already an admin' });
+    }
+
+    await supabase
+      .from('group_members')
+      .update({ role: 'admin' })
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.params.userId);
+
+    res.json({ message: 'Member promoted to admin' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not promote member' });
+  }
+});
+
+// ── Toggle admins only mode (admin only) ───────────────
+router.patch('/:id/admins-only', async (req, res) => {
+  try {
+    const { data: requester } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!requester || requester.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can change this setting' });
+    }
+
+    const { enabled } = req.body;
+
+    const { data, error } = await supabase
+      .from('groups')
+      .update({ admins_only: enabled })
+      .eq('id', req.params.id)
+      .select('id, admins_only')
+      .single();
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update setting' });
+  }
+});
+
 // ── Get a single group with its members ───────────────
 router.get('/:id', async (req, res) => {
   try {
@@ -196,5 +320,4 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Could not delete group' });
   }
 });
-
 module.exports = router;

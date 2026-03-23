@@ -5,98 +5,151 @@ import { groupsAPI } from '../services/api';
 const initials = (name) =>
   name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
-export default function MembersPanel({ group }) {
-  const { user }  = useAuth();
-  const isTeacher = group?.my_role === 'teacher';
+const COLORS = [
+  'bg-indigo-600','bg-teal-600','bg-purple-600',
+  'bg-pink-600','bg-amber-600','bg-green-600'
+];
+const avatarColor = (name) => COLORS[name?.charCodeAt(0) % COLORS.length];
 
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied]   = useState(false);
+export default function MembersPanel({ group, onGroupUpdate }) {
+  const { user }  = useAuth();
+  const myRole    = group?.my_role;
+  const isAdmin   = myRole === 'admin';
+
+  const [members, setMembers]       = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [copied, setCopied]         = useState(false);
+  const [adminsOnly, setAdminsOnly] = useState(group?.admins_only || false);
+  const [toggling, setToggling]     = useState(false);
+  const [error, setError]           = useState('');
 
   useEffect(() => {
     if (!group) return;
     setLoading(true);
     groupsAPI.get(group.id)
-      .then(res => setMembers(res.data.members || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [group?.id]);
+        .then(res => {
+        setMembers(res.data.members || []);
+        setAdminsOnly(res.data.admins_only || false);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }, [group?.id]);
 
-  const teachers = members.filter(m => m.role === 'teacher');
-  const students = members.filter(m => m.role === 'student');
-
-  const copyInviteCode = () => {
+  const copyCode = () => {
     navigator.clipboard.writeText(group.invite_code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleToggleAdminsOnly = async () => {
+    setToggling(true);
+    try {
+      await groupsAPI.toggleAdminsOnly(group.id, !adminsOnly);
+      setAdminsOnly(prev => !prev);
+      onGroupUpdate?.({ ...group, admins_only: !adminsOnly });
+    } catch (error) {
+      setError('Could not update setting');
+      console.log(error);
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const handleKick = async (userId, name) => {
+    if (!confirm(`Remove ${name} from the group?`)) return;
+    try {
+      await groupsAPI.kickMember(group.id, userId);
+      setMembers(prev => prev.filter(m => m.users?.id !== userId));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not remove member');
+    }
+  };
+
+  const handlePromote = async (userId, name) => {
+    if (!confirm(`Promote ${name} to admin?`)) return;
+    try {
+      await groupsAPI.promoteMember(group.id, userId);
+      setMembers(prev => prev.map(m =>
+        m.users?.id === userId ? { ...m, role: 'admin' } : m
+      ));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not promote member');
+    }
+  };
+
+  const admins   = members.filter(m => m.role === 'admin');
+  const teachers = members.filter(m => m.role === 'teacher');
+  const students = members.filter(m => m.role === 'student');
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-gray-950">
+    <div className="flex-1 flex flex-col min-h-0 bg-gray-950 overflow-y-auto">
+      <div className="p-5 space-y-6">
 
-      {/* Invite code section — teachers only */}
-      {isTeacher && (
-        <div className="mx-5 mt-5 p-4 bg-gray-900 border border-gray-800 rounded-xl">
-          <p className="text-xs text-gray-500 mb-2">Share this code to invite students</p>
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-2xl font-semibold text-indigo-400 tracking-widest">
-              {group.invite_code}
-            </span>
-            <button onClick={copyInviteCode}
-              className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
-              {copied ? 'Copied!' : 'Copy code'}
-            </button>
+        {error && (
+          <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+            {error}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Members list */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        {/* Invite code — admins only */}
+        {isAdmin && (
+          <div className="p-4 bg-gray-900 border border-gray-800 rounded-xl space-y-3">
+            <p className="text-xs text-gray-500">Invite code</p>
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-2xl font-semibold text-indigo-400 tracking-widest">
+                {group.invite_code}
+              </span>
+              <button onClick={copyCode}
+                className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+
+            {/* Admins only toggle */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-800">
+              <div>
+                <p className="text-xs text-gray-300 font-medium">Admins only mode</p>
+                <p className="text-xs text-gray-600 mt-0.5">Only admins can send messages</p>
+              </div>
+              <button onClick={handleToggleAdminsOnly} disabled={toggling}
+                className={`relative w-10 h-5 rounded-full transition-colors duration-200 flex-shrink-0
+                  ${adminsOnly ? 'bg-indigo-600' : 'bg-gray-700'}`}>
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-200
+                  ${adminsOnly ? 'translate-x-5' : 'translate-x-0'}`}/>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Members sections */}
         {loading ? (
           <div className="space-y-3">
             {[1,2,3,4].map(i => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gray-800 animate-pulse flex-shrink-0"/>
+                <div className="w-9 h-9 rounded-full bg-gray-800 animate-pulse"/>
                 <div className="h-4 bg-gray-800 rounded animate-pulse w-32"/>
               </div>
             ))}
           </div>
         ) : (
           <>
-            {/* Teachers */}
-            {teachers.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-3">
-                  Teachers · {teachers.length}
-                </p>
-                <div className="space-y-2">
-                  {teachers.map(m => (
-                    <MemberRow
-                      key={m.users?.id}
-                      member={m}
-                      isCurrentUser={m.users?.id === user?.id}
-                    />
-                  ))}
-                </div>
-              </div>
+            {admins.length > 0 && (
+              <MemberSection title="Admins" members={admins}
+                currentUserId={user?.id} isAdmin={isAdmin}
+                canKick={false} canPromote={false}
+                onKick={handleKick} onPromote={handlePromote}/>
             )}
-
-            {/* Students */}
+            {teachers.length > 0 && (
+              <MemberSection title="Teachers" members={teachers}
+                currentUserId={user?.id} isAdmin={isAdmin}
+                canKick={true} canPromote={true}
+                onKick={handleKick} onPromote={handlePromote}/>
+            )}
             {students.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-3">
-                  Students · {students.length}
-                </p>
-                <div className="space-y-2">
-                  {students.map(m => (
-                    <MemberRow
-                      key={m.users?.id}
-                      member={m}
-                      isCurrentUser={m.users?.id === user?.id}
-                    />
-                  ))}
-                </div>
-              </div>
+              <MemberSection title="Students" members={students}
+                currentUserId={user?.id} isAdmin={isAdmin}
+                canKick={true} canPromote={false}
+                onKick={handleKick} onPromote={handlePromote}/>
             )}
           </>
         )}
@@ -105,29 +158,49 @@ export default function MembersPanel({ group }) {
   );
 }
 
-function MemberRow({ member, isCurrentUser }) {
-  const u = member.users;
-  if (!u) return null;
-
-  const colors = [
-    'bg-indigo-600', 'bg-teal-600', 'bg-purple-600',
-    'bg-pink-600', 'bg-amber-600', 'bg-green-600'
-  ];
-  const color = colors[u.name?.charCodeAt(0) % colors.length];
-
+function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPromote, onKick, onPromote }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-900 transition">
-      <div className={`w-9 h-9 rounded-full ${color} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0`}>
-        {initials(u.name)}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-white font-medium truncate">
-          {u.name}
-          {isCurrentUser && (
-            <span className="ml-2 text-xs text-gray-600">(you)</span>
-          )}
-        </p>
-        <p className="text-xs text-gray-600 truncate">{u.email || u.phone}</p>
+    <div>
+      <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
+        {title} · {members.length}
+      </p>
+      <div className="space-y-1">
+        {members.map(m => {
+          const u = m.users;
+          if (!u) return null;
+          const isMe = u.id === currentUserId;
+          return (
+            <div key={u.id}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-900 transition group">
+              <div className={`w-9 h-9 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0`}>
+                {initials(u.name)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white font-medium truncate">
+                  {u.name}
+                  {isMe && <span className="ml-1.5 text-xs text-gray-600">(you)</span>}
+                </p>
+                <p className="text-xs text-gray-600 truncate">{u.email || u.phone}</p>
+              </div>
+              {isAdmin && !isMe && (
+                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition">
+                  {canPromote && (
+                    <button onClick={() => onPromote(u.id, u.name)}
+                      className="text-xs px-2 py-1 rounded bg-gray-800 hover:bg-indigo-600 text-gray-400 hover:text-white transition">
+                      Make admin
+                    </button>
+                  )}
+                  {canKick && (
+                    <button onClick={() => onKick(u.id, u.name)}
+                      className="text-xs px-2 py-1 rounded bg-gray-800 hover:bg-red-600 text-gray-400 hover:text-white transition">
+                      Remove
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

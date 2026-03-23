@@ -77,6 +77,18 @@ module.exports = (io) => {
           return;
         }
 
+        // Check admins_only mode
+        const { data: group } = await supabase
+          .from('groups')
+          .select('admins_only')
+          .eq('id', groupId)
+          .single();
+
+        if (group?.admins_only && membership.role !== 'admin') {
+          socket.emit('error', { message: 'Only admins can send messages right now' });
+          return;
+        }
+
         // Save message to DB
         const { data: message, error } = await supabase
             .from('messages')
