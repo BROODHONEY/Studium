@@ -10,6 +10,9 @@ const messageRoutes = require('./routes/messages');
 const fileRoutes = require('./routes/files');
 const initSocket = require('./config/socket');
 
+const announcementRoutes = require('./routes/announcements');
+const dueRoutes          = require('./routes/dues');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -36,6 +39,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/dues', dueRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studium API is running' });

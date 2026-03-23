@@ -55,4 +55,16 @@ export const filesAPI = {
   delete: (groupId, fileId) => api.delete(`/files/${groupId}/${fileId}`)
 };
 
+export const announcementsAPI = {
+  list:   (groupId)     => api.get(`/announcements/${groupId}`),
+  create: (groupId, data) => api.post(`/announcements/${groupId}`, data),
+  delete: (groupId, id) => api.delete(`/announcements/${groupId}/${id}`)
+};
+
+export const duesAPI = {
+  list:   (groupId)       => api.get(`/dues/${groupId}`),
+  create: (groupId, data) => api.post(`/dues/${groupId}`, data),
+  delete: (groupId, id)   => api.delete(`/dues/${groupId}/${id}`)
+};
+
 export default api;
