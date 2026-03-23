@@ -45,6 +45,9 @@ export const groupsAPI = {
 
 export const messagesAPI = {
   list:   (groupId, params) => api.get(`/messages/${groupId}`, { params }),
+  pinned: (groupId)         => api.get(`/messages/${groupId}/pinned`),
+  pin:    (messageId)       => api.patch(`/messages/${messageId}/pin`),
+  unpin:  (messageId)       => api.patch(`/messages/${messageId}/unpin`),
   delete: (messageId)       => api.delete(`/messages/${messageId}`)
 };
 

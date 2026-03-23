@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
+
 export default function ChatPanel({ group }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
@@ -10,6 +11,8 @@ export default function ChatPanel({ group }) {
   const [text, setText]             = useState('');
   const [loading, setLoading]       = useState(true);
   const [adminsOnly, setAdminsOnly] = useState(false);
+  const [pinnedMsgs, setPinnedMsgs] = useState([]);
+  const [showPinned, setShowPinned] = useState(false);
 
   const bottomRef        = useRef(null);
   const joinedRoomsRef   = useRef(new Set());
@@ -49,6 +52,11 @@ export default function ChatPanel({ group }) {
       .catch(console.error)
       .finally(() => setLoading(false));
 
+    // Fetch pinned messages
+    messagesAPI.pinned(group.id)
+      .then(res => setPinnedMsgs(res.data))
+      .catch(console.error);
+
     // Fetch fresh group state for admins_only
     groupsAPI.get(group.id)
       .then(res => setAdminsOnly(res.data.admins_only || false))
@@ -65,6 +73,8 @@ export default function ChatPanel({ group }) {
     socket.off('system_message');
     socket.off('admins_only_changed');
     socket.off('message_deleted');
+    socket.off('message_pinned');
+    socket.off('message_unpinned');
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
@@ -94,11 +104,23 @@ export default function ChatPanel({ group }) {
       setMessages(prev => prev.filter(m => m.id !== messageId));
     });
 
+    socket.on('message_pinned', ({ messageId, content }) => {
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: true } : m));
+      setPinnedMsgs(prev => prev.find(m => m.id === messageId) ? prev : [{ id: messageId, content }, ...prev]);
+    });
+
+    socket.on('message_unpinned', ({ messageId }) => {
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: false } : m));
+      setPinnedMsgs(prev => prev.filter(m => m.id !== messageId));
+    });
+
     return () => {
       socket.off('new_message');
       socket.off('system_message');
       socket.off('admins_only_changed');
       socket.off('message_deleted');
+      socket.off('message_pinned');
+      socket.off('message_unpinned');
     };
   }, [group?.id, socket]);
 
@@ -126,6 +148,22 @@ export default function ChatPanel({ group }) {
       await messagesAPI.delete(messageId);
     } catch {
       messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
+    }
+  };
+
+  const handleTogglePin = async (msg) => {
+    try {
+      if (msg.pinned) {
+        await messagesAPI.unpin(msg.id);
+        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, pinned: false } : m));
+        setPinnedMsgs(prev => prev.filter(m => m.id !== msg.id));
+      } else {
+        await messagesAPI.pin(msg.id);
+        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, pinned: true } : m));
+        setPinnedMsgs(prev => prev.find(m => m.id === msg.id) ? prev : [{ id: msg.id, content: msg.content }, ...prev]);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -162,6 +200,39 @@ export default function ChatPanel({ group }) {
       {adminsOnly && (
         <div className="mx-4 mt-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-400 text-xs text-center flex-shrink-0">
           Admins only mode is on — only admins can send messages
+        </div>
+      )}
+
+      {/* Pinned messages banner */}
+      {pinnedMsgs.length > 0 && (
+        <div className="mx-4 mt-2 flex-shrink-0">
+          <button onClick={() => setShowPinned(v => !v)}
+            className="w-full flex items-center gap-2 px-3 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-400 text-xs hover:bg-indigo-500/15 transition">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+            </svg>
+            <span className="flex-1 text-left truncate">
+              {pinnedMsgs[0]?.content}
+            </span>
+            <span className="text-indigo-400/60">{pinnedMsgs.length} pinned</span>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
+              className={`transition-transform ${showPinned ? 'rotate-180' : ''}`}>
+              <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+            </svg>
+          </button>
+          {showPinned && (
+            <div className="mt-1 bg-gray-900 border border-gray-800 rounded-lg divide-y divide-gray-800 overflow-hidden">
+              {pinnedMsgs.map(pm => (
+                <div key={pm.id} className="px-3 py-2 text-xs text-gray-300 flex items-start gap-2">
+                  <span className="flex-1 leading-relaxed">{pm.content}</span>
+                  {myRole === 'admin' && (
+                    <button onClick={() => handleTogglePin({ ...pm, pinned: true })}
+                      className="text-gray-600 hover:text-red-400 transition flex-shrink-0 mt-0.5">✕</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -257,14 +328,26 @@ export default function ChatPanel({ group }) {
                           Cancel
                         </button>
                       </div>
-                    ) : canDelete && (
-                      <button
-                        onClick={() => setConfirmDeleteId(item.id)}
-                        className="opacity-0 group-hover/msg:opacity-100 transition p-1 rounded text-gray-600 hover:text-red-400 flex-shrink-0 mb-1">
-                        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                          <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
-                        </svg>
-                      </button>
+                    ) : (
+                      <div className={`flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
+                        {myRole === 'admin' && (
+                          <button onClick={() => handleTogglePin(item)}
+                            className={`p-1 rounded transition ${item.pinned ? 'text-indigo-400' : 'text-gray-600 hover:text-indigo-400'}`}
+                            title={item.pinned ? 'Unpin' : 'Pin'}>
+                            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+                            </svg>
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button onClick={() => setConfirmDeleteId(item.id)}
+                            className="p-1 rounded text-gray-600 hover:text-red-400 transition">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
 
