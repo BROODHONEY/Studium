@@ -10,6 +10,7 @@ import FilesPanel    from '../components/FilesPanel';
 import MembersPanel  from '../components/MembersPanel';
 import GroupOverview from '../components/GroupOverview';
 import KickNotification from '../components/KickNotification';
+import { NotificationProvider } from '../context/NotificationContext';
 
 export default function DashboardPage() {
   const { logout, user } = useAuth();
@@ -70,6 +71,7 @@ export default function DashboardPage() {
   }, [socket, user?.id]);
 
   return (
+    <NotificationProvider activeGroupId={activeGroup?.id}>
     <div className="h-screen flex flex-col bg-gray-950">
 
       {/* Top nav */}
@@ -154,5 +156,6 @@ export default function DashboardPage() {
 
       <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
     </div>
+    </NotificationProvider>
   );
 }
