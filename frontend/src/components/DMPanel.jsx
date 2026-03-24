@@ -33,6 +33,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const [openMenuId, setOpenMenuId]       = useState(null);
   const [menuRect, setMenuRect]           = useState(null);
   const [replyTo, setReplyTo]             = useState(null); // { id, content, senderName }
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [showSearch, setShowSearch]       = useState(false);
 
   const bottomRef    = useRef(null);
   const textareaRef  = useRef(null);
@@ -174,6 +176,11 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const formatTime = (ts) =>
     new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  const filteredMessages = searchQuery.trim()
+    ? messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.sender?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages;
+
   if (!conversation) return (
     <div className="flex-1 flex items-center justify-center dark:bg-surface bg-gray-50">
       <div className="text-center">
@@ -200,6 +207,35 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
         </button>
       </div>
 
+      {/* Search bar */}
+      {showSearch && (
+        <div className="mx-4 mt-2 flex-shrink-0">
+          <div className="flex items-center gap-2 dark:bg-surface-2 bg-white dark:border-surface-3 border-gray-200 border rounded-lg px-3 py-2">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="#6b7280">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            </svg>
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search messages..."
+              className="flex-1 bg-transparent text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 outline-none"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="dark:text-gray-600 text-gray-400 dark:hover:text-gray-400 hover:text-gray-600 transition text-xs">✕</button>
+            )}
+            <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
+              className="dark:text-gray-600 text-gray-400 dark:hover:text-gray-400 hover:text-gray-600 transition text-xs ml-1">Close</button>
+          </div>
+          {searchQuery && (
+            <p className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
+              {filteredMessages.length} result{filteredMessages.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {loading ? (
@@ -221,7 +257,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
           </div>
         ) : (
           <>
-            {messages.flatMap((msg, i) => {
+            {filteredMessages.flatMap((msg, i) => {
               const getDateLabel = (iso) => {
                 const d = new Date(iso);
                 const today = new Date();
@@ -418,6 +454,13 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
           </div>
         )}
         <div className="flex gap-3 items-end">
+          <button onClick={() => { setShowSearch(v => !v); setSearchQuery(''); }}
+            className={`p-2.5 rounded-xl transition flex-shrink-0 ${showSearch ? 'bg-brand-600 text-white' : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600'}`}
+            title="Search messages">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            </svg>
+          </button>
           <div className="flex-1 flex flex-col">
             <FormatToolbar textareaRef={textareaRef} setText={setText} />
             <textarea
