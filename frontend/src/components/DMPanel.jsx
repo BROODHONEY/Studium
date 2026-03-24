@@ -28,6 +28,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
   const [openMenuId, setOpenMenuId]       = useState(null);
+  const [menuAbove, setMenuAbove]         = useState(true);
   const [replyTo, setReplyTo]             = useState(null); // { id, content, senderName }
 
   const bottomRef    = useRef(null);
@@ -297,7 +298,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                       {!isTemp && editingId !== msg.id && (
                         <div className={`relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
                           <button
-                            onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
+                            onClick={(e) => { e.stopPropagation(); const rect = e.currentTarget.getBoundingClientRect(); setMenuAbove(rect.top > 220); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
                             className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition"
                             title="Message actions">
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
@@ -308,7 +309,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                           {openMenuId === msg.id && (
                             <div
                               onClick={e => e.stopPropagation()}
-                              className={`absolute bottom-8 z-30 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden
+                              className={`absolute z-30 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl
+                                ${menuAbove ? 'bottom-8' : 'top-8'}
                                 ${isOwn ? 'right-0' : 'left-0'}`}>
 
                               {/* Emoji row */}

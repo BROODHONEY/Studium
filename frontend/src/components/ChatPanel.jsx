@@ -54,6 +54,7 @@ export default function ChatPanel({ group, onViewProfile }) {
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
   const [openMenuId, setOpenMenuId]       = useState(null); // three-dot menu
+  const [menuAbove, setMenuAbove]         = useState(true);
   // reply_to: { id, content, senderName, senderId }
   const [replyTo, setReplyTo]             = useState(null);
   const [privateReply, setPrivateReply]   = useState(null); // same shape, but sends as DM
@@ -789,7 +790,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                     {editingId !== item.id && (
                       <div className={`relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === item.id ? null : item.id); setEmojiPickerId(null); }}
+                          onClick={(e) => { e.stopPropagation(); const rect = e.currentTarget.getBoundingClientRect(); setMenuAbove(rect.top > 220); setOpenMenuId(openMenuId === item.id ? null : item.id); setEmojiPickerId(null); }}
                           className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition"
                           title="Message actions">
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
@@ -800,7 +801,8 @@ export default function ChatPanel({ group, onViewProfile }) {
                         {openMenuId === item.id && (
                           <div
                             onClick={e => e.stopPropagation()}
-                            className={`absolute bottom-8 z-30 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden
+                            className={`absolute z-30 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl
+                              ${menuAbove ? 'bottom-8' : 'top-8'}
                               ${isOwn ? 'right-0' : 'left-0'}`}>
 
                             {/* Emoji row */}
