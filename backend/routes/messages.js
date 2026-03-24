@@ -95,10 +95,11 @@ router.get('/:groupId', async (req, res) => {
     let query = supabase
         .from('messages')
         .select(`
-            id, content, type, created_at, edited,
+            id, content, type, created_at, edited, reply_to,
             users!sender_id (id, name, role, roll_no, avatar_url),
             files!file_id (id, filename, file_url, file_type, size_bytes),
-            message_reactions (emoji, user_id)
+            message_reactions (emoji, user_id),
+            replied_message:reply_to (id, content, users!sender_id (id, name))
         `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: false })
@@ -470,6 +471,62 @@ router.delete('/:messageId', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not delete message' });
+  }
+});
+
+// ── Reply privately to a group message ───────────────
+router.post('/reply-privately', async (req, res) => {
+  const { targetUserId, content, quotedContent, quotedSenderName } = req.body;
+  if (!targetUserId || !content?.trim()) {
+    return res.status(400).json({ error: 'targetUserId and content are required' });
+  }
+  if (targetUserId === req.user.id) {
+    return res.status(400).json({ error: 'Cannot DM yourself' });
+  }
+
+  try {
+    const [user1_id, user2_id] = [req.user.id, targetUserId].sort();
+
+    let { data: convo } = await supabase
+      .from('conversations')
+      .select('id, user1_id, user2_id')
+      .eq('user1_id', user1_id)
+      .eq('user2_id', user2_id)
+      .single();
+
+    if (!convo) {
+      const { data: newConvo, error } = await supabase
+        .from('conversations')
+        .insert({ user1_id, user2_id })
+        .select('id, user1_id, user2_id')
+        .single();
+      if (error) throw error;
+      convo = newConvo;
+    }
+
+    // Build message with quoted context prefix
+    const fullContent = quotedContent
+      ? `> ${quotedSenderName}: ${quotedContent}\n\n${content.trim()}`
+      : content.trim();
+
+    const { data: message, error } = await supabase
+      .from('direct_messages')
+      .insert({ conversation_id: convo.id, sender_id: req.user.id, content: fullContent })
+      .select(`id, content, read, created_at, sender:sender_id (id, name, avatar_url)`)
+      .single();
+
+    if (error) throw error;
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user:${req.user.id}`).to(`user:${targetUserId}`)
+        .emit('new_dm', { conversationId: convo.id, message });
+    }
+
+    res.json({ conversationId: convo.id, message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not send private reply' });
   }
 });
 

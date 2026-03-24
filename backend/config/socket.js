@@ -119,7 +119,7 @@ module.exports = (io) => {
       });
     });
 
-    socket.on('send_message', async ({ groupId, content, type = 'text', fileId = null }) => {
+    socket.on('send_message', async ({ groupId, content, type = 'text', fileId = null, replyTo = null }) => {
       if (!content && !fileId) return;
 
       try {
@@ -146,19 +146,24 @@ module.exports = (io) => {
           return;
         }
 
+        const insertData = {
+          group_id: groupId,
+          sender_id: socket.user.id,
+          content,
+          type,
+          file_id: fileId
+        };
+
+        if (replyTo) insertData.reply_to = replyTo;
+
         const { data: message, error } = await supabase
           .from('messages')
-          .insert({
-            group_id: groupId,
-            sender_id: socket.user.id,
-            content,
-            type,
-            file_id: fileId
-          })
+          .insert(insertData)
           .select(`
-            id, content, type, created_at,
+            id, content, type, created_at, reply_to,
             users!sender_id (id, name, role, roll_no, avatar_url),
-            files!file_id (id, filename, file_url, file_type, size_bytes)
+            files!file_id (id, filename, file_url, file_type, size_bytes),
+            replied_message:reply_to (id, content, users!sender_id (id, name))
           `)
           .single();
 

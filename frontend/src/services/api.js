@@ -44,13 +44,14 @@ export const groupsAPI = {
 };
 
 export const messagesAPI = {
-  list:    (groupId, params) => api.get(`/messages/${groupId}`, { params }),
-  pinned:  (groupId)         => api.get(`/messages/${groupId}/pinned`),
-  pin:     (messageId, data) => api.patch(`/messages/${messageId}/pin`, data ?? {}),
-  unpin:   (messageId)       => api.patch(`/messages/${messageId}/unpin`),
-  delete:  (messageId)       => api.delete(`/messages/${messageId}`),
-  edit:    (messageId, content) => api.patch(`/messages/${messageId}/edit`, { content }),
-  react:   (messageId, emoji)   => api.post(`/messages/${messageId}/reactions`, { emoji }),
+  list:         (groupId, params)    => api.get(`/messages/${groupId}`, { params }),
+  pinned:       (groupId)            => api.get(`/messages/${groupId}/pinned`),
+  pin:          (messageId, data)    => api.patch(`/messages/${messageId}/pin`, data ?? {}),
+  unpin:        (messageId)          => api.patch(`/messages/${messageId}/unpin`),
+  delete:       (messageId)          => api.delete(`/messages/${messageId}`),
+  edit:         (messageId, content) => api.patch(`/messages/${messageId}/edit`, { content }),
+  react:        (messageId, emoji)   => api.post(`/messages/${messageId}/reactions`, { emoji }),
+  replyPrivate: (data)               => api.post('/messages/reply-privately', data),
 };
 
 export const filesAPI = {

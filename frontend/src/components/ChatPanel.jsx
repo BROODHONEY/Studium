@@ -55,6 +55,9 @@ export default function ChatPanel({ group, onViewProfile }) {
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
   const [emojiPickerId, setEmojiPickerId] = useState(null);
+  // reply_to: { id, content, senderName, senderId }
+  const [replyTo, setReplyTo]             = useState(null);
+  const [privateReply, setPrivateReply]   = useState(null); // same shape, but sends as DM
 
   // Leave old room when switching groups
   useEffect(() => {
@@ -232,13 +235,30 @@ export default function ChatPanel({ group, onViewProfile }) {
     socket.emit('send_message', {
       groupId: group.id,
       content: text.trim(),
-      type: 'text'
+      type: 'text',
+      ...(replyTo ? { replyTo: replyTo.id } : {})
     });
     setText('');
-    // Stop typing indicator
+    setReplyTo(null);
     clearTimeout(typingTimeoutRef.current);
     isTypingRef.current = false;
     socket.emit('typing_stop', { groupId: group.id });
+  };
+
+  const handlePrivateReply = async () => {
+    if (!privateReply || !text.trim()) return;
+    try {
+      await messagesAPI.replyPrivate({
+        targetUserId: privateReply.senderId,
+        content: text.trim(),
+        quotedContent: privateReply.content,
+        quotedSenderName: privateReply.senderName,
+      });
+      setText('');
+      setPrivateReply(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleDeleteMessage = async (messageId) => {
@@ -329,7 +349,12 @@ export default function ChatPanel({ group, onViewProfile }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      if (privateReply) handlePrivateReply();
+      else sendMessage();
+    }
+    if (e.key === 'Escape') {
+      setReplyTo(null);
+      setPrivateReply(null);
     }
   };
 
@@ -739,6 +764,22 @@ export default function ChatPanel({ group, onViewProfile }) {
                           ? 'bg-indigo-600 text-white rounded-br-sm'
                           : 'bg-gray-800 text-gray-100 rounded-bl-sm'}
                         ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(99,102,241,0.15)]' : ''}`}>
+                        {/* Replied-to preview */}
+                        {item.replied_message && (
+                          <button
+                            onClick={() => scrollToMessage(item.replied_message.id)}
+                            className={`block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
+                              ${isOwn
+                                ? 'bg-indigo-700/50 border-indigo-300/50 text-indigo-200'
+                                : 'bg-gray-700/60 border-gray-500 text-gray-300'}`}>
+                            <span className="font-medium block truncate">
+                              {item.replied_message.users?.name || 'Unknown'}
+                            </span>
+                            <span className="opacity-70 truncate block">
+                              {item.replied_message.content?.slice(0, 80)}{item.replied_message.content?.length > 80 ? '…' : ''}
+                            </span>
+                          </button>
+                        )}
                         {item.content}
                         {item.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
                         {item.files && <FilePreview file={item.files} />}
@@ -760,6 +801,26 @@ export default function ChatPanel({ group, onViewProfile }) {
                         </div>
                       ) : (
                         <div className={`relative flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
+                          {/* Reply in group */}
+                          <button
+                            onClick={() => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); }}
+                            className="p-1 rounded text-gray-600 hover:text-green-400 transition"
+                            title="Reply">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933zM7.8 10.386c.068 0 .143.003.223.006.434.02 1.034.086 1.7.271 1.326.368 2.896 1.202 3.94 3.08a.5.5 0 0 0 .933-.305c-.464-3.71-1.886-5.662-3.46-6.66-1.245-.79-2.527-.942-3.336-.971v-.66a1.144 1.144 0 0 0-1.767-.96l-3.994 2.94a1.147 1.147 0 0 0 0 1.946l3.994 2.94a1.144 1.144 0 0 0 1.767-.96v-.667z"/>
+                            </svg>
+                          </button>
+                          {/* Reply privately — only to others' messages */}
+                          {!isOwn && (
+                            <button
+                              onClick={() => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); }}
+                              className="p-1 rounded text-gray-600 hover:text-purple-400 transition"
+                              title="Reply privately">
+                              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z"/>
+                              </svg>
+                            </button>
+                          )}
                           {/* Emoji picker trigger */}
                           <button onClick={(e) => { e.stopPropagation(); setEmojiPickerId(emojiPickerId === item.id ? null : item.id); }}
                             className="p-1 rounded text-gray-600 hover:text-yellow-400 transition"
@@ -876,6 +937,27 @@ export default function ChatPanel({ group, onViewProfile }) {
 
       {/* Input area */}
       <div className="px-4 py-3 border-t border-gray-800 flex-shrink-0">
+
+        {/* Reply / private reply banner */}
+        {(replyTo || privateReply) && (() => {
+          const r = replyTo || privateReply;
+          const isPrivate = !!privateReply;
+          return (
+            <div className={`flex items-center gap-2 mb-2 px-3 py-2 rounded-xl border text-xs
+              ${isPrivate
+                ? 'bg-purple-500/10 border-purple-500/20 text-purple-300'
+                : 'bg-gray-800 border-gray-700 text-gray-300'}`}>
+              <div className="flex-1 min-w-0">
+                <span className="font-medium">{isPrivate ? '🔒 Private reply to ' : '↩ Replying to '}</span>
+                <span className="font-semibold">{r.senderName}</span>
+                <span className="opacity-60 ml-1 truncate block">{r.content?.slice(0, 60)}{r.content?.length > 60 ? '…' : ''}</span>
+              </div>
+              <button onClick={() => { setReplyTo(null); setPrivateReply(null); }}
+                className="text-gray-500 hover:text-gray-300 transition flex-shrink-0 text-base leading-none">×</button>
+            </div>
+          );
+        })()}
+
         {canSend ? (
           <div className="flex gap-2 items-end">
             <button onClick={() => { setShowSearch(v => !v); setSearchQuery(''); }}
@@ -898,12 +980,11 @@ export default function ChatPanel({ group, onViewProfile }) {
               disabled={!connected}
             />
             <button
-              onClick={sendMessage}
-              disabled={!text.trim() || !connected}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40
-                disabled:cursor-not-allowed text-white px-5 py-2.5
-                rounded-xl text-sm font-medium transition">
-              Send
+              onClick={privateReply ? handlePrivateReply : sendMessage}
+              disabled={!text.trim() || (!connected && !privateReply)}
+              className={`disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-sm font-medium transition
+                ${privateReply ? 'bg-purple-600 hover:bg-purple-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}>
+              {privateReply ? 'Send privately' : 'Send'}
             </button>
           </div>
         ) : (
