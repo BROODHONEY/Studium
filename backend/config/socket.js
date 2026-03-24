@@ -64,7 +64,7 @@ module.exports = (io) => {
       });
     });
 
-    socket.on('send_dm', async ({ conversationId, content }) => {
+    socket.on('send_dm', async ({ conversationId, content, replyTo = null }) => {
       if (!content?.trim()) return;
 
       try {
@@ -79,18 +79,43 @@ module.exports = (io) => {
           return;
         }
 
-        const { data: message, error } = await supabase
-          .from('direct_messages')
-          .insert({
-            conversation_id: conversationId,
-            sender_id: socket.user.id,
-            content: content.trim()
-          })
-          .select(`
-            id, content, read, created_at,
-            sender:sender_id (id, name, avatar_url)
-          `)
-          .single();
+        const insertData = {
+          conversation_id: conversationId,
+          sender_id: socket.user.id,
+          content: content.trim()
+        };
+        if (replyTo) insertData.reply_to = replyTo;
+
+        let message, error;
+
+        // Try with reply_to support first
+        if (replyTo) {
+          ({ data: message, error } = await supabase
+            .from('direct_messages')
+            .insert(insertData)
+            .select(`
+              id, content, read, created_at, reply_to,
+              sender:sender_id (id, name, avatar_url),
+              replied_message:reply_to (id, content, sender:sender_id (id, name))
+            `)
+            .single());
+
+          if (error) {
+            // Fallback: reply_to column may not exist yet
+            delete insertData.reply_to;
+            ({ data: message, error } = await supabase
+              .from('direct_messages')
+              .insert(insertData)
+              .select(`id, content, read, created_at, sender:sender_id (id, name, avatar_url)`)
+              .single());
+          }
+        } else {
+          ({ data: message, error } = await supabase
+            .from('direct_messages')
+            .insert(insertData)
+            .select(`id, content, read, created_at, sender:sender_id (id, name, avatar_url)`)
+            .single());
+        }
 
         if (error) throw error;
 

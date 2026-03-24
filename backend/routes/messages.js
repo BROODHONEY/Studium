@@ -92,25 +92,47 @@ router.get('/:groupId', async (req, res) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
-    let query = supabase
+    const buildQuery = (select) => {
+      let q = supabase
         .from('messages')
-        .select(`
-            id, content, type, created_at, edited, reply_to,
-            users!sender_id (id, name, role, roll_no, avatar_url),
-            files!file_id (id, filename, file_url, file_type, size_bytes),
-            message_reactions (emoji, user_id),
-            replied_message:reply_to (id, content, users!sender_id (id, name))
-        `)
+        .select(select)
         .eq('group_id', groupId)
         .order('created_at', { ascending: false })
         .limit(limit);
+      if (before) q = q.lt('created_at', before);
+      return q;
+    };
 
-    // If a cursor is provided, only fetch messages before that timestamp
-    if (before) {
-      query = query.lt('created_at', before);
+    // Try full schema first, fall back progressively
+    let data, error;
+
+    ({ data, error } = await buildQuery(`
+      id, content, type, created_at, edited, reply_to,
+      users!sender_id (id, name, role, roll_no, avatar_url),
+      files!file_id (id, filename, file_url, file_type, size_bytes),
+      message_reactions (emoji, user_id),
+      replied_message:reply_to (id, content, users!sender_id (id, name))
+    `));
+
+    if (error) {
+      // Fallback: without reply columns
+      ({ data, error } = await buildQuery(`
+        id, content, type, created_at, edited,
+        users!sender_id (id, name, role, roll_no, avatar_url),
+        files!file_id (id, filename, file_url, file_type, size_bytes),
+        message_reactions (emoji, user_id)
+      `));
     }
 
-    const { data, error } = await query;
+    if (error) {
+      // Fallback: without reactions/edited
+      ({ data, error } = await buildQuery(`
+        id, content, type, created_at,
+        users!sender_id (id, name, role, roll_no, avatar_url),
+        files!file_id (id, filename, file_url, file_type, size_bytes)
+      `));
+    }
+
     if (error) throw error;
 
     // Reverse so oldest is first (chat order)

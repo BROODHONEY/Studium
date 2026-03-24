@@ -141,18 +141,32 @@ router.get('/conversations/:id/messages', async (req, res) => {
 
     let data, error;
 
-    // Try with reactions + edited (requires dm_reactions table and edited column)
+    // Try with reactions + edited + reply_to
     ({ data, error } = await supabase
       .from('direct_messages')
       .select(`
-        id, content, read, created_at, edited,
+        id, content, read, created_at, edited, reply_to,
         sender:sender_id (id, name, avatar_url),
-        dm_reactions (emoji, user_id)
+        dm_reactions (emoji, user_id),
+        replied_message:reply_to (id, content, sender:sender_id (id, name))
       `)
       .eq('conversation_id', req.params.id)
       .order('created_at', { ascending: true }));
 
-    // Fallback for schemas without dm_reactions / edited column
+    // Fallback: without reply columns
+    if (error) {
+      ({ data, error } = await supabase
+        .from('direct_messages')
+        .select(`
+          id, content, read, created_at, edited,
+          sender:sender_id (id, name, avatar_url),
+          dm_reactions (emoji, user_id)
+        `)
+        .eq('conversation_id', req.params.id)
+        .order('created_at', { ascending: true }));
+    }
+
+    // Fallback: without reactions/edited
     if (error) {
       ({ data, error } = await supabase
         .from('direct_messages')

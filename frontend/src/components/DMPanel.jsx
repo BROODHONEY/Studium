@@ -24,13 +24,15 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const [loading, setLoading]       = useState(true);
   const [isTyping, setIsTyping]     = useState(false);
 
-  // Edit & react state
+  // Edit, react & reply state
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
   const [emojiPickerId, setEmojiPickerId] = useState(null);
+  const [replyTo, setReplyTo]             = useState(null); // { id, content, senderName }
 
-  const bottomRef   = useRef(null);
-  const typingTimer = useRef(null);
+  const bottomRef    = useRef(null);
+  const typingTimer  = useRef(null);
+  const messageRefs  = useRef({});
 
   const other = conversation?.other;
 
@@ -112,12 +114,14 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
       content: text.trim(),
       created_at: new Date().toISOString(),
       read: false,
-      sender: { id: user.id, name: user.name, avatar_url: user.avatar_url }
+      sender: { id: user.id, name: user.name, avatar_url: user.avatar_url },
+      replied_message: replyTo ? { id: replyTo.id, content: replyTo.content, sender: { name: replyTo.senderName } } : null
     };
     setMessages(prev => [...prev, optimistic]);
-    setText('');
     socket.emit('dm_typing_stop', { conversationId: conversation.id, otherId: other?.id });
-    socket.emit('send_dm', { conversationId: conversation.id, content: optimistic.content });
+    socket.emit('send_dm', { conversationId: conversation.id, content: optimistic.content, replyTo: replyTo?.id || null });
+    setText('');
+    setReplyTo(null);
   };
 
   const handleEditSave = async (msgId) => {
@@ -218,6 +222,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
 
               return (
                 <div key={msg.id}
+                  ref={el => { if (el) messageRefs.current[msg.id] = el; }}
                   className={`flex gap-2.5 items-end group/msg ${isOwn ? 'flex-row-reverse' : ''}`}>
 
                   {/* Other avatar */}
@@ -261,6 +266,21 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                       ) : (
                         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
                           ${isOwn ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
+                          {msg.replied_message && (
+                            <button
+                              onClick={() => {
+                                const el = messageRefs.current[msg.replied_message.id];
+                                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              }}
+                              className={`block w-full text-left mb-2 pl-2 border-l-2 ${isOwn ? 'border-white/40' : 'border-indigo-400'} opacity-70 hover:opacity-100 transition`}>
+                              <span className={`text-xs font-semibold block ${isOwn ? 'text-white/80' : 'text-indigo-300'}`}>
+                                {msg.replied_message.sender?.name}
+                              </span>
+                              <span className="text-xs truncate block max-w-[200px]">
+                                {msg.replied_message.content}
+                              </span>
+                            </button>
+                          )}
                           {msg.content}
                           {msg.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
                         </div>
@@ -269,6 +289,16 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                       {/* Hover actions */}
                       {!isTemp && editingId !== msg.id && (
                         <div className={`relative flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
+                          {/* Reply */}
+                          <button
+                            onClick={() => setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.name })}
+                            className="p-1 rounded text-gray-600 hover:text-green-400 transition"
+                            title="Reply">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933z"/>
+                            </svg>
+                          </button>
+
                           {/* React */}
                           <button
                             onClick={(e) => { e.stopPropagation(); setEmojiPickerId(emojiPickerId === msg.id ? null : msg.id); }}
@@ -362,6 +392,20 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
 
       {/* Input */}
       <div className="px-4 py-3 border-t border-gray-800 flex-shrink-0">
+        {/* Reply banner */}
+        {replyTo && (
+          <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-1.5 mb-2 border-l-2 border-indigo-500">
+            <div className="min-w-0">
+              <span className="text-xs text-indigo-400 font-medium">Replying to {replyTo.senderName}</span>
+              <p className="text-xs text-gray-400 truncate">{replyTo.content}</p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="text-gray-500 hover:text-gray-300 ml-2 flex-shrink-0">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+              </svg>
+            </button>
+          </div>
+        )}
         <div className="flex gap-3 items-end">
           <textarea
             value={text}
