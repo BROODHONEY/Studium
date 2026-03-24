@@ -6,6 +6,6 @@ export default function OnlineDot({ userId, className = '' }) {
 
   return (
     <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0
-      ${isOnline ? 'bg-green-400' : 'bg-gray-600'} ${className}`}/>
+      ${isOnline ? 'bg-neon-green' : 'dark:bg-surface-4 bg-gray-300'} ${className}`}/>
   );
 }

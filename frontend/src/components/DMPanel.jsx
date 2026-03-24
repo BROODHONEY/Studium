@@ -172,28 +172,28 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
     new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   if (!conversation) return (
-    <div className="flex-1 flex items-center justify-center bg-gray-950">
+    <div className="flex-1 flex items-center justify-center dark:bg-surface bg-gray-50">
       <div className="text-center">
-        <p className="text-gray-600 text-sm">Select a conversation</p>
-        <p className="text-gray-700 text-xs mt-1">or search for someone to message</p>
+        <p className="dark:text-gray-600 text-gray-400 text-sm">Select a conversation</p>
+        <p className="dark:text-gray-700 text-gray-300 text-xs mt-1">or search for someone to message</p>
       </div>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-full bg-gray-950">
+    <div className="flex flex-col h-full dark:bg-surface bg-gray-50">
 
       {/* Header */}
-      <div className="px-5 py-3 border-b border-gray-800 flex items-center gap-3 flex-shrink-0">
+      <div className="px-5 py-3 border-b dark:border-brand-900/40 border-gray-200 flex items-center gap-3 flex-shrink-0 dark:bg-surface-1 bg-white">
         <button onClick={() => onViewProfile?.(other?.id)} className="relative flex-shrink-0">
-          <div className={`w-8 h-8 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white hover:ring-2 hover:ring-white/20 transition`}>
+          <div className={`w-8 h-8 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white dark:hover:ring-2 dark:hover:ring-white/20 hover:ring-2 hover:ring-gray-300 transition`}>
             {initials(other?.name)}
           </div>
-          <OnlineDot userId={other?.id} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-gray-950"/>
+          <OnlineDot userId={other?.id} className="absolute -bottom-0.5 -right-0.5 ring-2 dark:ring-surface ring-white"/>
         </button>
         <button onClick={() => onViewProfile?.(other?.id)} className="text-left">
-          <p className="text-sm font-semibold text-white hover:text-indigo-300 transition">{other?.name}</p>
-          <p className="text-xs text-gray-500 capitalize">{other?.role}</p>
+          <p className="text-sm font-semibold dark:text-white text-gray-900 dark:hover:text-brand-300 hover:text-brand-600 transition">{other?.name}</p>
+          <p className="text-xs dark:text-gray-500 text-gray-500 capitalize">{other?.role}</p>
         </button>
       </div>
 
@@ -203,8 +203,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
           <div className="space-y-4">
             {[1,2,3].map(i => (
               <div key={i} className="flex gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-800 animate-pulse"/>
-                <div className="h-10 bg-gray-800 rounded-xl animate-pulse w-40"/>
+                <div className="w-7 h-7 rounded-full dark:bg-surface-3 bg-gray-200 animate-pulse"/>
+                <div className="h-10 dark:bg-surface-3 bg-gray-200 rounded-xl animate-pulse w-40"/>
               </div>
             ))}
           </div>
@@ -213,8 +213,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
             <div className={`w-14 h-14 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xl font-semibold text-white mb-3`}>
               {initials(other?.name)}
             </div>
-            <p className="text-white text-sm font-medium">{other?.name}</p>
-            <p className="text-gray-600 text-xs mt-1">Start of your conversation</p>
+            <p className="dark:text-white text-gray-900 text-sm font-medium">{other?.name}</p>
+            <p className="dark:text-gray-600 text-gray-400 text-xs mt-1">Start of your conversation</p>
           </div>
         ) : (
           <>
@@ -244,11 +244,11 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
               const els = [];
               if (showSep) els.push(
                 <div key={`sep-${msg.id}`} className="flex items-center gap-3 py-2">
-                  <div className="flex-1 h-px bg-gray-800"/>
-                  <span className="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-700/40 select-none flex-shrink-0">
+                  <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
+                  <span className="text-xs dark:text-gray-500 text-gray-400 dark:bg-surface-1 bg-white px-3 py-1 rounded-full dark:border-surface-3/40 border-gray-200 border select-none flex-shrink-0">
                     {label}
                   </span>
-                  <div className="flex-1 h-px bg-gray-800"/>
+                  <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
                 </div>
               );
               els.push(
@@ -281,30 +281,32 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                               if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
                             }}
                             rows={2}
-                            className="bg-gray-700 border border-indigo-500 rounded-xl px-3 py-2 text-sm text-white resize-none focus:outline-none"
+                            className="dark:bg-surface-3 bg-gray-100 border border-brand-500 rounded-xl px-3 py-2 text-sm dark:text-white text-gray-900 resize-none focus:outline-none"
                           />
                           <div className="flex gap-1.5">
                             <button onClick={() => handleEditSave(msg.id)}
-                              className="text-xs px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+                              className="text-xs px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition">
                               Save
                             </button>
                             <button onClick={() => { setEditingId(null); setEditText(''); }}
-                              className="text-xs px-3 py-1 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
+                              className="text-xs px-3 py-1 rounded-lg dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 transition">
                               Cancel
                             </button>
                           </div>
                         </div>
                       ) : (
                         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
-                          ${isOwn ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
+                          ${isOwn
+                            ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white rounded-br-sm'
+                            : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-100 text-gray-900 rounded-bl-sm'}`}>
                           {msg.replied_message && (
                             <button
                               onClick={() => {
                                 const el = messageRefs.current[msg.replied_message.id];
                                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                               }}
-                              className={`block w-full text-left mb-2 pl-2 border-l-2 ${isOwn ? 'border-white/40' : 'border-indigo-400'} opacity-70 hover:opacity-100 transition`}>
-                              <span className={`text-xs font-semibold block ${isOwn ? 'text-white/80' : 'text-indigo-300'}`}>
+                              className={`block w-full text-left mb-2 pl-2 border-l-2 ${isOwn ? 'border-white/40' : 'border-brand-400'} opacity-70 hover:opacity-100 transition`}>
+                              <span className={`text-xs font-semibold block ${isOwn ? 'text-white/80' : 'text-brand-300'}`}>
                                 {msg.replied_message.sender?.name}
                               </span>
                               <span className="text-xs truncate block max-w-[200px]">
@@ -322,7 +324,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                         <div className="relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0">
                           <button
                             onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
-                            className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition"
+                            className="p-1.5 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-200 transition"
                             title="Message actions">
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
@@ -351,8 +353,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                             onClick={() => handleReact(msg.id, emoji)}
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
                               ${userIds.includes(user?.id)
-                                ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}>
+                                ? 'bg-brand-500/20 border-brand-500/40 text-brand-300'
+                                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
                             <span>{emoji}</span>
                             <span>{userIds.length}</span>
                           </button>
@@ -361,7 +363,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                     )}
 
                     {/* Timestamp */}
-                    <span className="text-xs text-gray-600 mt-1 px-1">
+                    <span className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
                       {formatTime(msg.created_at)}
                       {isOwn && msg.read && <span className="ml-1">· seen</span>}
                     </span>
@@ -384,10 +386,10 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                 <div className={`w-7 h-7 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0`}>
                   {initials(other?.name)}
                 </div>
-                <div className="bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
-                  <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay:'0ms'}}/>
-                  <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay:'150ms'}}/>
-                  <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay:'300ms'}}/>
+                <div className="dark:bg-surface-3 bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
+                  <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'0ms'}}/>
+                  <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}}/>
+                  <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}}/>
                 </div>
               </div>
             )}
@@ -397,15 +399,15 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-gray-800 flex-shrink-0">
+      <div className="px-4 py-3 border-t dark:border-brand-900/40 border-gray-200 flex-shrink-0">
         {/* Reply banner */}
         {replyTo && (
-          <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-1.5 mb-2 border-l-2 border-indigo-500">
+          <div className="flex items-center justify-between dark:bg-surface-3 bg-gray-100 rounded-lg px-3 py-1.5 mb-2 border-l-2 border-brand-500">
             <div className="min-w-0">
-              <span className="text-xs text-indigo-400 font-medium">Replying to {replyTo.senderName}</span>
-              <p className="text-xs text-gray-400 truncate">{replyTo.content}</p>
+              <span className="text-xs text-brand-400 font-medium">Replying to {replyTo.senderName}</span>
+              <p className="text-xs dark:text-gray-400 text-gray-500 truncate">{replyTo.content}</p>
             </div>
-            <button onClick={() => setReplyTo(null)} className="text-gray-500 hover:text-gray-300 ml-2 flex-shrink-0">
+            <button onClick={() => setReplyTo(null)} className="dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 ml-2 flex-shrink-0">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
               </svg>
@@ -419,10 +421,10 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
             onKeyDown={handleKeyDown}
             rows={1}
             placeholder={`Message ${other?.name}...`}
-            className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none transition"
+            className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5 text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none transition"
           />
           <button onClick={sendMessage} disabled={!text.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition">
+            className="bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition">
             Send
           </button>
         </div>

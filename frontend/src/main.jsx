@@ -5,18 +5,21 @@ import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './context/ToastContext';
 import { OnlineProvider } from './context/OnlineContext';
+import { ThemeProvider } from './context/ThemeContext';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ToastProvider>
-      <AuthProvider>
-        <SocketProvider>
-          <OnlineProvider>
-            <App />
-          </OnlineProvider>
-        </SocketProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <OnlineProvider>
+              <App />
+            </OnlineProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

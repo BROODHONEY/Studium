@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
 import GroupList        from '../components/GroupList';
@@ -15,26 +16,35 @@ import KickNotification from '../components/KickNotification';
 import ProfileModal     from '../components/ProfileModal';
 import { NotificationProvider } from '../context/NotificationContext';
 
+function NavIcon({ icon, label, active, onClick }) {
+  return (
+    <button onClick={onClick}
+      className={`flex flex-col items-center gap-0.5 px-4 py-2 flex-1 transition relative
+        ${active ? 'text-brand-400' : 'dark:text-gray-500 text-gray-400 hover:text-brand-400'}`}>
+      <span className="text-xl leading-none">{icon}</span>
+      <span className="text-[10px] font-medium">{label}</span>
+      {active && (
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-brand-400"/>
+      )}
+    </button>
+  );
+}
+
 export default function DashboardPage() {
   const { logout, user } = useAuth();
+  const { dark, toggle } = useTheme();
   const { socket } = useSocket();
 
-  // Sidebar tab
-  const [sidebarTab, setSidebarTab] = useState('groups');
-
-  // Groups state
+  const [sidebarTab, setSidebarTab]       = useState('groups');
   const [groups, setGroups]               = useState([]);
   const [activeGroup, setActiveGroup]     = useState(null);
   const [activeTab, setActiveTab]         = useState('Overview');
   const [showModal, setShowModal]         = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [kickNotice, setKickNotice]       = useState(null);
-
-  // DMs state
-  const [activeConvo, setActiveConvo] = useState(null);
-
-  // Profile modal
+  const [activeConvo, setActiveConvo]     = useState(null);
   const [profileUserId, setProfileUserId] = useState(null);
+  const [mobileView, setMobileView]       = useState('sidebar');
 
   useEffect(() => {
     groupsAPI.list()
@@ -44,52 +54,37 @@ export default function DashboardPage() {
   }, []);
 
   const handleSelectGroup = (group) => {
-    setActiveGroup(group);
-    setActiveConvo(null);
-    setActiveTab('Overview');
+    setActiveGroup(group); setActiveConvo(null);
+    setActiveTab('Overview'); setMobileView('main');
   };
 
   const handleSelectConvo = (convo) => {
-    setActiveConvo(convo);
-    setActiveGroup(null);
+    setActiveConvo(convo); setActiveGroup(null); setMobileView('main');
   };
 
   const handleGroupAdded = async (group) => {
-    // Fetch full group details (includes my_role, admins_only, etc.)
     let fullGroup = group;
     try {
       const res = await groupsAPI.get(group.id);
       fullGroup = { ...res.data, my_role: res.data.my_role ?? group.my_role };
-    } catch {
-      // fall back to the partial object if fetch fails
-    }
-    setGroups(prev => {
-      if (prev.find(g => g.id === fullGroup.id)) return prev;
-      return [fullGroup, ...prev];
-    });
-    setActiveGroup(fullGroup);
-    setActiveConvo(null);
-    setActiveTab('Overview');
-    setSidebarTab('groups');
+    } catch { /* fallback */ }
+    setGroups(prev => prev.find(g => g.id === fullGroup.id) ? prev : [fullGroup, ...prev]);
+    setActiveGroup(fullGroup); setActiveConvo(null);
+    setActiveTab('Overview'); setSidebarTab('groups'); setMobileView('main');
   };
 
   const handleLeft = (groupId) => {
     setGroups(prev => prev.filter(g => g.id !== groupId));
     setActiveGroup(prev => prev?.id === groupId ? null : prev);
+    setMobileView('sidebar');
   };
 
   const handleKicked = (groupId, groupName) => {
     setGroups(prev => prev.filter(g => g.id !== groupId));
     setActiveGroup(prev => prev?.id === groupId ? null : prev);
-    setKickNotice({ groupName });
+    setKickNotice({ groupName }); setMobileView('sidebar');
   };
 
-  const handleNewDMMessage = () => { //conversationId, message
-    // If the active convo is this one, unread stays 0
-    // Otherwise the DMList handles its own unread count internally
-  };
-
-  // Stable ref so the socket listener never captures stale state
   const handleKickedRef = useRef(handleKicked);
   useEffect(() => { handleKickedRef.current = handleKicked; });
 
@@ -104,170 +99,171 @@ export default function DashboardPage() {
 
   const showGroup = activeGroup && !activeConvo;
   const showDM    = activeConvo && !activeGroup;
+  const initials  = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
 
   return (
     <NotificationProvider activeGroupId={activeGroup?.id}>
-    <div className="h-screen flex flex-col bg-gray-950">
+    <div className="h-screen flex flex-col dark:bg-surface bg-gray-50 transition-colors duration-300">
 
-      {/* Top nav */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 flex-shrink-0">
-        <span className="text-sm font-semibold text-white">Studi+</span>
+      {/* Top bar */}
+      <header className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 border-b
+        dark:bg-surface-1 dark:border-brand-900/40 bg-white border-gray-200 shadow-sm">
         <div className="flex items-center gap-3">
+          {mobileView === 'main' && (
+            <button onClick={() => setMobileView('sidebar')}
+              className="md:hidden p-1.5 rounded-lg dark:text-gray-400 text-gray-500 transition">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+            </button>
+          )}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">S</span>
+            </div>
+            <span className="text-sm font-bold dark:text-white text-gray-900">Studi+</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={toggle}
+            className="p-1.5 rounded-lg border transition text-sm
+              dark:bg-surface-2 dark:border-brand-900/40 dark:text-gray-400 dark:hover:text-brand-300
+              bg-gray-100 border-gray-200 text-gray-500 hover:text-brand-600">
+            {dark ? '☀️' : '🌙'}
+          </button>
           <button onClick={() => setProfileUserId(user?.id)}
-            className="text-xs text-gray-400 hover:text-white transition">
-            {user?.name}
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg border transition
+              dark:bg-surface-2 dark:border-brand-900/40 dark:hover:border-brand-700/50
+              bg-gray-100 border-gray-200 hover:border-brand-300">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-brand-700
+              flex items-center justify-center text-white text-xs font-semibold">
+              {initials(user?.name)}
+            </div>
+            <span className="text-xs dark:text-gray-300 text-gray-700 hidden sm:block max-w-[100px] truncate">
+              {user?.name}
+            </span>
           </button>
           <button onClick={logout}
-            className="text-xs text-gray-600 hover:text-red-400 transition">
-            Sign out
+            className="text-xs px-2.5 py-1.5 rounded-lg border transition
+              dark:border-red-900/40 dark:text-red-400/70 dark:hover:text-red-400
+              border-red-200 text-red-400 hover:text-red-600">
+            Out
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Body */}
       <div className="flex flex-1 min-h-0">
 
         {/* Sidebar */}
-        <div className="w-64 flex-shrink-0 min-h-0 h-full flex flex-col border-r border-gray-800">
+        <aside className={`flex-shrink-0 flex flex-col border-r
+          dark:bg-surface-1 dark:border-brand-900/40 bg-white border-gray-200
+          w-full md:w-72
+          ${mobileView === 'sidebar' ? 'flex' : 'hidden md:flex'}`}>
 
-          {/* Sidebar tab switcher */}
-          <div className="flex p-2 gap-1 border-b border-gray-800 flex-shrink-0">
-            <button onClick={() => setSidebarTab('groups')}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition
-                ${sidebarTab === 'groups'
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-500 hover:text-gray-300'}`}>
-              Groups
-            </button>
-            <button onClick={() => setSidebarTab('dms')}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition
-                ${sidebarTab === 'dms'
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-500 hover:text-gray-300'}`}>
-              Messages
-            </button>
+          <div className="flex p-2 gap-1.5 border-b flex-shrink-0
+            dark:border-brand-900/40 border-gray-200">
+            {[['groups','Groups'],['dms','Messages']].map(([key, label]) => (
+              <button key={key} onClick={() => setSidebarTab(key)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition
+                  ${sidebarTab === key
+                    ? 'bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-neon-purple'
+                    : 'dark:text-gray-500 dark:hover:bg-surface-3 text-gray-500 hover:bg-gray-100'}`}>
+                {label}
+              </button>
+            ))}
           </div>
 
-          {/* Sidebar content */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            {sidebarTab === 'groups' ? (
-              <GroupList
-                groups={groups}
-                activeGroupId={activeGroup?.id}
-                onSelect={handleSelectGroup}
-                onOpenModal={() => setShowModal(true)}
-                loading={loadingGroups}
-              />
-            ) : (
-              <DMList
-                activeConvoId={activeConvo?.id}
-                onSelect={handleSelectConvo}
-              />
-            )}
+            {sidebarTab === 'groups'
+              ? <GroupList groups={groups} activeGroupId={activeGroup?.id}
+                  onSelect={handleSelectGroup} onOpenModal={() => setShowModal(true)}
+                  loading={loadingGroups} />
+              : <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
+            }
           </div>
-        </div>
+        </aside>
 
-        {/* Main content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Main */}
+        <main className={`flex-1 flex flex-col min-w-0
+          ${mobileView === 'main' ? 'flex' : 'hidden md:flex'}`}>
 
-          {/* Group view — preserves all your existing tabs */}
           {showGroup && (
             <>
-              <ChatHeader
-                group={activeGroup}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-              />
-              {activeTab === 'Overview' && (
-                <GroupOverview group={activeGroup} />
-              )}
+              <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
+              {activeTab === 'Overview' && <GroupOverview group={activeGroup} />}
               {activeTab === 'Chat' && (
                 <div className="flex-1 min-h-0">
-                  <ChatPanel group={activeGroup} onViewProfile={(userId) => setProfileUserId(userId)} />
+                  <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} />
                 </div>
               )}
-              {activeTab === 'Files' && (
-                <FilesPanel group={activeGroup} />
-              )}
+              {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
               {activeTab === 'Members' && (
                 <div className="flex-1 flex flex-col min-h-0">
-                  <MembersPanel
-                    group={activeGroup}
-                    onGroupUpdate={(updated) => {
-                      setActiveGroup(updated);
-                      setGroups(prev => prev.map(g => g.id === updated.id ? updated : g));
-                    }}
-                    onLeft={handleLeft}
-                    onGroupDeleted={handleLeft}
-                    onViewProfile={(userId) => setProfileUserId(userId)}
-                  />
+                  <MembersPanel group={activeGroup}
+                    onGroupUpdate={(u) => { setActiveGroup(u); setGroups(prev => prev.map(g => g.id === u.id ? u : g)); }}
+                    onLeft={handleLeft} onGroupDeleted={handleLeft}
+                    onViewProfile={setProfileUserId} />
                 </div>
               )}
             </>
           )}
 
-          {/* DM view */}
           {showDM && (
-            <DMPanel
-              conversation={activeConvo}
-              onNewMessage={handleNewDMMessage}
-              onViewProfile={(userId) => setProfileUserId(userId)}
-            />
+            <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId} />
           )}
 
-          {/* Empty state */}
           {!showGroup && !showDM && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center space-y-3">
-                <div className="w-16 h-16 rounded-2xl bg-gray-900 border border-gray-800
-                  flex items-center justify-center mx-auto">
-                  {sidebarTab === 'groups' ? (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                      stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                    </svg>
-                  ) : (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                      stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                      <path d="M8 10h8M8 14h5"/>
-                    </svg>
-                  )}
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="text-center space-y-4 max-w-xs">
+                <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center
+                  bg-gradient-to-br from-brand-900/60 to-brand-800/30 border border-brand-700/30">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+                    className="text-brand-400">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                  </svg>
                 </div>
-                <p className="text-gray-500 text-sm">
+                <p className="dark:text-gray-300 text-gray-700 font-medium">
+                  {sidebarTab === 'groups' ? 'Select a group' : 'Select a conversation'}
+                </p>
+                <p className="dark:text-gray-600 text-gray-400 text-sm">
                   {sidebarTab === 'groups'
-                    ? 'Select a group to get started'
-                    : 'Search for someone to message'}
+                    ? 'Choose a group from the sidebar to start chatting'
+                    : 'Search for someone by email to message them'}
                 </p>
                 {sidebarTab === 'groups' && groups.length === 0 && !loadingGroups && (
                   <button onClick={() => setShowModal(true)}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm transition">
+                    className="text-brand-400 hover:text-brand-300 text-sm transition font-medium">
                     Create or join your first group →
-                  </button>
-                )}
-                {sidebarTab === 'dms' && (
-                  <button onClick={() => setSidebarTab('dms')}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm transition">
-                    Search by email in the sidebar →
                   </button>
                 )}
               </div>
             </div>
           )}
-        </div>
+        </main>
       </div>
 
-      {showModal && (
-        <GroupModal
-          onClose={() => setShowModal(false)}
-          onSuccess={handleGroupAdded}
-        />
-      )}
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden flex-shrink-0 border-t
+        dark:bg-surface-1 dark:border-brand-900/40 bg-white border-gray-200">
+        <div className="flex pb-safe">
+          <NavIcon icon="👥" label="Groups"
+            active={sidebarTab === 'groups' && mobileView === 'sidebar'}
+            onClick={() => { setSidebarTab('groups'); setMobileView('sidebar'); }} />
+          <NavIcon icon="💬" label="Messages"
+            active={sidebarTab === 'dms' && mobileView === 'sidebar'}
+            onClick={() => { setSidebarTab('dms'); setMobileView('sidebar'); }} />
+          {(showGroup || showDM) && (
+            <NavIcon icon="📖" label="Open" active={mobileView === 'main'}
+              onClick={() => setMobileView('main')} />
+          )}
+          <NavIcon icon="➕" label="New" active={false} onClick={() => setShowModal(true)} />
+        </div>
+      </nav>
 
-      {profileUserId && (
-        <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
-      )}
-
+      {showModal && <GroupModal onClose={() => setShowModal(false)} onSuccess={handleGroupAdded} />}
+      {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
       <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
     </div>
     </NotificationProvider>

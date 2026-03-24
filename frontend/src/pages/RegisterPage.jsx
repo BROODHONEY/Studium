@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const DEPARTMENTS = [
   'B. Tech Artificial Intelligence and Machine Learning',
@@ -10,8 +11,9 @@ const DEPARTMENTS = [
 ];
 
 export default function RegisterPage() {
-  const { login } = useAuth();
-  const navigate  = useNavigate();
+  const { login }   = useAuth();
+  const { dark, toggle } = useTheme();
+  const navigate    = useNavigate();
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
@@ -20,32 +22,19 @@ export default function RegisterPage() {
   });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
-
   const isStudent = form.role === 'student';
 
-  const handleChange = e =>
-    setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+  const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
-
-    // Client-side validation for students
-    if (isStudent && !form.roll_no.trim()) {
-      setError('Roll number is required');
-      return;
-    }
-    if (isStudent && !form.department) {
-      setError('Please select your department');
-      return;
-    }
-
+    if (isStudent && !form.roll_no.trim()) return setError('Roll number is required');
+    if (isStudent && !form.department)     return setError('Please select your department');
     setLoading(true);
     try {
       const payload = {
-        name:     form.name,
-        password: form.password,
-        role:     form.role,
+        name: form.name, password: form.password, role: form.role,
         ...(form.email ? { email: form.email } : {}),
         ...(form.phone ? { phone: form.phone } : {}),
         ...(isStudent  ? { roll_no: form.roll_no, department: form.department } : {})
@@ -61,106 +50,98 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-8">
-      <div className="auth-card">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-white">Studi+</h1>
-          <p className="text-gray-400 text-sm mt-1">Create your account to get started</p>
+    <div className="min-h-screen min-h-dvh flex items-center justify-center px-4 py-8
+      dark:bg-surface bg-gray-50 transition-colors duration-300">
+
+      <button onClick={toggle}
+        className="fixed top-4 right-4 p-2 rounded-xl border transition
+          dark:bg-surface-2 dark:border-brand-900/50 dark:text-gray-400 dark:hover:text-brand-300
+          bg-white border-gray-200 text-gray-500 hover:text-brand-600 shadow-sm">
+        {dark ? '☀️' : '🌙'}
+      </button>
+
+      <div className="auth-card w-full">
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4
+            bg-gradient-to-br from-brand-600 to-brand-800 shadow-neon-purple">
+            <span className="text-white text-xl font-bold">S</span>
+          </div>
+          <h1 className="text-2xl font-bold dark:text-white text-gray-900">Studi+</h1>
+          <p className="dark:text-gray-400 text-gray-500 text-sm mt-1">Create your account to get started</p>
         </div>
 
-        {error && <div className="error-box mb-6">{error}</div>}
+        {error && <div className="error-box mb-5">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* Role selector — first so fields below react immediately */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Role */}
           <div>
             <label className="form-label">I am a</label>
             <div className="grid grid-cols-2 gap-3">
               {['student', 'teacher'].map(r => (
                 <button key={r} type="button"
                   onClick={() => setForm(p => ({ ...p, role: r }))}
-                  className={`py-2.5 rounded-lg text-sm font-medium border transition capitalize
+                  className={`py-2.5 rounded-xl text-sm font-medium border transition capitalize
                     ${form.role === r
-                      ? 'bg-indigo-600 border-indigo-500 text-white'
-                      : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}>
+                      ? 'bg-gradient-to-r from-brand-600 to-brand-500 border-brand-500 text-white shadow-neon-purple'
+                      : 'dark:bg-surface-3 dark:border-brand-900/40 dark:text-gray-400 dark:hover:border-brand-700 bg-gray-100 border-gray-300 text-gray-600 hover:border-brand-400'}`}>
                   {r}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Full name */}
           <div>
             <label className="form-label">Full name</label>
             <input className="form-input" type="text" name="name"
-              value={form.name} onChange={handleChange}
-              placeholder="Ravi Kumar" required />
+              value={form.name} onChange={handleChange} placeholder="Ravi Kumar" required />
           </div>
 
-          {/* Student-only fields */}
           {isStudent && (
             <>
               <div>
-                <label className="form-label">
-                  Roll number
-                  <span className="ml-1 text-red-400">*</span>
-                </label>
+                <label className="form-label">Roll number <span className="text-neon-pink">*</span></label>
                 <input className="form-input" type="text" name="roll_no"
-                  value={form.roll_no} onChange={handleChange}
-                  placeholder="21BD1A0512" required />
+                  value={form.roll_no} onChange={handleChange} placeholder="21BD1A0512" required />
               </div>
-
               <div>
-                <label className="form-label">
-                  Department
-                  <span className="ml-1 text-red-400">*</span>
-                </label>
+                <label className="form-label">Department <span className="text-neon-pink">*</span></label>
                 <select className="form-input" name="department"
                   value={form.department} onChange={handleChange} required>
                   <option value="" disabled>Select your department</option>
-                  {DEPARTMENTS.map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </>
           )}
 
-          {/* Email */}
           <div>
             <label className="form-label">Email</label>
             <input className="form-input" type="email" name="email"
-              value={form.email} onChange={handleChange}
-              placeholder="you@example.com" />
+              value={form.email} onChange={handleChange} placeholder="you@example.com" />
           </div>
 
-          {/* Phone */}
           <div>
             <label className="form-label">
-              Phone
-              <span className="text-gray-600 ml-1">(optional if email given)</span>
+              Phone <span className="dark:text-gray-600 text-gray-400 text-xs">(optional if email given)</span>
             </label>
             <input className="form-input" type="tel" name="phone"
-              value={form.phone} onChange={handleChange}
-              placeholder="+91 98765 43210" />
+              value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" />
           </div>
 
-          {/* Password */}
           <div>
             <label className="form-label">Password</label>
             <input className="form-input" type="password" name="password"
-              value={form.password} onChange={handleChange}
-              placeholder="••••••••" required />
+              value={form.password} onChange={handleChange} placeholder="••••••••" required />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? 'Creating account...' : 'Create account'}
+          <button type="submit" disabled={loading} className="btn-primary mt-2">
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center dark:text-gray-500 text-gray-500 text-sm mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-indigo-400 hover:text-indigo-300 transition">
+          <Link to="/login" className="text-brand-400 hover:text-brand-300 transition font-medium">
             Sign in
           </Link>
         </p>

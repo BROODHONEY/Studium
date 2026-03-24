@@ -263,7 +263,6 @@ export default function ChatPanel({ group, onViewProfile }) {
   };
 
   const handleDeleteMessage = async (messageId) => {
-    setConfirmDeleteId(null);
     setMessages(prev => prev.filter(m => m.id !== messageId));
     try {
       await messagesAPI.delete(messageId);
@@ -387,8 +386,8 @@ export default function ChatPanel({ group, onViewProfile }) {
     avatarColors[(name?.charCodeAt(0) || 0) % avatarColors.length];
 
   if (!group) return (
-    <div className="flex-1 flex items-center justify-center bg-gray-950">
-      <p className="text-gray-600 text-sm">Select a group to start chatting</p>
+    <div className="flex-1 flex items-center justify-center dark:bg-surface bg-gray-50">
+      <p className="dark:text-gray-600 text-gray-400 text-sm">Select a group to start chatting</p>
     </div>
   );
 
@@ -407,14 +406,14 @@ export default function ChatPanel({ group, onViewProfile }) {
       return (
         <a href={file.file_url} target="_blank" rel="noreferrer" className="block mt-1.5">
           <img src={file.file_url} alt={file.filename}
-            className="max-w-xs rounded-xl border border-gray-700 hover:opacity-90 transition cursor-pointer"
+            className="max-w-xs rounded-xl border dark:border-surface-3 border-gray-200 hover:opacity-90 transition cursor-pointer"
             style={{ maxHeight: 200, objectFit: 'cover' }}/>
         </a>
       );
     }
     return (
       <a href={file.file_url} target="_blank" rel="noreferrer"
-        className="mt-1.5 flex items-center gap-2.5 px-3 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-xl hover:bg-gray-700 transition max-w-xs">
+        className="mt-1.5 flex items-center gap-2.5 px-3 py-2.5 dark:bg-surface-4/50 bg-gray-200/50 dark:border-surface-4/50 border-gray-300/50 border rounded-xl dark:hover:bg-surface-4 hover:bg-gray-200 transition max-w-xs">
         <span className="text-xl flex-shrink-0">{isPdf ? '📄' : '📎'}</span>
         <div className="min-w-0">
           <p className="text-xs text-white font-medium truncate">{file.filename}</p>
@@ -429,7 +428,7 @@ export default function ChatPanel({ group, onViewProfile }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-950">
+    <div className="flex flex-col h-full dark:bg-surface bg-gray-50">
 
       {/* Pin time modal (teacher only) */}
       {pinTimeModal.open && (() => {
@@ -443,10 +442,10 @@ export default function ChatPanel({ group, onViewProfile }) {
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}>
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-xs mx-4 p-5 shadow-2xl"
+          <div className="card w-full max-w-xs mx-4 p-5 shadow-2xl"
               onClick={e => e.stopPropagation()}>
-              <p className="text-sm font-semibold text-white mb-1">Pin message</p>
-              <p className="text-xs text-gray-500 mb-4">How long should this stay pinned?</p>
+              <p className="text-sm font-semibold dark:text-white text-gray-900 mb-1">Pin message</p>
+              <p className="text-xs dark:text-gray-500 text-gray-500 mb-4">How long should this stay pinned?</p>
 
               <div className="space-y-2">
                 {PRESETS.map(p => (
@@ -454,20 +453,20 @@ export default function ChatPanel({ group, onViewProfile }) {
                     onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: p.value }))}
                     className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
                       ${pinTimeModal.pin_ttl_minutes === p.value && !isCustom
-                        ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
-                        : 'bg-gray-800/60 border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-gray-600'}`}>
+                        ? 'bg-brand-600/20 border-brand-500/50 text-brand-300'
+                        : 'dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/50 border-gray-200 dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-200 dark:hover:border-surface-4 hover:border-gray-300'}`}>
                     {p.label}
                     {p.value && <span className="text-gray-500 text-xs ml-1.5">({Number(p.value) >= 60 ? `${Number(p.value)/60}h` : `${p.value}m`})</span>}
                   </button>
                 ))}
 
                 {/* Custom option */}
-                <button
+                  <button
                   onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: isCustom ? s.pin_ttl_minutes : '30' }))}
                   className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
                     ${isCustom
-                      ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
-                      : 'bg-gray-800/60 border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-gray-600'}`}>
+                      ? 'bg-brand-600/20 border-brand-500/50 text-brand-300'
+                      : 'dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/50 border-gray-200 dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
                   Custom time
                 </button>
 
@@ -480,11 +479,11 @@ export default function ChatPanel({ group, onViewProfile }) {
                       step="1"
                       value={pinTimeModal.pin_ttl_minutes}
                       onChange={e => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: e.target.value }))}
-                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2
-                        text-sm text-white focus:outline-none focus:border-indigo-500"
+                      className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-300 border rounded-lg px-3 py-2
+                        text-sm dark:text-white text-gray-900 focus:outline-none focus:border-brand-500"
                       placeholder="Minutes"
                     />
-                    <span className="text-xs text-gray-500 flex-shrink-0">minutes</span>
+                    <span className="text-xs dark:text-gray-500 text-gray-400 flex-shrink-0">minutes</span>
                   </div>
                 )}
               </div>
@@ -492,7 +491,7 @@ export default function ChatPanel({ group, onViewProfile }) {
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}
-                  className="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm transition">
+                  className="flex-1 py-2 rounded-xl dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 text-sm transition">
                   Cancel
                 </button>
                 <button
@@ -502,7 +501,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                     await handlePinWithTime(messageId, pin_ttl_minutes, content);
                     scrollToMessage(messageId);
                   }}
-                  className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition"
+                  className="flex-1 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition"
                   disabled={!pinTimeModal.messageId}>
                   Pin
                 </button>
@@ -514,14 +513,14 @@ export default function ChatPanel({ group, onViewProfile }) {
 
       {/* Admins only banner */}
       {adminsOnly && (
-        <div className="mx-4 mt-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-400 text-xs text-center flex-shrink-0">
+        <div className="mx-4 mt-3 px-4 py-2 bg-neon-yellow/10 border border-neon-yellow/20 rounded-lg text-neon-yellow text-xs text-center flex-shrink-0">
           Admins only mode is on — only admins can send messages
         </div>
       )}
 
       {/* Connection status */}
       {socket && !connected && (
-        <div className="mx-4 mt-2 px-4 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-gray-300 text-xs text-center flex-shrink-0">
+        <div className="mx-4 mt-2 px-4 py-2 dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/60 border-gray-200 border rounded-lg dark:text-gray-300 text-gray-600 text-xs text-center flex-shrink-0">
           Reconnecting... messages may be delayed
         </div>
       )}
@@ -536,7 +535,7 @@ export default function ChatPanel({ group, onViewProfile }) {
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') scrollToMessage(pinnedMsgs[0]?.id);
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800/70 rounded-lg text-indigo-300 text-xs hover:bg-gray-900/80 transition cursor-pointer"
+            className="w-full flex items-center gap-2 px-3 py-2 dark:bg-surface-2/60 bg-gray-100 dark:border-surface-3/70 border-gray-200 border rounded-lg text-brand-400 text-xs dark:hover:bg-surface-2/80 hover:bg-gray-200 transition cursor-pointer"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
@@ -546,15 +545,15 @@ export default function ChatPanel({ group, onViewProfile }) {
                 {pinnedMsgs[0]?.content}
               </span>
               {pinnedMsgs[0]?.pin_time && (
-                <span className="block text-[11px] text-gray-400 mt-0.5">
+                <span className="block text-[11px] dark:text-gray-400 text-gray-500 mt-0.5">
                   {formatPinLabel(pinnedMsgs[0]?.pin_time)}
                 </span>
               )}
             </span>
-            <span className="text-indigo-400/60 flex-shrink-0">{pinnedMsgs.length} pinned</span>
+            <span className="text-brand-400/60 flex-shrink-0">{pinnedMsgs.length} pinned</span>
             <button
               onClick={(e) => { e.stopPropagation(); setShowPinned(v => !v); }}
-              className="p-1 rounded hover:bg-gray-800/60 transition flex-shrink-0"
+              className="p-1 rounded dark:hover:bg-surface-3/60 hover:bg-gray-200/60 transition flex-shrink-0"
               title={showPinned ? 'Hide pinned' : 'Show pinned'}
             >
               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
@@ -564,17 +563,17 @@ export default function ChatPanel({ group, onViewProfile }) {
             </button>
           </div>
           {showPinned && (
-            <div className="mt-1 bg-gray-900 border border-gray-800 rounded-lg divide-y divide-gray-800 overflow-hidden">
+            <div className="mt-1 dark:bg-surface-2 bg-white dark:border-surface-3 border-gray-200 border rounded-lg divide-y dark:divide-surface-3 divide-gray-100 overflow-hidden">
               {pinnedMsgs.map(pm => (
                 <div
                   key={pm.id}
-                  className="px-3 py-2 text-xs text-gray-300 flex items-start gap-2 hover:bg-gray-800/20 transition cursor-pointer"
+                  className="px-3 py-2 text-xs dark:text-gray-300 text-gray-700 flex items-start gap-2 dark:hover:bg-surface-3/20 hover:bg-gray-50 transition cursor-pointer"
                   onClick={() => scrollToMessage(pm.id)}
                 >
                   <span className="flex-1 min-w-0 leading-relaxed">
                     <span className="block truncate">{pm.content}</span>
                     {pm.pin_time && (
-                      <span className="block text-[11px] text-gray-500 mt-0.5">
+                      <span className="block text-[11px] dark:text-gray-500 text-gray-400 mt-0.5">
                         {formatPinLabel(pm.pin_time)}
                       </span>
                     )}
@@ -584,23 +583,16 @@ export default function ChatPanel({ group, onViewProfile }) {
                       <button
                         onClick={() => {
                           const remaining = getRemainingMinutes(pm.pin_time);
-                          setPinTimeModal({
-                            open: true,
-                            messageId: pm.id,
-                            pin_ttl_minutes: remaining === null ? '' : String(remaining),
-                            content: pm.content
-                          });
+                          setPinTimeModal({ open: true, messageId: pm.id, pin_ttl_minutes: remaining === null ? '' : String(remaining), content: pm.content });
                         }}
-                        className="text-gray-300 hover:text-white transition text-[11px] px-2 py-1 rounded bg-gray-800/50 border border-gray-700"
-                        title="Set expiry duration"
-                      >
+                        className="dark:text-gray-300 text-gray-700 dark:hover:text-white hover:text-gray-900 transition text-[11px] px-2 py-1 rounded dark:bg-surface-3/50 bg-gray-100 dark:border-surface-4 border-gray-200 border"
+                        title="Set expiry duration">
                         Set
                       </button>
                       <button
                         onClick={() => handleUnpinMessage(pm.id)}
-                        className="text-gray-600 hover:text-red-400 transition flex-shrink-0 mt-0.5"
-                        title="Unpin"
-                      >
+                        className="dark:text-gray-600 text-gray-400 hover:text-red-400 transition flex-shrink-0 mt-0.5"
+                        title="Unpin">
                         ✕
                       </button>
                     </div>
@@ -615,7 +607,7 @@ export default function ChatPanel({ group, onViewProfile }) {
       {/* Search bar */}
       {showSearch && (
         <div className="mx-4 mt-2 flex-shrink-0">
-          <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 dark:bg-surface-2 bg-white dark:border-surface-3 border-gray-200 border rounded-lg px-3 py-2">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="#6b7280">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
             </svg>
@@ -624,17 +616,17 @@ export default function ChatPanel({ group, onViewProfile }) {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search messages..."
-              className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+              className="flex-1 bg-transparent text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 outline-none"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')}
-                className="text-gray-600 hover:text-gray-400 transition text-xs">✕</button>
+                className="dark:text-gray-600 text-gray-400 dark:hover:text-gray-400 hover:text-gray-600 transition text-xs">✕</button>
             )}
             <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-              className="text-gray-600 hover:text-gray-400 transition text-xs ml-1">Close</button>
+              className="dark:text-gray-600 text-gray-400 dark:hover:text-gray-400 hover:text-gray-600 transition text-xs ml-1">Close</button>
           </div>
           {searchQuery && (
-            <p className="text-xs text-gray-600 mt-1 px-1">
+            <p className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
               {timeline.filter(m => m._kind !== 'system').length} result{timeline.filter(m => m._kind !== 'system').length !== 1 ? 's' : ''}
             </p>
           )}
@@ -647,17 +639,17 @@ export default function ChatPanel({ group, onViewProfile }) {
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="flex gap-3 items-start">
-                <div className="w-7 h-7 rounded-full bg-gray-800 animate-pulse flex-shrink-0"/>
+                <div className="w-7 h-7 rounded-full dark:bg-surface-3 bg-gray-200 animate-pulse flex-shrink-0"/>
                 <div className="space-y-2 flex-1">
-                  <div className="h-3 bg-gray-800 rounded animate-pulse w-20"/>
-                  <div className="h-10 bg-gray-800 rounded-xl animate-pulse w-48"/>
+                  <div className="h-3 dark:bg-surface-3 bg-gray-200 rounded animate-pulse w-20"/>
+                  <div className="h-10 dark:bg-surface-3 bg-gray-200 rounded-xl animate-pulse w-48"/>
                 </div>
               </div>
             ))}
           </div>
         ) : timeline.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-600 text-sm">No messages yet. Say hello!</p>
+            <p className="dark:text-gray-600 text-gray-400 text-sm">No messages yet. Say hello!</p>
           </div>
         ) : (
           timeline.flatMap((item, i) => {
@@ -675,11 +667,11 @@ export default function ChatPanel({ group, onViewProfile }) {
             const els = [];
             if (showSep) els.push(
               <div key={`sep-${item.id}`} className="flex items-center gap-3 py-2">
-                <div className="flex-1 h-px bg-gray-800"/>
-                <span className="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-700/40 select-none flex-shrink-0">
+                <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
+                <span className="text-xs dark:text-gray-500 text-gray-400 dark:bg-surface-1 bg-white px-3 py-1 rounded-full dark:border-surface-3/40 border-gray-200 border select-none flex-shrink-0">
                   {label}
                 </span>
-                <div className="flex-1 h-px bg-gray-800"/>
+                <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
               </div>
             );
 
@@ -687,16 +679,16 @@ export default function ChatPanel({ group, onViewProfile }) {
             if (item._kind === 'system') {
               els.push(
                 <div key={item.id} className="flex items-center gap-3 py-1">
-                  <div className="flex-1 h-px bg-gray-800"/>
+                  <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
                   <span className={`text-xs px-3 py-1 rounded-full flex-shrink-0 select-none
                     ${item.subtype === 'kick'
                       ? 'text-red-400/70 bg-red-500/5 border border-red-500/10'
                       : item.subtype === 'leave'
                       ? 'text-orange-400/70 bg-orange-500/5 border border-orange-500/10'
-                      : 'text-gray-600 bg-gray-800/50 border border-gray-700/30'}`}>
+                      : 'dark:text-gray-600 text-gray-400 dark:bg-surface-3/50 bg-gray-100 dark:border-surface-4/30 border-gray-200 border'}`}>
                     {item.content}
                   </span>
-                  <div className="flex-1 h-px bg-gray-800"/>
+                  <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
                 </div>
               );
               return els;
@@ -748,7 +740,7 @@ export default function ChatPanel({ group, onViewProfile }) {
 
                   {/* Sender name — only for others */}
                   {!isOwn && (
-                    <span className="text-xs text-gray-500 mb-1 px-1">
+                    <span className="text-xs dark:text-gray-500 text-gray-500 mb-1 px-1">
                       {senderName}
                     </span>
                   )}
@@ -767,16 +759,16 @@ export default function ChatPanel({ group, onViewProfile }) {
                             if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
                           }}
                           rows={2}
-                          className="bg-gray-700 border border-indigo-500 rounded-xl px-3 py-2
-                            text-sm text-white resize-none focus:outline-none"
+                          className="dark:bg-surface-3 bg-gray-100 border border-brand-500 rounded-xl px-3 py-2
+                            text-sm dark:text-white text-gray-900 resize-none focus:outline-none"
                         />
                         <div className="flex gap-1.5">
                           <button onClick={() => handleEditMessage(item.id)}
-                            className="text-xs px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+                            className="text-xs px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition">
                             Save
                           </button>
                           <button onClick={() => { setEditingId(null); setEditText(''); }}
-                            className="text-xs px-3 py-1 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
+                            className="text-xs px-3 py-1 rounded-lg dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 transition">
                             Cancel
                           </button>
                         </div>
@@ -784,17 +776,17 @@ export default function ChatPanel({ group, onViewProfile }) {
                     ) : (
                       <div className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed break-words
                         ${isOwn
-                          ? 'bg-indigo-600 text-white rounded-br-sm'
-                          : 'bg-gray-800 text-gray-100 rounded-bl-sm'}
-                        ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(99,102,241,0.15)]' : ''}`}>
+                          ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white rounded-br-sm'
+                          : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900 rounded-bl-sm'}
+                        ${highlightedMessageId === item.id ? 'ring-2 ring-brand-400/70 shadow-[0_0_0_3px_rgba(168,85,247,0.15)]' : ''}`}>
                         {/* Replied-to preview */}
                         {item.replied_message && (
                           <button
                             onClick={() => scrollToMessage(item.replied_message.id)}
                             className={`block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
                               ${isOwn
-                                ? 'bg-indigo-700/50 border-indigo-300/50 text-indigo-200'
-                                : 'bg-gray-700/60 border-gray-500 text-gray-300'}`}>
+                                ? 'bg-brand-700/50 border-brand-300/50 text-brand-200'
+                                : 'dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600'}`}>
                             <span className="font-medium block truncate">
                               {item.replied_message.users?.name || 'Unknown'}
                             </span>
@@ -814,7 +806,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                       <div className="relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0">
                         <button
                           onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
-                          className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition"
+                          className="p-1.5 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-200 transition"
                           title="Message actions">
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
@@ -846,8 +838,8 @@ export default function ChatPanel({ group, onViewProfile }) {
                           onClick={() => handleReact(item.id, emoji)}
                           className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
                             ${userIds.includes(user?.id)
-                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                              : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}>
+                              ? 'bg-brand-500/20 border-brand-500/40 text-brand-300'
+                              : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
                           <span>{emoji}</span>
                           <span>{userIds.length}</span>
                         </button>
@@ -856,7 +848,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                   )}
 
                   {/* Timestamp */}
-                  <span className="text-xs text-gray-600 mt-1 px-1">
+                  <span className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
                     {formatTime(item.created_at)}
                   </span>
                 </div>
@@ -884,11 +876,11 @@ export default function ChatPanel({ group, onViewProfile }) {
         <div className="px-5 pb-1 flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="flex gap-0.5">
-              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
-              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
-              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+              <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
+              <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
+              <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
             </div>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs dark:text-gray-500 text-gray-400">
               {Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} typing
             </span>
           </div>
@@ -896,7 +888,7 @@ export default function ChatPanel({ group, onViewProfile }) {
       )}
 
       {/* Input area */}
-      <div className="px-4 py-3 border-t border-gray-800 flex-shrink-0">
+      <div className="px-4 py-3 border-t dark:border-brand-900/40 border-gray-200 flex-shrink-0">
 
         {/* Reply / private reply banner */}
         {(replyTo || privateReply) && (() => {
@@ -905,8 +897,8 @@ export default function ChatPanel({ group, onViewProfile }) {
           return (
             <div className={`flex items-center gap-2 mb-2 px-3 py-2 rounded-xl border text-xs
               ${isPrivate
-                ? 'bg-purple-500/10 border-purple-500/20 text-purple-300'
-                : 'bg-gray-800 border-gray-700 text-gray-300'}`}>
+                ? 'bg-brand-500/10 border-brand-500/20 text-brand-300'
+                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-300 text-gray-700'}`}>
               <div className="flex-1 min-w-0">
                 <span className="font-medium">{isPrivate ? '🔒 Private reply to ' : '↩ Replying to '}</span>
                 <span className="font-semibold">{r.senderName}</span>
@@ -921,7 +913,7 @@ export default function ChatPanel({ group, onViewProfile }) {
         {canSend ? (
           <div className="flex gap-2 items-end">
             <button onClick={() => { setShowSearch(v => !v); setSearchQuery(''); }}
-              className={`p-2.5 rounded-xl transition flex-shrink-0 ${showSearch ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-500 hover:text-gray-300'}`}
+              className={`p-2.5 rounded-xl transition flex-shrink-0 ${showSearch ? 'bg-brand-600 text-white' : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600'}`}
               title="Search messages">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
@@ -932,10 +924,10 @@ export default function ChatPanel({ group, onViewProfile }) {
               onChange={handleTextChange}
               onKeyDown={handleKeyDown}
               rows={1}
-              placeholder={connected ? 'Type a message... (Enter to send)' : 'Disconnected... reconnecting'}
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5
-                text-sm text-white placeholder-gray-500
-                focus:outline-none focus:ring-2 focus:ring-indigo-500
+              placeholder={connected ? 'Type a message... ' : 'Disconnected... reconnecting'}
+              className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
+                text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
+                focus:outline-none focus:ring-2 focus:ring-brand-500
                 resize-none transition"
               disabled={!connected}
             />
@@ -943,12 +935,12 @@ export default function ChatPanel({ group, onViewProfile }) {
               onClick={privateReply ? handlePrivateReply : sendMessage}
               disabled={!text.trim() || (!connected && !privateReply)}
               className={`disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-sm font-medium transition
-                ${privateReply ? 'bg-purple-600 hover:bg-purple-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}>
+                ${privateReply ? 'bg-brand-600 hover:bg-brand-500' : 'bg-brand-600 hover:bg-brand-500'}`}>
               {privateReply ? 'Send privately' : 'Send'}
             </button>
           </div>
         ) : (
-          <div className="text-center py-2.5 text-gray-600 text-sm">
+          <div className="text-center py-2.5 dark:text-gray-600 text-gray-400 text-sm">
             Only admins can send messages in this group right now
           </div>
         )}
