@@ -358,49 +358,85 @@ export default function ChatPanel({ group, onViewProfile }) {
     <div className="flex flex-col h-full bg-gray-950">
 
       {/* Pin time modal (teacher only) */}
-      {pinTimeModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl w-full max-w-sm mx-4 p-4">
-            <div className="text-sm text-white font-semibold">Pin message</div>
-            <div className="text-xs text-gray-400 mt-1">
-              Choose how long before the pin disappears.
-            </div>
+      {pinTimeModal.open && (() => {
+        const PRESETS = [
+          { label: '1 hour',    value: '60' },
+          { label: '8 hours',   value: '480' },
+          { label: '24 hours',  value: '1440' },
+          { label: 'Until removed', value: '' },
+        ];
+        const isCustom = !PRESETS.some(p => p.value === pinTimeModal.pin_ttl_minutes);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-xs mx-4 p-5 shadow-2xl"
+              onClick={e => e.stopPropagation()}>
+              <p className="text-sm font-semibold text-white mb-1">Pin message</p>
+              <p className="text-xs text-gray-500 mb-4">How long should this stay pinned?</p>
 
-            <div className="mt-3">
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={pinTimeModal.pin_ttl_minutes}
-                onChange={(e) => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Minutes"
-              />
-            </div>
+              <div className="space-y-2">
+                {PRESETS.map(p => (
+                  <button key={p.label}
+                    onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: p.value }))}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
+                      ${pinTimeModal.pin_ttl_minutes === p.value && !isCustom
+                        ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
+                        : 'bg-gray-800/60 border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-gray-600'}`}>
+                    {p.label}
+                    {p.value && <span className="text-gray-500 text-xs ml-1.5">({Number(p.value) >= 60 ? `${Number(p.value)/60}h` : `${p.value}m`})</span>}
+                  </button>
+                ))}
 
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}
-                className="text-xs px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition text-gray-300 border border-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  const { messageId, pin_ttl_minutes, content } = pinTimeModal;
-                  setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' });
-                  await handlePinWithTime(messageId, pin_ttl_minutes, content);
-                  scrollToMessage(messageId);
-                }}
-                className="text-xs px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-medium"
-                disabled={!pinTimeModal.messageId}
-              >
-                Pin
-              </button>
+                {/* Custom option */}
+                <button
+                  onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: isCustom ? s.pin_ttl_minutes : '30' }))}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
+                    ${isCustom
+                      ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
+                      : 'bg-gray-800/60 border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-gray-600'}`}>
+                  Custom time
+                </button>
+
+                {isCustom && (
+                  <div className="flex items-center gap-2 px-1">
+                    <input
+                      autoFocus
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={pinTimeModal.pin_ttl_minutes}
+                      onChange={e => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: e.target.value }))}
+                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2
+                        text-sm text-white focus:outline-none focus:border-indigo-500"
+                      placeholder="Minutes"
+                    />
+                    <span className="text-xs text-gray-500 flex-shrink-0">minutes</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}
+                  className="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm transition">
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    const { messageId, pin_ttl_minutes, content } = pinTimeModal;
+                    setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' });
+                    await handlePinWithTime(messageId, pin_ttl_minutes, content);
+                    scrollToMessage(messageId);
+                  }}
+                  className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition"
+                  disabled={!pinTimeModal.messageId}>
+                  Pin
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Admins only banner */}
       {adminsOnly && (
@@ -643,7 +679,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                               setPinTimeModal({
                                 open: true,
                                 messageId: item.id,
-                                pin_ttl_minutes: '10',
+                                pin_ttl_minutes: '60',
                                 content: item.content
                               });
                             }}
