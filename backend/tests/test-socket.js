@@ -9,7 +9,6 @@ const socket = io('http://localhost:3000', {
 });
 
 socket.on('connect', () => {
-  console.log('Connected:', socket.id);
 
   // Join a group room
   socket.emit('join_group', GROUP_ID);

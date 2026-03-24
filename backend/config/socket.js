@@ -17,7 +17,6 @@ module.exports = (io) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.user.id}`);
 
     socket.join(`user:${socket.user.id}`);
 
@@ -32,7 +31,6 @@ module.exports = (io) => {
       onlineUsers.delete(socket.user.id);
       io.userSockets?.delete(socket.user.id);
       io.emit('user_offline', { userId: socket.user.id });
-      console.log(`User disconnected: ${socket.user.id}`);
     });
 
     socket.on('join_group', async (groupId) => {

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
 import MessageMenu from './ui/MessageMenu';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
@@ -59,6 +60,7 @@ export default function ChatPanel({ group, onViewProfile }) {
   // reply_to: { id, content, senderName, senderId }
   const [replyTo, setReplyTo]             = useState(null);
   const [privateReply, setPrivateReply]   = useState(null); // same shape, but sends as DM
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // messageId to delete
 
   // Leave old room when switching groups
   useEffect(() => {
@@ -262,7 +264,13 @@ export default function ChatPanel({ group, onViewProfile }) {
     }
   };
 
-  const handleDeleteMessage = async (messageId) => {
+  const handleDeleteMessage = (messageId) => {
+    setDeleteConfirm(messageId);
+  };
+
+  const confirmDelete = async () => {
+    const messageId = deleteConfirm;
+    setDeleteConfirm(null);
     setMessages(prev => prev.filter(m => m.id !== messageId));
     try {
       await messagesAPI.delete(messageId);
@@ -429,6 +437,18 @@ export default function ChatPanel({ group, onViewProfile }) {
 
   return (
     <div className="flex flex-col h-full dark:bg-surface bg-gray-50">
+
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        title="Delete message"
+        description="This message will be permanently deleted."
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
 
       {/* Pin time modal (teacher only) */}
       {pinTimeModal.open && (() => {

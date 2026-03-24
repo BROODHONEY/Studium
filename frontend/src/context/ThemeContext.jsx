@@ -14,7 +14,6 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
     localStorage.setItem('theme', dark ? 'dark' : 'light');
-    console.log('[Theme] toggled. dark=', dark, 'html classes=', document.documentElement.className);
   }, [dark]);
 
   return (

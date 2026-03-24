@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
     password: '', role: 'student',
-    roll_no: '', department: ''
+    roll_no: '', department: '', year: ''
   });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,13 +31,14 @@ export default function RegisterPage() {
     setError('');
     if (isStudent && !form.roll_no.trim()) return setError('Roll number is required');
     if (isStudent && !form.department)     return setError('Please select your department');
+    if (isStudent && !form.year)           return setError('Please select your year');
     setLoading(true);
     try {
       const payload = {
         name: form.name, password: form.password, role: form.role,
         ...(form.email ? { email: form.email } : {}),
         ...(form.phone ? { phone: form.phone } : {}),
-        ...(isStudent  ? { roll_no: form.roll_no, department: form.department } : {})
+        ...(isStudent  ? { roll_no: form.roll_no, department: form.department, year: Number(form.year) } : {})
       };
       const res = await authAPI.register(payload);
       login(res.data.token, res.data.user);
@@ -114,6 +115,16 @@ export default function RegisterPage() {
                   {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
+              <div>
+                <label className="form-label">Year <span className="text-neon-pink">*</span></label>
+                <select className="form-input" name="year"
+                  value={form.year} onChange={handleChange} required>
+                  <option value="" disabled>Select your year</option>
+                  {[1, 2, 3, 4].map(y => (
+                    <option key={y} value={y}>{y === 1 ? '1st' : y === 2 ? '2nd' : y === 3 ? '3rd' : '4th'} Year</option>
+                  ))}
+                </select>
+              </div>
             </>
           )}
 
@@ -125,7 +136,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="form-label">
-              Phone <span className="dark:text-gray-600 text-gray-400 text-xs">(optional if email given)</span>
+              Phone <span className="dark:text-gray-600 text-gray-400 text-xs">(optional)</span>
             </label>
             <input className="form-input" type="tel" name="phone"
               value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" />

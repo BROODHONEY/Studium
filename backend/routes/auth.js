@@ -7,10 +7,10 @@ const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { name, email, phone, password, role, roll_no, department } = req.body;
+  const { name, email, phone, password, role, roll_no, department, year } = req.body;
 
-  if (!name || !password || (!email && !phone)) {
-    return res.status(400).json({ error: 'Name, password, and email or phone are required' });
+  if (!name || !password || !email) {
+    return res.status(400).json({ error: 'Name, password, and email are required' });
   }
 
   if (!['teacher', 'student'].includes(role)) {
@@ -24,6 +24,9 @@ router.post('/register', async (req, res) => {
     }
     if (!department || !department.trim()) {
       return res.status(400).json({ error: 'Department is required for students' });
+    }
+    if (!year || ![1, 2, 3, 4].includes(Number(year))) {
+      return res.status(400).json({ error: 'Year (1–4) is required for students' });
     }
   }
 
@@ -43,9 +46,9 @@ router.post('/register', async (req, res) => {
       .from('users')
       .insert({
         name, email, phone, password_hash, role,
-        ...(role === 'student' ? { roll_no, department } : {})
+        ...(role === 'student' ? { roll_no, department, year: Number(year) } : {})
       })
-      .select('id, name, email, phone, role, roll_no, department, created_at')
+      .select('id, name, email, phone, role, roll_no, department, year, created_at')
       .single();
 
     if (error) throw error;
