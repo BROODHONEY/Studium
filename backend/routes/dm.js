@@ -40,7 +40,7 @@ router.post('/conversations', async (req, res) => {
     // Ensure consistent ordering so we never create duplicates
     const [user1_id, user2_id] = [req.user.id, userId].sort();
 
-    // Check if conversation already exists
+    // Check if conversation already exists  + 
     let { data: convo } = await supabase
       .from('conversations')
       .select(`
