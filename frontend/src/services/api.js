@@ -89,6 +89,7 @@ export const dmAPI = {
   getOnlineStatus:  (userIds)        => api.post('/dm/online-status', { userIds }),
   editMessage:      (id, content)    => api.patch(`/dm/messages/${id}/edit`, { content }),
   reactMessage:     (id, emoji)      => api.post(`/dm/messages/${id}/reactions`, { emoji }),
+  deleteMessage:    (id)             => api.delete(`/dm/messages/${id}`),
 };
 
 export default api;

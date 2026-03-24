@@ -51,10 +51,9 @@ export default function ChatPanel({ group, onViewProfile }) {
         (m.users || m.sender)?.name?.toLowerCase().includes(q);
     });
 
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
-  const [emojiPickerId, setEmojiPickerId] = useState(null);
+  const [openMenuId, setOpenMenuId]       = useState(null); // three-dot menu
   // reply_to: { id, content, senderName, senderId }
   const [replyTo, setReplyTo]             = useState(null);
   const [privateReply, setPrivateReply]   = useState(null); // same shape, but sends as DM
@@ -198,13 +197,13 @@ export default function ChatPanel({ group, onViewProfile }) {
     };
   }, [group?.id, socket]);
 
-  // Close emoji picker on outside click
+  // Close menu on outside click
   useEffect(() => {
-    if (!emojiPickerId) return;
-    const handler = () => setEmojiPickerId(null);
+    if (!openMenuId) return;
+    const handler = () => { setOpenMenuId(null); };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
-  }, [emojiPickerId]);
+  }, [openMenuId]);
 
   // Auto scroll to bottom on new messages
   useEffect(() => {
@@ -285,7 +284,7 @@ export default function ChatPanel({ group, onViewProfile }) {
   };
 
   const handleReact = async (messageId, emoji) => {
-    setEmojiPickerId(null);
+    setOpenMenuId(null);
     try {
       await messagesAPI.react(messageId, emoji);
       // socket event will update state
@@ -786,96 +785,97 @@ export default function ChatPanel({ group, onViewProfile }) {
                       </div>
                     )}
 
-                    {/* Hover action buttons */}
+                    {/* Three-dot menu */}
                     {editingId !== item.id && (
-                      confirmDeleteId === item.id ? (
-                        <div className="flex items-center gap-1 mb-1 flex-shrink-0">
-                          <button onClick={() => handleDeleteMessage(item.id)}
-                            className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white transition">
-                            Delete
-                          </button>
-                          <button onClick={() => setConfirmDeleteId(null)}
-                            className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className={`relative flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
-                          {/* Reply in group */}
-                          <button
-                            onClick={() => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); }}
-                            className="p-1 rounded text-gray-600 hover:text-green-400 transition"
-                            title="Reply">
-                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933zM7.8 10.386c.068 0 .143.003.223.006.434.02 1.034.086 1.7.271 1.326.368 2.896 1.202 3.94 3.08a.5.5 0 0 0 .933-.305c-.464-3.71-1.886-5.662-3.46-6.66-1.245-.79-2.527-.942-3.336-.971v-.66a1.144 1.144 0 0 0-1.767-.96l-3.994 2.94a1.147 1.147 0 0 0 0 1.946l3.994 2.94a1.144 1.144 0 0 0 1.767-.96v-.667z"/>
-                            </svg>
-                          </button>
-                          {/* Reply privately — only to others' messages */}
-                          {!isOwn && (
-                            <button
-                              onClick={() => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); }}
-                              className="p-1 rounded text-gray-600 hover:text-purple-400 transition"
-                              title="Reply privately">
-                              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z"/>
-                              </svg>
-                            </button>
-                          )}
-                          {/* Emoji picker trigger */}
-                          <button onClick={(e) => { e.stopPropagation(); setEmojiPickerId(emojiPickerId === item.id ? null : item.id); }}
-                            className="p-1 rounded text-gray-600 hover:text-yellow-400 transition"
-                            title="React">
-                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                              <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
-                            </svg>
-                          </button>
-                          {/* Emoji picker dropdown */}
-                          {emojiPickerId === item.id && (
-                            <div onClick={e => e.stopPropagation()}
-                              className={`absolute bottom-8 z-20 flex gap-1 bg-gray-900 border border-gray-700
-                              rounded-xl px-2 py-1.5 shadow-xl
+                      <div className={`relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === item.id ? null : item.id); setEmojiPickerId(null); }}
+                          className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition"
+                          title="Message actions">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                          </svg>
+                        </button>
+
+                        {openMenuId === item.id && (
+                          <div
+                            onClick={e => e.stopPropagation()}
+                            className={`absolute bottom-8 z-30 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden
                               ${isOwn ? 'right-0' : 'left-0'}`}>
+
+                            {/* Emoji row */}
+                            <div className="flex justify-around px-2 py-2 border-b border-gray-800">
                               {EMOJI_OPTIONS.map(e => (
-                                <button key={e} onClick={() => handleReact(item.id, e)}
+                                <button key={e}
+                                  onClick={() => { handleReact(item.id, e); setOpenMenuId(null); }}
                                   className="text-base hover:scale-125 transition-transform leading-none p-0.5">
                                   {e}
                                 </button>
                               ))}
                             </div>
-                          )}
-                          {myRole === 'admin' && (
-                            <button
-                              onClick={() => {
-                                if (item.pinned) return handleUnpinMessage(item.id);
-                                setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '60', content: item.content });
-                              }}
-                              className={`p-1 rounded transition ${item.pinned ? 'text-indigo-400' : 'text-gray-600 hover:text-indigo-400'}`}
-                              title={item.pinned ? 'Unpin' : 'Pin'}>
-                              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
-                              </svg>
-                            </button>
-                          )}
-                          {canEdit && (
-                            <button onClick={() => { setEditingId(item.id); setEditText(item.content); }}
-                              className="p-1 rounded text-gray-600 hover:text-blue-400 transition"
-                              title="Edit">
-                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                              </svg>
-                            </button>
-                          )}
-                          {canDelete && (
-                            <button onClick={() => setConfirmDeleteId(item.id)}
-                              className="p-1 rounded text-gray-600 hover:text-red-400 transition">
-                              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      )
+
+                            {/* Menu items */}
+                            <div className="py-1">
+                              <button
+                                onClick={() => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); setOpenMenuId(null); }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-green-400 flex-shrink-0">
+                                  <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933z"/>
+                                </svg>
+                                Reply
+                              </button>
+
+                              {!isOwn && (
+                                <button
+                                  onClick={() => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-purple-400 flex-shrink-0">
+                                    <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z"/>
+                                  </svg>
+                                  Reply privately
+                                </button>
+                              )}
+
+                              {myRole === 'admin' && (
+                                <button
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    if (item.pinned) return handleUnpinMessage(item.id);
+                                    setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '60', content: item.content });
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+                                  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className={`flex-shrink-0 ${item.pinned ? 'text-indigo-400' : 'text-gray-500'}`}>
+                                    <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+                                  </svg>
+                                  {item.pinned ? 'Unpin' : 'Pin'}
+                                </button>
+                              )}
+
+                              {canEdit && (
+                                <button
+                                  onClick={() => { setEditingId(item.id); setEditText(item.content); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+                                  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className="text-blue-400 flex-shrink-0">
+                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                                  </svg>
+                                  Edit
+                                </button>
+                              )}
+
+                              {canDelete && (
+                                <button
+                                  onClick={() => { handleDeleteMessage(item.id); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-gray-800 transition text-left">
+                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0">
+                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                                  </svg>
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 

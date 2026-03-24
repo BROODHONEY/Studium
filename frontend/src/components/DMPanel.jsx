@@ -27,7 +27,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   // Edit, react & reply state
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
-  const [emojiPickerId, setEmojiPickerId] = useState(null);
+  const [openMenuId, setOpenMenuId]       = useState(null);
   const [replyTo, setReplyTo]             = useState(null); // { id, content, senderName }
 
   const bottomRef    = useRef(null);
@@ -36,13 +36,13 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
 
   const other = conversation?.other;
 
-  // Close emoji picker on outside click
+  // Close menu on outside click
   useEffect(() => {
-    if (!emojiPickerId) return;
-    const handler = () => setEmojiPickerId(null);
+    if (!openMenuId) return;
+    const handler = () => setOpenMenuId(null);
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
-  }, [emojiPickerId]);
+  }, [openMenuId]);
 
   useEffect(() => {
     if (!conversation) { setMessages([]); setLoading(false); return; }
@@ -80,6 +80,11 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
       setMessages(prev => prev.map(m => m.id === messageId ? { ...m, dm_reactions: reactions } : m));
     };
 
+    const handleDeleted = ({ conversationId, messageId }) => {
+      if (conversationId !== conversation.id) return;
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    };
+
     const handleTyping = ({ conversationId, userId }) => {
       if (conversationId === conversation.id && userId === other?.id) setIsTyping(true);
     };
@@ -91,6 +96,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
     socket.on('new_dm', handleNewDM);
     socket.on('dm_message_edited', handleEdited);
     socket.on('dm_message_reaction', handleReaction);
+    socket.on('dm_message_deleted', handleDeleted);
     socket.on('dm_user_typing', handleTyping);
     socket.on('dm_user_stopped_typing', handleStopTyping);
 
@@ -98,6 +104,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
       socket.off('new_dm', handleNewDM);
       socket.off('dm_message_edited', handleEdited);
       socket.off('dm_message_reaction', handleReaction);
+      socket.off('dm_message_deleted', handleDeleted);
       socket.off('dm_user_typing', handleTyping);
       socket.off('dm_user_stopped_typing', handleStopTyping);
     };
@@ -140,7 +147,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   };
 
   const handleReact = async (msgId, emoji) => {
-    setEmojiPickerId(null);
+    setOpenMenuId(null);
     try { await dmAPI.reactMessage(msgId, emoji); }
     catch (err) { console.error(err); }
   };
@@ -286,52 +293,71 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                         </div>
                       )}
 
-                      {/* Hover actions */}
+                      {/* Three-dot menu */}
                       {!isTemp && editingId !== msg.id && (
-                        <div className={`relative flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
-                          {/* Reply */}
+                        <div className={`relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
                           <button
-                            onClick={() => setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.name })}
-                            className="p-1 rounded text-gray-600 hover:text-green-400 transition"
-                            title="Reply">
-                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933z"/>
+                            onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
+                            className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition"
+                            title="Message actions">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                             </svg>
                           </button>
 
-                          {/* React */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setEmojiPickerId(emojiPickerId === msg.id ? null : msg.id); }}
-                            className="p-1 rounded text-gray-600 hover:text-yellow-400 transition"
-                            title="React">
-                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                              <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
-                            </svg>
-                          </button>
+                          {openMenuId === msg.id && (
+                            <div
+                              onClick={e => e.stopPropagation()}
+                              className={`absolute bottom-8 z-30 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden
+                                ${isOwn ? 'right-0' : 'left-0'}`}>
 
-                          {/* Emoji picker */}
-                          {emojiPickerId === msg.id && (
-                            <div onClick={e => e.stopPropagation()}
-                              className={`absolute bottom-8 z-20 flex gap-1 bg-gray-900 border border-gray-700 rounded-xl px-2 py-1.5 shadow-xl ${isOwn ? 'right-0' : 'left-0'}`}>
-                              {EMOJI_OPTIONS.map(e => (
-                                <button key={e} onClick={() => handleReact(msg.id, e)}
-                                  className="text-base hover:scale-125 transition-transform leading-none p-0.5">
-                                  {e}
+                              {/* Emoji row */}
+                              <div className="flex justify-around px-2 py-2 border-b border-gray-800">
+                                {EMOJI_OPTIONS.map(e => (
+                                  <button key={e}
+                                    onClick={() => { handleReact(msg.id, e); setOpenMenuId(null); }}
+                                    className="text-base hover:scale-125 transition-transform leading-none p-0.5">
+                                    {e}
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Menu items */}
+                              <div className="py-1">
+                                <button
+                                  onClick={() => { setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.name }); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-green-400 flex-shrink-0">
+                                    <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933z"/>
+                                  </svg>
+                                  Reply
                                 </button>
-                              ))}
-                            </div>
-                          )}
 
-                          {/* Edit (own only) */}
-                          {isOwn && (
-                            <button onClick={() => { setEditingId(msg.id); setEditText(msg.content); }}
-                              className="p-1 rounded text-gray-600 hover:text-blue-400 transition"
-                              title="Edit">
-                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                              </svg>
-                            </button>
+                                {isOwn && (
+                                  <button
+                                    onClick={() => { setEditingId(msg.id); setEditText(msg.content); setOpenMenuId(null); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className="text-blue-400 flex-shrink-0">
+                                      <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                                    </svg>
+                                    Edit
+                                  </button>
+                                )}
+
+                                <button
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    setMessages(prev => prev.filter(m => m.id !== msg.id));
+                                    dmAPI.deleteMessage(msg.id).catch(console.error);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-gray-800 transition text-left">
+                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0">
+                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                                  </svg>
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
                           )}
                         </div>
                       )}

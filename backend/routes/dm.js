@@ -309,6 +309,40 @@ router.post('/messages/:id/reactions', async (req, res) => {
   }
 });
 
+// ── Delete a DM (sender only) ─────────────────────────
+router.delete('/messages/:id', async (req, res) => {
+  try {
+    const { data: msg } = await supabase
+      .from('direct_messages')
+      .select('id, sender_id, conversation_id')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+    if (msg.sender_id !== req.user.id) return res.status(403).json({ error: 'You can only delete your own messages' });
+
+    await supabase.from('direct_messages').delete().eq('id', req.params.id);
+
+    const { data: convo } = await supabase
+      .from('conversations')
+      .select('user1_id, user2_id')
+      .eq('id', msg.conversation_id)
+      .single();
+
+    const io = req.app.get('io');
+    if (io && convo) {
+      const otherId = convo.user1_id === req.user.id ? convo.user2_id : convo.user1_id;
+      io.to(`user:${req.user.id}`).to(`user:${otherId}`)
+        .emit('dm_message_deleted', { conversationId: msg.conversation_id, messageId: req.params.id });
+    }
+
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not delete message' });
+  }
+});
+
 // ── Get online status for a list of user IDs ──────────
 router.post('/online-status', async (req, res) => {
   const { userIds } = req.body;
