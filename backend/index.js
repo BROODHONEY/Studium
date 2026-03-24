@@ -48,7 +48,7 @@ app.use('/api/dm', dmRoutes);
 app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Studium API is running' });
+  res.json({ message: 'Studi+ API is running' });
 });
 
 // Initialize Socket.io
