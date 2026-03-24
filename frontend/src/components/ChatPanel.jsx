@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
 
+const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+
 export default function ChatPanel({ group, onViewProfile }) {
   const { user }   = useAuth();
   const { socket, connected } = useSocket();
@@ -48,6 +50,11 @@ export default function ChatPanel({ group, onViewProfile }) {
       return m.content?.toLowerCase().includes(q) ||
         (m.users || m.sender)?.name?.toLowerCase().includes(q);
     });
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [editingId, setEditingId]         = useState(null);
+  const [editText, setEditText]           = useState('');
+  const [emojiPickerId, setEmojiPickerId] = useState(null);
 
   // Leave old room when switching groups
   useEffect(() => {
@@ -99,6 +106,8 @@ export default function ChatPanel({ group, onViewProfile }) {
     socket.off('message_unpinned');
     socket.off('user_typing');
     socket.off('user_stopped_typing');
+    socket.off('message_edited');
+    socket.off('message_reaction');
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
@@ -164,6 +173,14 @@ export default function ChatPanel({ group, onViewProfile }) {
       setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n; });
     });
 
+    socket.on('message_edited', ({ messageId, content }) => {
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content, edited: true } : m));
+    });
+
+    socket.on('message_reaction', ({ messageId, reactions }) => {
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, message_reactions: reactions } : m));
+    });
+
     return () => {
       socket.off('new_message');
       socket.off('system_message');
@@ -173,8 +190,18 @@ export default function ChatPanel({ group, onViewProfile }) {
       socket.off('message_unpinned');
       socket.off('user_typing');
       socket.off('user_stopped_typing');
+      socket.off('message_edited');
+      socket.off('message_reaction');
     };
   }, [group?.id, socket]);
+
+  // Close emoji picker on outside click
+  useEffect(() => {
+    if (!emojiPickerId) return;
+    const handler = () => setEmojiPickerId(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [emojiPickerId]);
 
   // Auto scroll to bottom on new messages
   useEffect(() => {
@@ -214,8 +241,6 @@ export default function ChatPanel({ group, onViewProfile }) {
     socket.emit('typing_stop', { groupId: group.id });
   };
 
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-
   const handleDeleteMessage = async (messageId) => {
     setConfirmDeleteId(null);
     setMessages(prev => prev.filter(m => m.id !== messageId));
@@ -223,6 +248,29 @@ export default function ChatPanel({ group, onViewProfile }) {
       await messagesAPI.delete(messageId);
     } catch {
       messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
+    }
+  };
+
+  const handleEditMessage = async (messageId) => {
+    if (!editText.trim()) return;
+    try {
+      await messagesAPI.edit(messageId, editText.trim());
+      // socket event will update state
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setEditingId(null);
+      setEditText('');
+    }
+  };
+
+  const handleReact = async (messageId, emoji) => {
+    setEmojiPickerId(null);
+    try {
+      await messagesAPI.react(messageId, emoji);
+      // socket event will update state
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -615,6 +663,14 @@ export default function ChatPanel({ group, onViewProfile }) {
               ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}`
               : 'Unknown';
             const canDelete = isOwn || myRole === 'admin';
+            const canEdit   = isOwn && item.type !== 'system';
+
+            // Group reactions: { emoji -> [userIds] }
+            const reactionMap = {};
+            (item.message_reactions || []).forEach(r => {
+              if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+              reactionMap[r.emoji].push(r.user_id);
+            });
 
             return (
               <div
@@ -649,58 +705,135 @@ export default function ChatPanel({ group, onViewProfile }) {
                     </span>
                   )}
 
-                  {/* Bubble + delete button */}
+                  {/* Bubble + actions */}
                   <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                    <div className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed break-words
-                      ${isOwn
-                        ? 'bg-indigo-600 text-white rounded-br-sm'
-                        : 'bg-gray-800 text-gray-100 rounded-bl-sm'}
-                      ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(99,102,241,0.15)]' : ''}`}>
-                      {item.content}
-                      {item.files && <FilePreview file={item.files} />}
-                    </div>
-                    {canDelete && confirmDeleteId === item.id ? (
-                      <div className="flex items-center gap-1 mb-1 flex-shrink-0">
-                        <button onClick={() => handleDeleteMessage(item.id)}
-                          className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white transition">
-                          Delete
-                        </button>
-                        <button onClick={() => setConfirmDeleteId(null)}
-                          className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
-                          Cancel
-                        </button>
+                    {/* Edit mode vs normal bubble */}
+                    {editingId === item.id ? (
+                      <div className="flex flex-col gap-1.5 min-w-[200px]">
+                        <textarea
+                          autoFocus
+                          value={editText}
+                          onChange={e => setEditText(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditMessage(item.id); }
+                            if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
+                          }}
+                          rows={2}
+                          className="bg-gray-700 border border-indigo-500 rounded-xl px-3 py-2
+                            text-sm text-white resize-none focus:outline-none"
+                        />
+                        <div className="flex gap-1.5">
+                          <button onClick={() => handleEditMessage(item.id)}
+                            className="text-xs px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+                            Save
+                          </button>
+                          <button onClick={() => { setEditingId(null); setEditText(''); }}
+                            className="text-xs px-3 py-1 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <div className={`flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
-                        {myRole === 'admin' && (
-                          <button
-                            onClick={() => {
-                              if (item.pinned) return handleUnpinMessage(item.id);
-                              setPinTimeModal({
-                                open: true,
-                                messageId: item.id,
-                                pin_ttl_minutes: '60',
-                                content: item.content
-                              });
-                            }}
-                            className={`p-1 rounded transition ${item.pinned ? 'text-indigo-400' : 'text-gray-600 hover:text-indigo-400'}`}
-                            title={item.pinned ? 'Unpin' : 'Pin'}>
-                            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
-                            </svg>
-                          </button>
-                        )}
-                        {canDelete && (
-                          <button onClick={() => setConfirmDeleteId(item.id)}
-                            className="p-1 rounded text-gray-600 hover:text-red-400 transition">
-                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
-                            </svg>
-                          </button>
-                        )}
+                      <div className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed break-words
+                        ${isOwn
+                          ? 'bg-indigo-600 text-white rounded-br-sm'
+                          : 'bg-gray-800 text-gray-100 rounded-bl-sm'}
+                        ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(99,102,241,0.15)]' : ''}`}>
+                        {item.content}
+                        {item.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
+                        {item.files && <FilePreview file={item.files} />}
                       </div>
                     )}
+
+                    {/* Hover action buttons */}
+                    {editingId !== item.id && (
+                      confirmDeleteId === item.id ? (
+                        <div className="flex items-center gap-1 mb-1 flex-shrink-0">
+                          <button onClick={() => handleDeleteMessage(item.id)}
+                            className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white transition">
+                            Delete
+                          </button>
+                          <button onClick={() => setConfirmDeleteId(null)}
+                            className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition">
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={`relative flex items-center gap-1 opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0`}>
+                          {/* Emoji picker trigger */}
+                          <button onClick={(e) => { e.stopPropagation(); setEmojiPickerId(emojiPickerId === item.id ? null : item.id); }}
+                            className="p-1 rounded text-gray-600 hover:text-yellow-400 transition"
+                            title="React">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                              <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+                            </svg>
+                          </button>
+                          {/* Emoji picker dropdown */}
+                          {emojiPickerId === item.id && (
+                            <div onClick={e => e.stopPropagation()}
+                              className={`absolute bottom-8 z-20 flex gap-1 bg-gray-900 border border-gray-700
+                              rounded-xl px-2 py-1.5 shadow-xl
+                              ${isOwn ? 'right-0' : 'left-0'}`}>
+                              {EMOJI_OPTIONS.map(e => (
+                                <button key={e} onClick={() => handleReact(item.id, e)}
+                                  className="text-base hover:scale-125 transition-transform leading-none p-0.5">
+                                  {e}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {myRole === 'admin' && (
+                            <button
+                              onClick={() => {
+                                if (item.pinned) return handleUnpinMessage(item.id);
+                                setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '60', content: item.content });
+                              }}
+                              className={`p-1 rounded transition ${item.pinned ? 'text-indigo-400' : 'text-gray-600 hover:text-indigo-400'}`}
+                              title={item.pinned ? 'Unpin' : 'Pin'}>
+                              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+                              </svg>
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button onClick={() => { setEditingId(item.id); setEditText(item.content); }}
+                              className="p-1 rounded text-gray-600 hover:text-blue-400 transition"
+                              title="Edit">
+                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                              </svg>
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button onClick={() => setConfirmDeleteId(item.id)}
+                              className="p-1 rounded text-gray-600 hover:text-red-400 transition">
+                              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      )
+                    )}
                   </div>
+
+                  {/* Reactions display */}
+                  {Object.keys(reactionMap).length > 0 && (
+                    <div className={`flex flex-wrap gap-1 mt-1 px-1 ${isOwn ? 'justify-end' : ''}`}>
+                      {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                        <button key={emoji}
+                          onClick={() => handleReact(item.id, emoji)}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
+                            ${userIds.includes(user?.id)
+                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
+                              : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}>
+                          <span>{emoji}</span>
+                          <span>{userIds.length}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Timestamp */}
                   <span className="text-xs text-gray-600 mt-1 px-1">

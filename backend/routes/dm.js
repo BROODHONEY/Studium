@@ -139,14 +139,30 @@ router.get('/conversations/:id/messages', async (req, res) => {
       return res.status(403).json({ error: 'Not your conversation' });
     }
 
-    const { data, error } = await supabase
+    let data, error;
+
+    // Try with reactions + edited (requires dm_reactions table and edited column)
+    ({ data, error } = await supabase
       .from('direct_messages')
       .select(`
-        id, content, read, created_at,
-        sender:sender_id (id, name, avatar_url)
+        id, content, read, created_at, edited,
+        sender:sender_id (id, name, avatar_url),
+        dm_reactions (emoji, user_id)
       `)
       .eq('conversation_id', req.params.id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true }));
+
+    // Fallback for schemas without dm_reactions / edited column
+    if (error) {
+      ({ data, error } = await supabase
+        .from('direct_messages')
+        .select(`
+          id, content, read, created_at,
+          sender:sender_id (id, name, avatar_url)
+        `)
+        .eq('conversation_id', req.params.id)
+        .order('created_at', { ascending: true }));
+    }
 
     if (error) throw error;
 
@@ -162,6 +178,120 @@ router.get('/conversations/:id/messages', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not fetch messages' });
+  }
+});
+
+// ── Edit a DM (sender only) ───────────────────────────
+router.patch('/messages/:id/edit', async (req, res) => {
+  const { content } = req.body;
+  if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
+
+  try {
+    const { data: msg } = await supabase
+      .from('direct_messages')
+      .select('id, sender_id, conversation_id')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+    if (msg.sender_id !== req.user.id) return res.status(403).json({ error: 'You can only edit your own messages' });
+
+    // Try with edited flag, fall back if column doesn't exist yet
+    let data, error;
+    ({ data, error } = await supabase
+      .from('direct_messages')
+      .update({ content: content.trim(), edited: true })
+      .eq('id', req.params.id)
+      .select('id, content, edited')
+      .single());
+
+    if (error) {
+      ({ data, error } = await supabase
+        .from('direct_messages')
+        .update({ content: content.trim() })
+        .eq('id', req.params.id)
+        .select('id, content')
+        .single());
+    }
+
+    if (error) throw error;
+
+    // Notify both participants
+    const { data: convo } = await supabase
+      .from('conversations')
+      .select('user1_id, user2_id')
+      .eq('id', msg.conversation_id)
+      .single();
+
+    const io = req.app.get('io');
+    if (io && convo) {
+      const otherId = convo.user1_id === req.user.id ? convo.user2_id : convo.user1_id;
+      io.to(`user:${req.user.id}`).to(`user:${otherId}`)
+        .emit('dm_message_edited', { conversationId: msg.conversation_id, messageId: req.params.id, content: data.content });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not edit message' });
+  }
+});
+
+// ── Toggle a DM reaction ──────────────────────────────
+router.post('/messages/:id/reactions', async (req, res) => {
+  const { emoji } = req.body;
+  if (!emoji) return res.status(400).json({ error: 'Emoji is required' });
+
+  try {
+    const { data: msg } = await supabase
+      .from('direct_messages')
+      .select('id, conversation_id')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+
+    // Verify user is part of this conversation
+    const { data: convo } = await supabase
+      .from('conversations')
+      .select('user1_id, user2_id')
+      .eq('id', msg.conversation_id)
+      .single();
+
+    if (!convo || (convo.user1_id !== req.user.id && convo.user2_id !== req.user.id)) {
+      return res.status(403).json({ error: 'Not your conversation' });
+    }
+
+    const { data: existing } = await supabase
+      .from('dm_reactions')
+      .select('id')
+      .eq('message_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .eq('emoji', emoji)
+      .single();
+
+    if (existing) {
+      await supabase.from('dm_reactions').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('dm_reactions').insert({ message_id: req.params.id, user_id: req.user.id, emoji });
+    }
+
+    const { data: reactions } = await supabase
+      .from('dm_reactions')
+      .select('emoji, user_id')
+      .eq('message_id', req.params.id);
+
+    const io = req.app.get('io');
+    if (io) {
+      const otherId = convo.user1_id === req.user.id ? convo.user2_id : convo.user1_id;
+      io.to(`user:${req.user.id}`).to(`user:${otherId}`)
+        .emit('dm_message_reaction', { conversationId: msg.conversation_id, messageId: req.params.id, reactions: reactions || [] });
+    }
+
+    res.json({ reactions: reactions || [] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not toggle reaction' });
   }
 });
 

@@ -95,9 +95,10 @@ router.get('/:groupId', async (req, res) => {
     let query = supabase
         .from('messages')
         .select(`
-            id, content, type, created_at,
+            id, content, type, created_at, edited,
             users!sender_id (id, name, role, roll_no, avatar_url),
-            files!file_id (id, filename, file_url, file_type, size_bytes)
+            files!file_id (id, filename, file_url, file_type, size_bytes),
+            message_reactions (emoji, user_id)
         `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: false })
@@ -318,6 +319,106 @@ router.patch('/:messageId/unpin', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not unpin message' });
+  }
+});
+
+// ── Edit a message (sender only) ─────────────────────
+router.patch('/:messageId/edit', async (req, res) => {
+  const { messageId } = req.params;
+  const { content } = req.body;
+
+  if (!content?.trim()) {
+    return res.status(400).json({ error: 'Content is required' });
+  }
+
+  try {
+    const { data: message } = await supabase
+      .from('messages')
+      .select('id, sender_id, group_id')
+      .eq('id', messageId)
+      .single();
+
+    if (!message) return res.status(404).json({ error: 'Message not found' });
+    if (message.sender_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only edit your own messages' });
+    }
+
+    const { data, error } = await supabase
+      .from('messages')
+      .update({ content: content.trim(), edited: true })
+      .eq('id', messageId)
+      .select('id, content, edited')
+      .single();
+
+    if (error) throw error;
+
+    const io = req.app.get('io');
+    if (io) io.to(message.group_id).emit('message_edited', { messageId, content: data.content });
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not edit message' });
+  }
+});
+
+// ── Toggle a reaction ─────────────────────────────────
+router.post('/:messageId/reactions', async (req, res) => {
+  const { messageId } = req.params;
+  const { emoji } = req.body;
+
+  if (!emoji) return res.status(400).json({ error: 'Emoji is required' });
+
+  try {
+    const { data: message } = await supabase
+      .from('messages')
+      .select('id, group_id')
+      .eq('id', messageId)
+      .single();
+
+    if (!message) return res.status(404).json({ error: 'Message not found' });
+
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', message.group_id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!membership) return res.status(403).json({ error: 'Not a member' });
+
+    // Check if reaction already exists (toggle)
+    const { data: existing } = await supabase
+      .from('message_reactions')
+      .select('id')
+      .eq('message_id', messageId)
+      .eq('user_id', req.user.id)
+      .eq('emoji', emoji)
+      .single();
+
+    if (existing) {
+      await supabase.from('message_reactions').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('message_reactions').insert({
+        message_id: messageId,
+        user_id: req.user.id,
+        emoji
+      });
+    }
+
+    // Fetch updated reaction counts for this message
+    const { data: reactions } = await supabase
+      .from('message_reactions')
+      .select('emoji, user_id')
+      .eq('message_id', messageId);
+
+    const io = req.app.get('io');
+    if (io) io.to(message.group_id).emit('message_reaction', { messageId, reactions: reactions || [] });
+
+    res.json({ reactions: reactions || [] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not toggle reaction' });
   }
 });
 

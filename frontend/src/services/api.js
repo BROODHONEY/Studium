@@ -44,11 +44,13 @@ export const groupsAPI = {
 };
 
 export const messagesAPI = {
-  list:   (groupId, params) => api.get(`/messages/${groupId}`, { params }),
-  pinned: (groupId)         => api.get(`/messages/${groupId}/pinned`),
-  pin:    (messageId, data) => api.patch(`/messages/${messageId}/pin`, data ?? {}),
-  unpin:  (messageId)       => api.patch(`/messages/${messageId}/unpin`),
-  delete: (messageId)       => api.delete(`/messages/${messageId}`)
+  list:    (groupId, params) => api.get(`/messages/${groupId}`, { params }),
+  pinned:  (groupId)         => api.get(`/messages/${groupId}/pinned`),
+  pin:     (messageId, data) => api.patch(`/messages/${messageId}/pin`, data ?? {}),
+  unpin:   (messageId)       => api.patch(`/messages/${messageId}/unpin`),
+  delete:  (messageId)       => api.delete(`/messages/${messageId}`),
+  edit:    (messageId, content) => api.patch(`/messages/${messageId}/edit`, { content }),
+  react:   (messageId, emoji)   => api.post(`/messages/${messageId}/reactions`, { emoji }),
 };
 
 export const filesAPI = {
@@ -79,11 +81,13 @@ export const profileAPI = {
 };
 
 export const dmAPI = {
-  search:          (email)          => api.get('/dm/search', { params: { email } }),
-  getConversations:()               => api.get('/dm/conversations'),
-  startConversation:(userId)        => api.post('/dm/conversations', { userId }),
-  getMessages:     (conversationId) => api.get(`/dm/conversations/${conversationId}/messages`),
-  getOnlineStatus: (userIds)        => api.post('/dm/online-status', { userIds })
+  search:           (email)          => api.get('/dm/search', { params: { email } }),
+  getConversations: ()               => api.get('/dm/conversations'),
+  startConversation:(userId)         => api.post('/dm/conversations', { userId }),
+  getMessages:      (conversationId) => api.get(`/dm/conversations/${conversationId}/messages`),
+  getOnlineStatus:  (userIds)        => api.post('/dm/online-status', { userIds }),
+  editMessage:      (id, content)    => api.patch(`/dm/messages/${id}/edit`, { content }),
+  reactMessage:     (id, emoji)      => api.post(`/dm/messages/${id}/reactions`, { emoji }),
 };
 
 export default api;
