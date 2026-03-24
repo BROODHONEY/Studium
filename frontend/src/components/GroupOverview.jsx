@@ -5,20 +5,33 @@ import { useToast } from '../context/ToastContext';
 import { announcementsAPI, duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 
-const formatDate = (d) =>
-  new Date(d).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+const formatDate = (d) => {
+  const dt = new Date(d);
+  // Check if a time component was stored (not midnight UTC)
+  const hasTime = dt.getUTCHours() !== 0 || dt.getUTCMinutes() !== 0;
+  if (hasTime) {
+    return dt.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+      + ' · ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  return dt.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 const daysUntil = (dateStr) => {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const due   = new Date(dateStr);
-  return Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+  const now = Date.now();
+  const due = new Date(dateStr).getTime();
+  const diffMs = due - now;
+  // If already past, return negative
+  if (diffMs < 0) return -1;
+  // If within the next 24h, return 0 (due today/soon)
+  if (diffMs < 24 * 60 * 60 * 1000) return 0;
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 };
 
 const dueBadge = (days) => {
-  if (days < 0)  return { label: 'Overdue',          cls: 'bg-red-500/10 text-red-400 border-red-500/20' };
-  if (days === 0) return { label: 'Due today',        cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
-  if (days <= 3) return { label: `${days}d left`,    cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
-  return              { label: `${days}d left`,       cls: 'bg-gray-800 text-gray-400 border-gray-700' };
+  if (days < 0)   return { label: 'Overdue',       cls: 'bg-red-500/10 text-red-400 border-red-500/20' };
+  if (days === 0) return { label: 'Due today',      cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+  if (days <= 3)  return { label: `${days}d left`,  cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+  return               { label: `${days}d left`,    cls: 'bg-gray-800 text-gray-400 border-gray-700' };
 };
 
 // ── Announcement form ──────────────────────────────────
@@ -102,20 +115,25 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
 
 // ── Due form ───────────────────────────────────────────
 function DueForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]       = useState({ title: '', description: '', due_date: '' });
+  const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(false);
 
   useEffect(() => {
     if (editing) {
+      const dt = new Date(editing.due_date);
+      // Extract local date and time from the stored value
+      const localDate = dt.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
+      const localTime = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
       setForm({
         title: editing.title,
         description: editing.description || '',
-        due_date: editing.due_date
+        due_date: localDate,
+        due_time: localTime === '00:00' ? '' : localTime,
       });
       setOpen(true);
     } else {
-      setForm({ title: '', description: '', due_date: '' });
+      setForm({ title: '', description: '', due_date: '', due_time: '' });
       setOpen(false);
     }
   }, [editing]);
@@ -124,14 +142,17 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
     e.preventDefault();
     setLoading(true);
     try {
+      // Combine date + time into an ISO string; default to end of day if no time set
+      const timeStr = form.due_time || '23:59';
+      const isoDatetime = new Date(`${form.due_date}T${timeStr}`).toISOString();
+      const payload = { title: form.title, description: form.description, due_date: isoDatetime };
       const res = editing
-        ? await duesAPI.update(groupId, editing.id, form)
-        : await duesAPI.create(groupId, form);
-      // For edits, update immediately; for creates, socket 'new_due' handles it
+        ? await duesAPI.update(groupId, editing.id, payload)
+        : await duesAPI.create(groupId, payload);
       if (editing) {
         onCreated(res.data);
       }
-      setForm({ title: '', description: '', due_date: '' });
+      setForm({ title: '', description: '', due_date: '', due_time: '' });
       setOpen(false);
       if (onCancel) onCancel();
     } catch (err) {
@@ -143,7 +164,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
 
   const handleCancel = () => {
     setOpen(false);
-    setForm({ title: '', description: '', due_date: '' });
+    setForm({ title: '', description: '', due_date: '', due_time: '' });
     if (onCancel) onCancel();
   };
 
@@ -165,11 +186,19 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
         className="form-input" placeholder="Description (optional)"
         value={form.description}
         onChange={e => setForm(p => ({ ...p, description: e.target.value }))}/>
-      <div>
-        <label className="form-label">Due date</label>
-        <input type="date" className="form-input" required
-          value={form.due_date}
-          onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className="form-label">Due date</label>
+          <input type="date" className="form-input" required
+            value={form.due_date}
+            onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
+        </div>
+        <div className="flex-1">
+          <label className="form-label">Time <span className="text-gray-600">(optional)</span></label>
+          <input type="time" className="form-input"
+            value={form.due_time}
+            onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}/>
+        </div>
       </div>
       <div className="flex gap-2">
         <button type="submit" disabled={loading}
@@ -470,6 +499,15 @@ export default function GroupOverview({ group }) {
                       <p className="text-xs text-gray-500 mt-0.5 uppercase">
                         {new Date(d.due_date).toLocaleDateString([], { month: 'short' })}
                       </p>
+                      {(() => {
+                        const dt = new Date(d.due_date);
+                        const hasTime = dt.getUTCHours() !== 0 || dt.getUTCMinutes() !== 0;
+                        return hasTime ? (
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            {dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        ) : null;
+                      })()}
                     </div>
 
                     {/* Divider */}
