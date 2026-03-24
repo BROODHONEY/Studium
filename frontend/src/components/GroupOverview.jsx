@@ -44,7 +44,11 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
       const res = editing
         ? await announcementsAPI.update(groupId, editing.id, form)
         : await announcementsAPI.create(groupId, form);
-      onCreated(res.data);
+      // For edits, update state immediately (no socket event for updates from self)
+      // For creates, the socket 'new_announcement' event handles adding to the list
+      if (editing) {
+        onCreated(res.data);
+      }
       setForm({ title: '', content: '' });
       setOpen(false);
       if (onCancel) onCancel();
@@ -123,7 +127,10 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
       const res = editing
         ? await duesAPI.update(groupId, editing.id, form)
         : await duesAPI.create(groupId, form);
-      onCreated(res.data);
+      // For edits, update immediately; for creates, socket 'new_due' handles it
+      if (editing) {
+        onCreated(res.data);
+      }
       setForm({ title: '', description: '', due_date: '' });
       setOpen(false);
       if (onCancel) onCancel();

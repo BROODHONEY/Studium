@@ -27,48 +27,66 @@ export default function DMPanel({ conversation, onNewMessage }) {
   const other = conversation?.other;
 
   useEffect(() => {
-    if (!conversation) return;
+    if (!conversation) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
+    // Reset state when conversation changes
     setMessages([]);
     setLoading(true);
 
+    // Load messages
     dmAPI.getMessages(conversation.id)
       .then(res => setMessages(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
+  }, [conversation?.id, conversation]);
 
-    if (!socket) return;
+  useEffect(() => {
+    if (!socket || !conversation) return;
 
-    socket.off('new_dm');
-    socket.off('dm_user_typing');
-    socket.off('dm_user_stopped_typing');
-
-    socket.on('new_dm', ({ conversationId, message }) => {
+    const handleNewDM = ({ conversationId, message }) => {
       if (conversationId !== conversation.id) return;
       setMessages(prev => {
-        if (prev.find(m => m.id === message.id)) return prev;
-        return [...prev, message];
+        // Replace optimistic message with real one, or add if not found
+        const existingIndex = prev.findIndex(m => m.id === message.id || (m.id.startsWith('temp-') && m.content === message.content && m.sender.id === message.sender.id));
+        if (existingIndex >= 0) {
+          // Replace the optimistic message
+          const newMessages = [...prev];
+          newMessages[existingIndex] = message;
+          return newMessages;
+        } else {
+          // Add new message
+          return [...prev, message];
+        }
       });
       onNewMessage?.(conversationId, message);
-    });
+    };
 
-    socket.on('dm_user_typing', ({ conversationId, userId }) => {
+    const handleTyping = ({ conversationId, userId }) => {
       if (conversationId === conversation.id && userId === other?.id) {
         setIsTyping(true);
       }
-    });
+    };
 
-    socket.on('dm_user_stopped_typing', ({ conversationId, userId }) => {
+    const handleStopTyping = ({ conversationId, userId }) => {
       if (conversationId === conversation.id && userId === other?.id) {
         setIsTyping(false);
       }
-    });
+    };
+
+    socket.on('new_dm', handleNewDM);
+    socket.on('dm_user_typing', handleTyping);
+    socket.on('dm_user_stopped_typing', handleStopTyping);
 
     return () => {
-      socket.off('new_dm');
-      socket.off('dm_user_typing');
-      socket.off('dm_user_stopped_typing');
+      socket.off('new_dm', handleNewDM);
+      socket.off('dm_user_typing', handleTyping);
+      socket.off('dm_user_stopped_typing', handleStopTyping);
     };
-  }, [conversation?.id, socket]);
+  }, [conversation?.id, socket, other?.id, onNewMessage, conversation]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -76,15 +94,35 @@ export default function DMPanel({ conversation, onNewMessage }) {
 
   const sendMessage = () => {
     if (!text.trim() || !socket) return;
-    socket.emit('send_dm', {
-      conversationId: conversation.id,
-      content: text.trim()
-    });
+
+    const messageContent = text.trim();
+
+    // Optimistically add the message to local state
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`, // Temporary ID
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      read: false,
+      sender: {
+        id: user.id,
+        name: user.name,
+        avatar_url: user.avatar_url
+      }
+    };
+
+    setMessages(prev => [...prev, optimisticMessage]);
     setText('');
+
     // Stop typing indicator
     socket.emit('dm_typing_stop', {
       conversationId: conversation.id,
       otherId: other?.id
+    });
+
+    // Send via socket
+    socket.emit('send_dm', {
+      conversationId: conversation.id,
+      content: messageContent
     });
   };
 

@@ -50,12 +50,20 @@ export default function DashboardPage() {
     setActiveGroup(null);
   };
 
-  const handleGroupAdded = (group) => {
+  const handleGroupAdded = async (group) => {
+    // Fetch full group details (includes my_role, admins_only, etc.)
+    let fullGroup = group;
+    try {
+      const res = await groupsAPI.get(group.id);
+      fullGroup = { ...res.data, my_role: res.data.my_role ?? group.my_role };
+    } catch {
+      // fall back to the partial object if fetch fails
+    }
     setGroups(prev => {
-      if (prev.find(g => g.id === group.id)) return prev;
-      return [group, ...prev];
+      if (prev.find(g => g.id === fullGroup.id)) return prev;
+      return [fullGroup, ...prev];
     });
-    setActiveGroup(group);
+    setActiveGroup(fullGroup);
     setActiveConvo(null);
     setActiveTab('Overview');
     setSidebarTab('groups');
