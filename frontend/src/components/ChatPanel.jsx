@@ -4,6 +4,8 @@ import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
 import MessageMenu from './ui/MessageMenu';
 import ConfirmDialog from './ui/ConfirmDialog';
+import MessageContent from './ui/MessageContent';
+import FormatToolbar from './ui/FormatToolbar';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
@@ -35,6 +37,7 @@ export default function ChatPanel({ group, onViewProfile }) {
   const typingTimersRef = useRef({});
 
   const bottomRef        = useRef(null);
+  const textareaRef      = useRef(null);
   const joinedRoomsRef   = useRef(new Set());
   const previousGroupRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -815,7 +818,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                             </span>
                           </button>
                         )}
-                        {item.content}
+                        <MessageContent content={item.content} isOwn={isOwn} />
                         {item.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
                         {item.files && <FilePreview file={item.files} />}
                       </div>
@@ -939,18 +942,22 @@ export default function ChatPanel({ group, onViewProfile }) {
                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
               </svg>
             </button>
-            <textarea
-              value={text}
-              onChange={handleTextChange}
-              onKeyDown={handleKeyDown}
-              rows={1}
-              placeholder={connected ? 'Type a message... ' : 'Disconnected... reconnecting'}
-              className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
-                text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-brand-500
-                resize-none transition"
-              disabled={!connected}
-            />
+            <div className="flex-1 flex flex-col">
+              <FormatToolbar textareaRef={textareaRef} setText={setText} />
+              <textarea
+                ref={textareaRef}
+                value={text}
+                onChange={handleTextChange}
+                onKeyDown={handleKeyDown}
+                rows={1}
+                placeholder={connected ? 'Type a message... ' : 'Disconnected... reconnecting'}
+                className="dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
+                  text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
+                  focus:outline-none focus:ring-2 focus:ring-brand-500
+                  resize-none transition"
+                disabled={!connected}
+              />
+            </div>
             <button
               onClick={privateReply ? handlePrivateReply : sendMessage}
               disabled={!text.trim() || (!connected && !privateReply)}
