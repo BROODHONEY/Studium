@@ -4,6 +4,8 @@ import { useSocket } from '../context/SocketContext';
 import { dmAPI } from '../services/api';
 import OnlineDot from './OnlineDot';
 import MessageMenu from './ui/MessageMenu';
+import MessageContent from './ui/MessageContent';
+import FormatToolbar from './ui/FormatToolbar';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
@@ -33,6 +35,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const [replyTo, setReplyTo]             = useState(null); // { id, content, senderName }
 
   const bottomRef    = useRef(null);
+  const textareaRef  = useRef(null);
   const typingTimer  = useRef(null);
   const messageRefs  = useRef({});
 
@@ -314,7 +317,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                               </span>
                             </button>
                           )}
-                          {msg.content}
+                          <MessageContent content={msg.content} isOwn={isOwn} />
                           {msg.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
                         </div>
                       )}
@@ -415,14 +418,18 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
           </div>
         )}
         <div className="flex gap-3 items-end">
-          <textarea
-            value={text}
-            onChange={handleTypingInput}
-            onKeyDown={handleKeyDown}
-            rows={1}
-            placeholder={`Message ${other?.name}...`}
-            className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5 text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none transition"
-          />
+          <div className="flex-1 flex flex-col">
+            <FormatToolbar textareaRef={textareaRef} setText={setText} />
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={handleTypingInput}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              placeholder={`Message ${other?.name}...`}
+              className="dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5 text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none transition"
+            />
+          </div>
           <button onClick={sendMessage} disabled={!text.trim()}
             className="bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition">
             Send
