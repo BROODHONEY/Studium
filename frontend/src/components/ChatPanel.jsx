@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
 
-export default function ChatPanel({ group }) {
+export default function ChatPanel({ group, onViewProfile }) {
   const { user }   = useAuth();
   const { socket, connected } = useSocket();
 
@@ -593,11 +593,13 @@ export default function ChatPanel({ group }) {
 
                 {/* Avatar */}
                 {!isOwn && (
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center
-                    text-xs font-semibold text-white flex-shrink-0 mb-1
-                    ${avatarColor(senderName)}`}>
+                  <button
+                    onClick={() => onViewProfile?.(sender?.id)}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center
+                      text-xs font-semibold text-white flex-shrink-0 mb-1
+                      ${avatarColor(senderName)} hover:ring-2 hover:ring-white/20 transition`}>
                     {initials(sender?.name)}
-                  </div>
+                  </button>
                 )}
 
                 {/* Bubble group */}
@@ -672,11 +674,13 @@ export default function ChatPanel({ group }) {
 
                 {/* Own avatar on the right */}
                 {isOwn && (
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center
-                    text-xs font-semibold text-white flex-shrink-0 mb-1
-                    ${avatarColor(user?.name)}`}>
+                  <button
+                    onClick={() => onViewProfile?.(user?.id)}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center
+                      text-xs font-semibold text-white flex-shrink-0 mb-1
+                      ${avatarColor(user?.name)} hover:ring-2 hover:ring-white/20 transition`}>
                     {initials(user?.name)}
-                  </div>
+                  </button>
                 )}
               </div>
             );

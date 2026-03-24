@@ -73,6 +73,11 @@ export const duesAPI = {
   delete: (groupId, id)   => api.delete(`/dues/${groupId}/${id}`)
 };
 
+export const profileAPI = {
+  get:    (userId) => api.get(`/users/${userId}`),
+  update: (data)   => api.patch('/users/me', data),
+};
+
 export const dmAPI = {
   search:          (email)          => api.get('/dm/search', { params: { email } }),
   getConversations:()               => api.get('/dm/conversations'),

@@ -12,6 +12,7 @@ import FilesPanel       from '../components/FilesPanel';
 import MembersPanel     from '../components/MembersPanel';
 import GroupOverview    from '../components/GroupOverview';
 import KickNotification from '../components/KickNotification';
+import ProfileModal     from '../components/ProfileModal';
 import { NotificationProvider } from '../context/NotificationContext';
 
 export default function DashboardPage() {
@@ -31,6 +32,9 @@ export default function DashboardPage() {
 
   // DMs state
   const [activeConvo, setActiveConvo] = useState(null);
+
+  // Profile modal
+  const [profileUserId, setProfileUserId] = useState(null);
 
   useEffect(() => {
     groupsAPI.list()
@@ -108,10 +112,16 @@ export default function DashboardPage() {
       {/* Top nav */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 flex-shrink-0">
         <span className="text-sm font-semibold text-white">Studi+</span>
-        <button onClick={logout}
-          className="text-xs text-gray-600 hover:text-red-400 transition">
-          Sign out
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setProfileUserId(user?.id)}
+            className="text-xs text-gray-400 hover:text-white transition">
+            {user?.name}
+          </button>
+          <button onClick={logout}
+            className="text-xs text-gray-600 hover:text-red-400 transition">
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Body */}
@@ -173,7 +183,7 @@ export default function DashboardPage() {
               )}
               {activeTab === 'Chat' && (
                 <div className="flex-1 min-h-0">
-                  <ChatPanel group={activeGroup} />
+                  <ChatPanel group={activeGroup} onViewProfile={(userId) => setProfileUserId(userId)} />
                 </div>
               )}
               {activeTab === 'Files' && (
@@ -189,6 +199,7 @@ export default function DashboardPage() {
                     }}
                     onLeft={handleLeft}
                     onGroupDeleted={handleLeft}
+                    onViewProfile={(userId) => setProfileUserId(userId)}
                   />
                 </div>
               )}
@@ -200,6 +211,7 @@ export default function DashboardPage() {
             <DMPanel
               conversation={activeConvo}
               onNewMessage={handleNewDMMessage}
+              onViewProfile={(userId) => setProfileUserId(userId)}
             />
           )}
 
@@ -250,6 +262,10 @@ export default function DashboardPage() {
           onClose={() => setShowModal(false)}
           onSuccess={handleGroupAdded}
         />
+      )}
+
+      {profileUserId && (
+        <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
       )}
 
       <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />

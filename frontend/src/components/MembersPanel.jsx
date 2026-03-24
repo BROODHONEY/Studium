@@ -14,7 +14,7 @@ const COLORS = [
 ];
 const avatarColor = (name) => COLORS[name?.charCodeAt(0) % COLORS.length];
 
-export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDeleted }) {
+export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDeleted, onViewProfile }) {
   const { user }  = useAuth();
   const { addToast } = useToast();
   const myRole    = group?.my_role;
@@ -301,19 +301,22 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               <MemberSection title="Admins" members={admins}
                 currentUserId={user?.id} isAdmin={isAdmin}
                 canKick={false} canPromote={false} canDemote={true}
-                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}/>
+                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}
+                onViewProfile={onViewProfile}/>
             )}
             {teachers.length > 0 && (
               <MemberSection title="Teachers" members={teachers}
                 currentUserId={user?.id} isAdmin={isAdmin}
                 canKick={true} canPromote={true} canDemote={false}
-                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}/>
+                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}
+                onViewProfile={onViewProfile}/>
             )}
             {students.length > 0 && (
               <MemberSection title="Students" members={students}
                 currentUserId={user?.id} isAdmin={isAdmin}
                 canKick={true} canPromote={false} canDemote={false}
-                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}/>
+                onKick={handleKick} onPromote={handlePromote} onDemote={handleDemote}
+                onViewProfile={onViewProfile}/>
             )}
           </>
         )}
@@ -424,7 +427,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   );
 }
 
-function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPromote, canDemote, onKick, onPromote, onDemote }) {
+function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPromote, canDemote, onKick, onPromote, onDemote, onViewProfile }) {
   return (
     <div>
       <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
@@ -442,10 +445,12 @@ function MemberSection({ title, members, currentUserId, isAdmin, canKick, canPro
                 {initials(u.name)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-white font-medium truncate">
+                <button
+                  onClick={() => onViewProfile?.(u.id)}
+                  className="text-sm text-white font-medium truncate hover:text-indigo-300 transition text-left">
                   {u.name}
                   {isMe && <span className="ml-1.5 text-xs text-gray-600">(you)</span>}
-                </p>
+                </button>
                 <p className="text-xs text-gray-600 truncate">{u.email || u.phone}</p>
               </div>
               {isAdmin && !isMe && (

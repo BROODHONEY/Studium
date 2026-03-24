@@ -13,6 +13,7 @@ const initSocket = require('./config/socket');
 const announcementRoutes = require('./routes/announcements');
 const dueRoutes          = require('./routes/dues');
 const dmRoutes = require('./routes/dm');
+const userRoutes = require('./routes/users');
 
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api/files', fileRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/dues', dueRoutes);
 app.use('/api/dm', dmRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studium API is running' });

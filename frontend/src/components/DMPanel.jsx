@@ -13,7 +13,7 @@ const COLORS = [
 ];
 const avatarColor = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
-export default function DMPanel({ conversation, onNewMessage }) {
+export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
 
@@ -168,16 +168,16 @@ export default function DMPanel({ conversation, onNewMessage }) {
 
       {/* Header */}
       <div className="px-5 py-3 border-b border-gray-800 flex items-center gap-3 flex-shrink-0">
-        <div className="relative">
-          <div className={`w-8 h-8 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white`}>
+        <button onClick={() => onViewProfile?.(other?.id)} className="relative flex-shrink-0">
+          <div className={`w-8 h-8 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white hover:ring-2 hover:ring-white/20 transition`}>
             {initials(other?.name)}
           </div>
           <OnlineDot userId={other?.id} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-gray-950"/>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-white">{other?.name}</p>
+        </button>
+        <button onClick={() => onViewProfile?.(other?.id)} className="text-left">
+          <p className="text-sm font-semibold text-white hover:text-indigo-300 transition">{other?.name}</p>
           <p className="text-xs text-gray-500 capitalize">{other?.role}</p>
-        </div>
+        </button>
       </div>
 
       {/* Messages */}
@@ -207,9 +207,10 @@ export default function DMPanel({ conversation, onNewMessage }) {
                 <div key={msg.id}
                   className={`flex gap-2.5 items-end ${isOwn ? 'flex-row-reverse' : ''}`}>
                   {!isOwn && (
-                    <div className={`w-7 h-7 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0 mb-1`}>
+                    <button onClick={() => onViewProfile?.(other?.id)}
+                      className={`w-7 h-7 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0 mb-1 hover:ring-2 hover:ring-white/20 transition`}>
                       {initials(other?.name)}
-                    </div>
+                    </button>
                   )}
                   <div className={`flex flex-col max-w-xs lg:max-w-md ${isOwn ? 'items-end' : 'items-start'}`}>
                     <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
@@ -228,9 +229,10 @@ export default function DMPanel({ conversation, onNewMessage }) {
                     </span>
                   </div>
                   {isOwn && (
-                    <div className={`w-7 h-7 rounded-full ${avatarColor(user?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0 mb-1`}>
+                    <button onClick={() => onViewProfile?.(user?.id)}
+                      className={`w-7 h-7 rounded-full ${avatarColor(user?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0 mb-1 hover:ring-2 hover:ring-white/20 transition`}>
                       {initials(user?.name)}
-                    </div>
+                    </button>
                   )}
                 </div>
               );
