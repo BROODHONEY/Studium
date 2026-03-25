@@ -22,13 +22,22 @@ router.get('/:groupId', async (req, res) => {
     const { data, error } = await supabase
       .from('announcements')
       .select(`
-        id, title, content, created_at,
+        id, title, content, tag, created_at,
         users!created_by (id, name)
       `)
       .eq('group_id', req.params.groupId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      // Fallback: tag column may not exist yet — fetch without it
+      const { data: fallback, error: fallbackErr } = await supabase
+        .from('announcements')
+        .select(`id, title, content, created_at, users!created_by (id, name)`)
+        .eq('group_id', req.params.groupId)
+        .order('created_at', { ascending: false });
+      if (fallbackErr) throw fallbackErr;
+      return res.json((fallback || []).map(a => ({ ...a, tag: 'general' })));
+    }
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -38,7 +47,8 @@ router.get('/:groupId', async (req, res) => {
 
 // ── Create an announcement (admin/teacher only) ────────
 router.post('/:groupId', async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, tag } = req.body;
+  const VALID_TAGS = ['general', 'urgent', 'exam', 'assignment', 'event'];
 
   if (!title || !content) {
     return res.status(400).json({ error: 'Title and content are required' });
@@ -66,21 +76,28 @@ router.post('/:groupId', async (req, res) => {
         group_id: req.params.groupId,
         created_by: req.user.id,
         title,
-        content
+        content,
+        tag: VALID_TAGS.includes(tag) ? tag : 'general'
       })
-      .select(`
-        id, title, content, created_at,
-        users!created_by (id, name)
-      `)
+      .select(`id, title, content, tag, created_at, users!created_by (id, name)`)
       .single();
 
-    if (error) throw error;
-
-    // Broadcast to group via socket
-    const io = req.app.get('io');
-    if (io) {
-      io.to(req.params.groupId).emit('new_announcement', data);
+    if (error) {
+      // Fallback if tag column doesn't exist yet
+      const { data: fallback, error: fallbackErr } = await supabase
+        .from('announcements')
+        .insert({ group_id: req.params.groupId, created_by: req.user.id, title, content })
+        .select(`id, title, content, created_at, users!created_by (id, name)`)
+        .single();
+      if (fallbackErr) throw fallbackErr;
+      const result = { ...fallback, tag: 'general' };
+      const io = req.app.get('io');
+      if (io) io.to(req.params.groupId).emit('new_announcement', result);
+      return res.status(201).json(result);
     }
+
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('new_announcement', data);
 
     res.status(201).json(data);
   } catch (err) {
@@ -91,7 +108,8 @@ router.post('/:groupId', async (req, res) => {
 
 // ── Update an announcement (admin/creator only) ──────
 router.put('/:groupId/:id', async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, tag } = req.body;
+  const VALID_TAGS = ['general', 'urgent', 'exam', 'assignment', 'event'];
 
   if (!title || !content) {
     return res.status(400).json({ error: 'Title and content are required' });
@@ -124,21 +142,28 @@ router.put('/:groupId/:id', async (req, res) => {
 
     const { data, error } = await supabase
       .from('announcements')
-      .update({ title, content })
+      .update({ title, content, tag: VALID_TAGS.includes(tag) ? tag : 'general' })
       .eq('id', req.params.id)
-      .select(`
-        id, title, content, created_at,
-        users!created_by (id, name)
-      `)
+      .select(`id, title, content, tag, created_at, users!created_by (id, name)`)
       .single();
 
-    if (error) throw error;
-
-    // Broadcast update to group via socket
-    const io = req.app.get('io');
-    if (io) {
-      io.to(req.params.groupId).emit('update_announcement', data);
+    if (error) {
+      // Fallback if tag column doesn't exist yet
+      const { data: fallback, error: fallbackErr } = await supabase
+        .from('announcements')
+        .update({ title, content })
+        .eq('id', req.params.id)
+        .select(`id, title, content, created_at, users!created_by (id, name)`)
+        .single();
+      if (fallbackErr) throw fallbackErr;
+      const result = { ...fallback, tag: 'general' };
+      const io = req.app.get('io');
+      if (io) io.to(req.params.groupId).emit('update_announcement', result);
+      return res.json(result);
     }
+
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('update_announcement', data);
 
     res.json(data);
   } catch (err) {

@@ -5,6 +5,30 @@ import { useToast } from '../context/ToastContext';
 import { announcementsAPI, duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 
+// ── Announcement tag config ────────────────────────────
+const TagIcon = ({ type }) => {
+  const icons = {
+    general:    <path d="M13.5 3a.5.5 0 0 1 .5.5V11H2V3.5a.5.5 0 0 1 .5-.5h11zm-11-1A1.5 1.5 0 0 0 1 3.5V12h14V3.5A1.5 1.5 0 0 0 13.5 2h-11zm-2 13a.5.5 0 0 1 .5-.5h15a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5zM3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>,
+    urgent:     <><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/></>,
+    exam:       <><path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6v7zm6.5-3.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1 0-1zm-2-1a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm2-1h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1 0-1zm-2 3a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm2 0h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1 0-1z"/></>,
+    assignment: <><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/><path d="M4.5 8a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0-4a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3z"/></>,
+    event:      <><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/><path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></>,
+  };
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0">
+      {icons[type] || icons.general}
+    </svg>
+  );
+};
+
+export const ANNOUNCEMENT_TAGS = {
+  general:    { label: 'General',    border: 'border-l-gray-400',   badge: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
+  urgent:     { label: 'Urgent',     border: 'border-l-red-500',    badge: 'bg-red-500/10 text-red-400 border-red-500/20' },
+  exam:       { label: 'Exam',       border: 'border-l-purple-500', badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+  assignment: { label: 'Assignment', border: 'border-l-amber-500',  badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  event:      { label: 'Event',      border: 'border-l-teal-500',   badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
+};
+
 const formatDate = (d) => {
   const dt = new Date(d);
   const hasTime = dt.getUTCHours() !== 0 || dt.getUTCMinutes() !== 0;
@@ -30,13 +54,13 @@ const dueBadge = (days) => {
 };
 
 function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]       = useState({ title: '', content: '' });
+  const [form, setForm]       = useState({ title: '', content: '', tag: 'general' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(false);
 
   useEffect(() => {
-    if (editing) { setForm({ title: editing.title, content: editing.content }); setOpen(true); }
-    else { setForm({ title: '', content: '' }); setOpen(false); }
+    if (editing) { setForm({ title: editing.title, content: editing.content, tag: editing.tag || 'general' }); setOpen(true); }
+    else { setForm({ title: '', content: '', tag: 'general' }); setOpen(false); }
   }, [editing]);
 
   const handleSubmit = async e => {
@@ -47,14 +71,14 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
         ? await announcementsAPI.update(groupId, editing.id, form)
         : await announcementsAPI.create(groupId, form);
       if (editing) onCreated(res.data);
-      setForm({ title: '', content: '' });
+      setForm({ title: '', content: '', tag: 'general' });
       setOpen(false);
       if (onCancel) onCancel();
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
-  const handleCancel = () => { setOpen(false); setForm({ title: '', content: '' }); if (onCancel) onCancel(); };
+  const handleCancel = () => { setOpen(false); setForm({ title: '', content: '', tag: 'general' }); if (onCancel) onCancel(); };
 
   if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
@@ -65,6 +89,17 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit} className="card p-4 space-y-3">
+      {/* Tag picker */}
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(ANNOUNCEMENT_TAGS).map(([key, t]) => (
+          <button key={key} type="button"
+            onClick={() => setForm(p => ({ ...p, tag: key }))}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition
+              ${form.tag === key ? t.badge + ' font-medium' : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-500 dark:hover:bg-surface-4 hover:bg-gray-200'}`}>
+            <TagIcon type={key} />{t.label}
+          </button>
+        ))}
+      </div>
       <input className="form-input" placeholder="Announcement title" required
         value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
       <textarea className="form-input resize-none" rows={3} placeholder="Write your announcement..."
@@ -269,9 +304,16 @@ export default function GroupOverview({ group }) {
                   <p className="dark:text-gray-600 text-gray-400 text-sm">No announcements yet</p>
                 </div>
               ) : announcements.map(a => (
-                <div key={a.id} className="card-hover p-4 group">
+                <div key={a.id} className={`card-hover p-4 group border-l-4 ${(ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general).border}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {(() => { const t = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general; return (
+                          <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${t.badge}`}>
+                            <TagIcon type={a.tag || 'general'} />{t.label}
+                          </span>
+                        ); })()}
+                      </div>
                       <p className="text-sm font-medium dark:text-white text-gray-900">{a.title}</p>
                       <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{a.users?.name} · {formatDate(a.created_at)}</p>
                     </div>
