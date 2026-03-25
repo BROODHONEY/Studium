@@ -308,9 +308,9 @@ export default function GroupOverview({ group }) {
                       <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{a.users?.name} · {formatDate(a.created_at)}</p>
                     </div>
                     {(isTeacher || a.users?.id === user?.id) && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition">Edit</button>
-                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition">Delete</button>
+                      <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition">
+                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition px-1 py-0.5">Edit</button>
+                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
                       </div>
                     )}
                   </div>
@@ -397,9 +397,9 @@ export default function GroupOverview({ group }) {
                         <p className="text-sm font-medium dark:text-white text-gray-900">{a.title}</p>
                         <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{a.users?.name}</p>
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition">Edit</button>
-                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition">Delete</button>
+                      <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition">
+                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition px-1 py-0.5">Edit</button>
+                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
                       </div>
                     </div>
                     <p className="text-sm dark:text-gray-400 text-gray-600 mt-3 leading-relaxed whitespace-pre-wrap line-clamp-2">{a.content}</p>

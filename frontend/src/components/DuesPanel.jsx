@@ -230,11 +230,11 @@ export default function DuesPanel({ group }) {
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`text-xs px-2.5 py-1 rounded-full border ${badge.cls}`}>{badge.label}</span>
                         {(isTeacher || d.users?.id === user?.id) && (
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                          <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition">
                             <button onClick={() => setEditingDue(d)}
-                              className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition">Edit</button>
+                              className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition px-1 py-0.5">Edit</button>
                             <button onClick={() => setDeleteConfirm(d.id)}
-                              className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition">Delete</button>
+                              className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
                           </div>
                         )}
                       </div>
