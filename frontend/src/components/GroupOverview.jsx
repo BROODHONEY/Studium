@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
-import { announcementsAPI, duesAPI } from '../services/api';
+import { announcementsAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { formatDateTime, toISTDateInput, toISTTimeInput } from '../utils/time';
 
@@ -31,20 +31,6 @@ export const ANNOUNCEMENT_TAGS = {
 };
 
 const formatDate = (d) => formatDateTime(d);
-
-const daysUntil = (dateStr) => {
-  const diffMs = new Date(dateStr).getTime() - Date.now();
-  if (diffMs < 0) return -1;
-  if (diffMs < 24 * 60 * 60 * 1000) return 0;
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-};
-
-const dueBadge = (days) => {
-  if (days < 0)   return { label: 'Overdue',      cls: 'bg-red-500/10 text-red-400 border-red-500/20' };
-  if (days === 0) return { label: 'Due today',     cls: 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/20' };
-  if (days <= 3)  return { label: `${days}d left`, cls: 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/20' };
-  return               { label: `${days}d left`,   cls: 'dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:border-surface-4 border-gray-200' };
-};
 
 function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const [form, setForm]         = useState({ title: '', content: '', tag: 'general' });
@@ -170,77 +156,6 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   );
 }
 
-function DueForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '' });
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen]       = useState(false);
-
-  useEffect(() => {
-    if (editing) {
-      const localDate = toISTDateInput(editing.due_date);
-      const localTime = toISTTimeInput(editing.due_date);
-      setForm({ title: editing.title, description: editing.description || '', due_date: localDate, due_time: localTime === '00:00' ? '' : localTime });
-      setOpen(true);
-    } else { setForm({ title: '', description: '', due_date: '', due_time: '' }); setOpen(false); }
-  }, [editing]);
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const timeStr = form.due_time || '23:59';
-      const isoDatetime = new Date(`${form.due_date}T${timeStr}`).toISOString();
-      const payload = { title: form.title, description: form.description, due_date: isoDatetime };
-      const res = editing ? await duesAPI.update(groupId, editing.id, payload) : await duesAPI.create(groupId, payload);
-      if (editing) onCreated(res.data);
-      setForm({ title: '', description: '', due_date: '', due_time: '' });
-      setOpen(false);
-      if (onCancel) onCancel();
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
-
-  const handleCancel = () => { setOpen(false); setForm({ title: '', description: '', due_date: '', due_time: '' }); if (onCancel) onCancel(); };
-
-  if (!open && !editing) return (
-    <button onClick={() => setOpen(true)}
-      className="w-full py-2.5 border border-dashed dark:border-brand-900/50 border-gray-300 rounded-xl dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:border-brand-700/50 hover:border-gray-400 text-sm transition">
-      + Add due date
-    </button>
-  );
-
-  return (
-    <form onSubmit={handleSubmit} className="card p-4 space-y-3">
-      <input className="form-input" placeholder="e.g. Assignment 3 submission" required
-        value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
-      <input className="form-input" placeholder="Description (optional)"
-        value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}/>
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <label className="form-label">Due date</label>
-          <input type="date" className="form-input" required value={form.due_date}
-            onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
-        </div>
-        <div className="flex-1">
-          <label className="form-label">Time <span className="dark:text-gray-600 text-gray-400">(optional)</span></label>
-          <input type="time" className="form-input" value={form.due_time}
-            onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}/>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button type="submit" disabled={loading}
-          className="flex-1 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition">
-          {loading ? (editing ? 'Updating...' : 'Adding...') : (editing ? 'Update' : 'Add')}
-        </button>
-        <button type="button" onClick={handleCancel}
-          className="flex-1 py-2 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-400 text-gray-600 text-sm rounded-xl transition">
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-}
-
 export default function GroupOverview({ group }) {
   const { user }     = useAuth();
   const { socket }   = useSocket();
@@ -251,20 +166,16 @@ export default function GroupOverview({ group }) {
 
   const [announcements, setAnnouncements] = useState([]);
   const [scheduled, setScheduled]         = useState([]);
-  const [dues, setDues]                   = useState([]);
   const [loadingA, setLoadingA]           = useState(true);
-  const [loadingD, setLoadingD]           = useState(true);
   const [deleteConfirm, setDeleteConfirm]       = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-  const [editingDue, setEditingDue]               = useState(null);
 
   useEffect(() => {
     if (!group || !socket) return;
-    setLoadingA(true); setLoadingD(true);
+    setLoadingA(true);
     announcementsAPI.list(group.id).then(res => setAnnouncements(res.data)).catch(console.error).finally(() => setLoadingA(false));
     if (isTeacher) announcementsAPI.scheduled(group.id).then(res => setScheduled(res.data)).catch(console.error);
-    duesAPI.list(group.id).then(res => setDues(res.data)).catch(console.error).finally(() => setLoadingD(false));
 
     // Ensure we're in the socket room (ChatPanel may not be mounted)
     socket.emit('join_group', group.id);
@@ -273,8 +184,8 @@ export default function GroupOverview({ group }) {
     const onUpdateAnnouncement = (a) => setAnnouncements(prev => prev.map(x => x.id === a.id ? a : x));
     const onReaction = ({ announcementId, reactions }) =>
       setAnnouncements(prev => prev.map(a => a.id === announcementId ? { ...a, announcement_reactions: reactions } : a));
-    const onNewDue    = (d) => setDues(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
-    const onUpdateDue = (d) => setDues(prev => prev.map(x => x.id === d.id ? d : x).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+    const onNewDue    = (d) => d; // handled by DuesPanel
+    const onUpdateDue = (d) => d;
 
     socket.on('new_announcement',    onNewAnnouncement);
     socket.on('update_announcement', onUpdateAnnouncement);
@@ -302,12 +213,6 @@ export default function GroupOverview({ group }) {
     addToast({ type: 'success', message: 'Announcement updated.' });
   };
 
-  const handleDueUpdate = (updated) => {
-    setDues(prev => prev.map(d => d.id === updated.id ? updated : d).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
-    setEditingDue(null);
-    addToast({ type: 'success', message: 'Due date updated.' });
-  };
-
   const handleReact = async (announcementId, emoji) => {
     try {
       await announcementsAPI.react(group.id, announcementId, emoji);
@@ -325,10 +230,6 @@ export default function GroupOverview({ group }) {
         setAnnouncements(prev => prev.filter(a => a.id !== id));
         setScheduled(prev => prev.filter(a => a.id !== id));
         addToast({ type: 'success', message: 'Announcement deleted.' });
-      } else {
-        await duesAPI.delete(group.id, id);
-        setDues(prev => prev.filter(d => d.id !== id));
-        addToast({ type: 'success', message: 'Due date deleted.' });
       }
     } catch (err) {
       addToast({ type: 'error', message: err.response?.data?.error || 'Could not delete item' });
@@ -508,54 +409,6 @@ export default function GroupOverview({ group }) {
             </div>
           </section>
         )}
-
-        {/* Upcoming dues */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold dark:text-white text-gray-900 uppercase tracking-wider">Upcoming dues</h2>
-            <span className="text-xs dark:text-gray-600 text-gray-400">{dues.length} total</span>
-          </div>
-          <div className="space-y-3">
-            {isTeacher && (
-              <DueForm groupId={group.id}
-                onCreated={editingDue ? handleDueUpdate : (d => setDues(prev => [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date))))}
-                editing={editingDue} onCancel={() => setEditingDue(null)}/>
-            )}
-            {loadingD ? [1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>) :
-              dues.length === 0 ? (
-                <div className="py-10 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
-                  <p className="dark:text-gray-600 text-gray-400 text-sm">No upcoming dues</p>
-                </div>
-              ) : dues.map(d => {
-                const days = daysUntil(d.due_date);
-                const badge = dueBadge(days);
-                return (
-                  <div key={d.id} className="card-hover px-4 py-3 group flex items-center gap-4">
-                    <div className="flex-shrink-0 w-12 text-center">
-                      <p className="text-lg font-semibold dark:text-white text-gray-900 leading-none">{new Date(d.due_date).toLocaleString('en-IN', { day: 'numeric', timeZone: 'Asia/Kolkata' })}</p>
-                      <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 uppercase">{new Date(d.due_date).toLocaleDateString('en-IN', { month: 'short', timeZone: 'Asia/Kolkata' })}</p>
-                      {(() => { const dt = new Date(d.due_date); const istTime = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }); const istMidnight = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }); return istMidnight !== '00:00' ? <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">{istTime}</p> : null; })()}
-                    </div>
-                    <div className="w-px h-8 dark:bg-surface-4 bg-gray-200 flex-shrink-0"/>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium dark:text-white text-gray-900 truncate">{d.title}</p>
-                      {d.description && <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 truncate">{d.description}</p>}
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border ${badge.cls}`}>{badge.label}</span>
-                      {(isTeacher || d.users?.id === user?.id) && (
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                          <button onClick={() => setEditingDue(d)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition">Edit</button>
-                          <button onClick={() => setDeleteConfirm({ type: 'due', id: d.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition">Delete</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            }
-          </div>
-        </section>
       </div>
     </div>
   );

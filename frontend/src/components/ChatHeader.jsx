@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ChatHeader({ group, activeTab, onTabChange }) {
   const { user } = useAuth();
-  const tabs = ['Overview', 'Chat', 'Files', 'Members'];
+  const tabs = ['Overview', 'Chat', 'Dues', 'Files', 'Members'];
 
   return (
     <div className="px-5 py-3 border-b dark:border-brand-900/40 border-gray-200 flex items-center justify-between flex-shrink-0 dark:bg-surface-1 bg-white">

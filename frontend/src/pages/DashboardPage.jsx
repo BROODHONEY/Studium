@@ -12,6 +12,7 @@ import GroupModal       from '../components/GroupModal';
 import FilesPanel       from '../components/FilesPanel';
 import MembersPanel     from '../components/MembersPanel';
 import GroupOverview    from '../components/GroupOverview';
+import DuesPanel        from '../components/DuesPanel';
 import KickNotification from '../components/KickNotification';
 import ProfileModal     from '../components/ProfileModal';
 import { NotificationProvider } from '../context/NotificationContext';
@@ -200,6 +201,7 @@ export default function DashboardPage() {
                   <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} />
                 </div>
               )}
+              {activeTab === 'Dues'  && <DuesPanel group={activeGroup} />}
               {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
               {activeTab === 'Members' && (
                 <div className="flex-1 flex flex-col min-h-0">
