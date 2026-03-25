@@ -4,6 +4,7 @@ import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { announcementsAPI, duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
+import { formatDateTime, toISTDateInput, toISTTimeInput } from '../utils/time';
 
 // ── Announcement tag config ────────────────────────────
 const TagIcon = ({ type }) => {
@@ -29,15 +30,7 @@ export const ANNOUNCEMENT_TAGS = {
   event:      { label: 'Event',      border: 'border-l-teal-500',   badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
 };
 
-const formatDate = (d) => {
-  const dt = new Date(d);
-  const hasTime = dt.getUTCHours() !== 0 || dt.getUTCMinutes() !== 0;
-  if (hasTime) {
-    return dt.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
-      + ' · ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-  return dt.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-};
+const formatDate = (d) => formatDateTime(d);
 
 const daysUntil = (dateStr) => {
   const diffMs = new Date(dateStr).getTime() - Date.now();
@@ -65,10 +58,9 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
     if (editing) {
       setForm({ title: editing.title, content: editing.content, tag: editing.tag || 'general' });
       if (editing.scheduled_at && !editing.published) {
-        const d = new Date(editing.scheduled_at);
         setScheduled(true);
-        setSchedDate(d.toLocaleDateString('en-CA'));
-        setSchedTime(d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }));
+        setSchedDate(toISTDateInput(editing.scheduled_at));
+        setSchedTime(toISTTimeInput(editing.scheduled_at));
       } else {
         setScheduled(false); setSchedDate(''); setSchedTime('');
       }
@@ -108,7 +100,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   };
 
   // Min datetime = now + 1 min
-  const minDate = new Date(Date.now() + 60_000).toLocaleDateString('en-CA');
+  const minDate = toISTDateInput(Date.now() + 60_000);
 
   if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
@@ -185,9 +177,8 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
 
   useEffect(() => {
     if (editing) {
-      const dt = new Date(editing.due_date);
-      const localDate = dt.toLocaleDateString('en-CA');
-      const localTime = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const localDate = toISTDateInput(editing.due_date);
+      const localTime = toISTTimeInput(editing.due_date);
       setForm({ title: editing.title, description: editing.description || '', due_date: localDate, due_time: localTime === '00:00' ? '' : localTime });
       setOpen(true);
     } else { setForm({ title: '', description: '', due_date: '', due_time: '' }); setOpen(false); }
@@ -389,8 +380,9 @@ export default function GroupOverview({ group }) {
                 onCreated={editingAnnouncement
                   ? handleAnnouncementUpdate
                   : (a => {
-                      if (a.published) setAnnouncements(prev => [a, ...prev]);
-                      else setScheduled(prev => [...prev, a].sort((x, y) => new Date(x.scheduled_at) - new Date(y.scheduled_at)));
+                      // For scheduled announcements the socket won't fire, so add directly.
+                      // For published ones the socket event handles it — no need to add here.
+                      if (!a.published) setScheduled(prev => [...prev, a].sort((x, y) => new Date(x.scheduled_at) - new Date(y.scheduled_at)));
                     })
                 }
                 editing={editingAnnouncement} onCancel={() => setEditingAnnouncement(null)}/>
@@ -498,7 +490,7 @@ export default function GroupOverview({ group }) {
                               <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
                               <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
                             </svg>
-                            {sendAt.toLocaleDateString([], { day: 'numeric', month: 'short' })} at {sendAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })} at {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                           </span>
                         </div>
                         <p className="text-sm font-medium dark:text-white text-gray-900">{a.title}</p>
@@ -540,9 +532,9 @@ export default function GroupOverview({ group }) {
                 return (
                   <div key={d.id} className="card-hover px-4 py-3 group flex items-center gap-4">
                     <div className="flex-shrink-0 w-12 text-center">
-                      <p className="text-lg font-semibold dark:text-white text-gray-900 leading-none">{new Date(d.due_date).getDate()}</p>
-                      <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 uppercase">{new Date(d.due_date).toLocaleDateString([], { month: 'short' })}</p>
-                      {(() => { const dt = new Date(d.due_date); const hasTime = dt.getUTCHours() !== 0 || dt.getUTCMinutes() !== 0; return hasTime ? <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">{dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p> : null; })()}
+                      <p className="text-lg font-semibold dark:text-white text-gray-900 leading-none">{new Date(d.due_date).toLocaleString('en-IN', { day: 'numeric', timeZone: 'Asia/Kolkata' })}</p>
+                      <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 uppercase">{new Date(d.due_date).toLocaleDateString('en-IN', { month: 'short', timeZone: 'Asia/Kolkata' })}</p>
+                      {(() => { const dt = new Date(d.due_date); const istTime = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }); const istMidnight = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }); return istMidnight !== '00:00' ? <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">{istTime}</p> : null; })()}
                     </div>
                     <div className="w-px h-8 dark:bg-surface-4 bg-gray-200 flex-shrink-0"/>
                     <div className="flex-1 min-w-0">

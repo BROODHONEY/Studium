@@ -6,6 +6,7 @@ import MessageMenu from './ui/MessageMenu';
 import ConfirmDialog from './ui/ConfirmDialog';
 import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
+import { formatTime, getDateLabel } from '../utils/time';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
@@ -383,8 +384,7 @@ export default function ChatPanel({ group, onViewProfile }) {
     }, 2000);
   };
 
-  const formatTime = (ts) =>
-    new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // formatTime imported from utils/time
 
   const initials = (name) =>
     name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -676,14 +676,6 @@ export default function ChatPanel({ group, onViewProfile }) {
           </div>
         ) : (
           timeline.flatMap((item, i) => {
-            const getDateLabel = (iso) => {
-              const d = new Date(iso);
-              const today = new Date();
-              const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
-              if (d.toDateString() === today.toDateString()) return 'Today';
-              if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-              return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
-            };
             const label = item.created_at ? getDateLabel(item.created_at) : null;
             const prevLabel = i > 0 && timeline[i-1].created_at ? getDateLabel(timeline[i-1].created_at) : null;
             const showSep = label && label !== prevLabel;

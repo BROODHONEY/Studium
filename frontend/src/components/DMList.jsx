@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { dmAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import OnlineDot from './OnlineDot';
+import { formatShort } from '../utils/time';
 
 const initials = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 const COLORS = ['bg-brand-600','bg-teal-600','bg-purple-600','bg-pink-600','bg-amber-600','bg-green-600'];
@@ -43,13 +44,7 @@ export default function DMList({ activeConvoId, onSelect }) {
     } catch (err) { console.error(err); }
   };
 
-  const formatTime = (ts) => {
-    if (!ts) return '';
-    const d = new Date(ts), now = new Date();
-    return d.toDateString() === now.toDateString()
-      ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : d.toLocaleDateString([], { day: 'numeric', month: 'short' });
-  };
+  const formatTime = (ts) => ts ? formatShort(ts) : '';
 
   return (
     <div className="flex flex-col h-full">

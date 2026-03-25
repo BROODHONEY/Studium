@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { filesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
+import { formatDate as formatDateIST } from '../utils/time';
 
 const FILE_ICONS = {
   'application/pdf': '📄',
@@ -21,8 +22,7 @@ const formatSize = (bytes) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const formatDate = (ts) =>
-  new Date(ts).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+const formatDate = (ts) => formatDateIST(ts);
 
 function ConfirmUploadModal({ file, onConfirm, onCancel }) {
   return (
