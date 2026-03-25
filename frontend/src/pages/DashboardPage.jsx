@@ -1,6 +1,5 @@
 ﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
 import GroupList        from '../components/GroupList';
@@ -15,6 +14,7 @@ import GroupOverview    from '../components/GroupOverview';
 import DuesPanel        from '../components/DuesPanel';
 import KickNotification from '../components/KickNotification';
 import ProfileModal     from '../components/ProfileModal';
+import SettingsPanel    from '../components/SettingsPanel';
 import { NotificationProvider } from '../context/NotificationContext';
 
 function NavIcon({ icon, label, active, onClick }) {
@@ -32,8 +32,7 @@ function NavIcon({ icon, label, active, onClick }) {
 }
 
 export default function DashboardPage() {
-  const { logout, user } = useAuth();
-  const { dark, toggle } = useTheme();
+  const { user } = useAuth();
   const { socket } = useSocket();
 
   const [sidebarTab, setSidebarTab]       = useState('groups');
@@ -46,7 +45,6 @@ export default function DashboardPage() {
   const [activeConvo, setActiveConvo]     = useState(null);
   const [profileUserId, setProfileUserId] = useState(null);
   const [mobileView, setMobileView]       = useState('sidebar');
-
   useEffect(() => {
     groupsAPI.list()
       .then(res => setGroups(res.data))
@@ -100,7 +98,6 @@ export default function DashboardPage() {
 
   const showGroup = activeGroup && !activeConvo;
   const showDM    = activeConvo && !activeGroup;
-  const initials  = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
 
   return (
     <NotificationProvider activeGroupId={activeGroup?.id}>
@@ -125,35 +122,18 @@ export default function DashboardPage() {
             <span className="text-sm font-bold dark:text-white text-gray-900">Studi+</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={toggle}
-            className="p-1.5 rounded-lg border transition text-sm
-              dark:bg-surface-2 dark:border-brand-900/40 dark:text-gray-400 dark:hover:text-brand-300
-              bg-gray-100 border-gray-200 text-gray-500 hover:text-brand-600">
-            {dark
-              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            }
-          </button>
-          <button onClick={() => setProfileUserId(user?.id)}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-lg border transition
-              dark:bg-surface-2 dark:border-brand-900/40 dark:hover:border-brand-700/50
-              bg-gray-100 border-gray-200 hover:border-brand-300">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-brand-700
-              flex items-center justify-center text-white text-xs font-semibold">
-              {initials(user?.name)}
-            </div>
-            <span className="text-xs dark:text-gray-300 text-gray-700 hidden sm:block max-w-[100px] truncate">
-              {user?.name}
-            </span>
-          </button>
-          <button onClick={logout}
-            className="text-xs px-2.5 py-1.5 rounded-lg border transition
-              dark:border-red-900/40 dark:text-red-400/70 dark:hover:text-red-400
-              border-red-200 text-red-400 hover:text-red-600">
-            Out
-          </button>
-        </div>
+        <button
+          onClick={() => { setSidebarTab('settings'); setMobileView('main'); }}
+          className={`p-1.5 rounded-lg border transition
+            ${sidebarTab === 'settings'
+              ? 'bg-brand-600 border-brand-500 text-white'
+              : 'dark:bg-surface-2 dark:border-brand-900/40 dark:text-gray-400 dark:hover:text-brand-300 bg-gray-100 border-gray-200 text-gray-500 hover:text-brand-600'}`}
+          title="Settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.474l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+          </svg>
+        </button>
       </header>
 
       {/* Body */}
@@ -192,7 +172,7 @@ export default function DashboardPage() {
         <main className={`flex-1 flex flex-col min-w-0
           ${mobileView === 'main' ? 'flex' : 'hidden md:flex'}`}>
 
-          {showGroup && (
+          {showGroup && sidebarTab !== 'settings' && (
             <>
               <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
               {activeTab === 'Overview' && <GroupOverview group={activeGroup} />}
@@ -214,11 +194,15 @@ export default function DashboardPage() {
             </>
           )}
 
-          {showDM && (
+          {showDM && sidebarTab !== 'settings' && (
             <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId} />
           )}
 
-          {!showGroup && !showDM && (
+          {sidebarTab === 'settings' && (
+            <SettingsPanel />
+          )}
+
+          {!showGroup && !showDM && sidebarTab !== 'settings' && (
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="text-center space-y-4 max-w-xs">
                 <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center
