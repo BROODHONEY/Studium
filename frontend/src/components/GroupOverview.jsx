@@ -54,31 +54,61 @@ const dueBadge = (days) => {
 };
 
 function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]       = useState({ title: '', content: '', tag: 'general' });
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen]       = useState(false);
+  const [form, setForm]         = useState({ title: '', content: '', tag: 'general' });
+  const [scheduled, setScheduled] = useState(false);
+  const [schedDate, setSchedDate] = useState('');
+  const [schedTime, setSchedTime] = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [open, setOpen]         = useState(false);
 
   useEffect(() => {
-    if (editing) { setForm({ title: editing.title, content: editing.content, tag: editing.tag || 'general' }); setOpen(true); }
-    else { setForm({ title: '', content: '', tag: 'general' }); setOpen(false); }
+    if (editing) {
+      setForm({ title: editing.title, content: editing.content, tag: editing.tag || 'general' });
+      if (editing.scheduled_at && !editing.published) {
+        const d = new Date(editing.scheduled_at);
+        setScheduled(true);
+        setSchedDate(d.toLocaleDateString('en-CA'));
+        setSchedTime(d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }));
+      } else {
+        setScheduled(false); setSchedDate(''); setSchedTime('');
+      }
+      setOpen(true);
+    } else {
+      setForm({ title: '', content: '', tag: 'general' });
+      setScheduled(false); setSchedDate(''); setSchedTime('');
+      setOpen(false);
+    }
   }, [editing]);
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = { ...form };
+      if (scheduled && schedDate) {
+        payload.scheduled_at = new Date(`${schedDate}T${schedTime || '09:00'}`).toISOString();
+      }
       const res = editing
-        ? await announcementsAPI.update(groupId, editing.id, form)
-        : await announcementsAPI.create(groupId, form);
-      if (editing) onCreated(res.data);
+        ? await announcementsAPI.update(groupId, editing.id, payload)
+        : await announcementsAPI.create(groupId, payload);
+      onCreated(res.data);
       setForm({ title: '', content: '', tag: 'general' });
+      setScheduled(false); setSchedDate(''); setSchedTime('');
       setOpen(false);
       if (onCancel) onCancel();
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
-  const handleCancel = () => { setOpen(false); setForm({ title: '', content: '', tag: 'general' }); if (onCancel) onCancel(); };
+  const handleCancel = () => {
+    setOpen(false);
+    setForm({ title: '', content: '', tag: 'general' });
+    setScheduled(false); setSchedDate(''); setSchedTime('');
+    if (onCancel) onCancel();
+  };
+
+  // Min datetime = now + 1 min
+  const minDate = new Date(Date.now() + 60_000).toLocaleDateString('en-CA');
 
   if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
@@ -100,14 +130,44 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
           </button>
         ))}
       </div>
+
       <input className="form-input" placeholder="Announcement title" required
         value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
       <textarea className="form-input resize-none" rows={3} placeholder="Write your announcement..."
         required value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}/>
+
+      {/* Schedule toggle */}
+      <div className="flex items-center gap-2.5 pt-1">
+        <button type="button" onClick={() => setScheduled(v => !v)}
+          className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${scheduled ? 'bg-brand-600' : 'dark:bg-surface-4 bg-gray-300'}`}>
+          <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${scheduled ? 'translate-x-4' : ''}`}/>
+        </button>
+        <span className="text-xs dark:text-gray-400 text-gray-500">Schedule for later</span>
+      </div>
+
+      {scheduled && (
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label className="form-label">Date</label>
+            <input type="date" className="form-input" required min={minDate}
+              value={schedDate} onChange={e => setSchedDate(e.target.value)}/>
+          </div>
+          <div className="flex-1">
+            <label className="form-label">Time</label>
+            <input type="time" className="form-input"
+              value={schedTime} onChange={e => setSchedTime(e.target.value)}/>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <button type="submit" disabled={loading}
           className="flex-1 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition">
-          {loading ? (editing ? 'Updating...' : 'Posting...') : (editing ? 'Update' : 'Post')}
+          {loading
+            ? (editing ? 'Saving...' : 'Saving...')
+            : scheduled
+              ? (editing ? 'Reschedule' : 'Schedule')
+              : (editing ? 'Update' : 'Post now')}
         </button>
         <button type="button" onClick={handleCancel}
           className="flex-1 py-2 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-400 text-gray-600 text-sm rounded-xl transition">
@@ -199,6 +259,7 @@ export default function GroupOverview({ group }) {
   const isTeacher = myRole === 'admin' || myRole === 'teacher';
 
   const [announcements, setAnnouncements] = useState([]);
+  const [scheduled, setScheduled]         = useState([]);
   const [dues, setDues]                   = useState([]);
   const [loadingA, setLoadingA]           = useState(true);
   const [loadingD, setLoadingD]           = useState(true);
@@ -211,6 +272,7 @@ export default function GroupOverview({ group }) {
     if (!group) return;
     setLoadingA(true); setLoadingD(true);
     announcementsAPI.list(group.id).then(res => setAnnouncements(res.data)).catch(console.error).finally(() => setLoadingA(false));
+    if (isTeacher) announcementsAPI.scheduled(group.id).then(res => setScheduled(res.data)).catch(console.error);
     duesAPI.list(group.id).then(res => setDues(res.data)).catch(console.error).finally(() => setLoadingD(false));
 
     if (socket) {
@@ -223,7 +285,12 @@ export default function GroupOverview({ group }) {
   }, [group?.id, socket]);
 
   const handleAnnouncementUpdate = (updated) => {
-    setAnnouncements(prev => prev.map(a => a.id === updated.id ? updated : a));
+    if (updated.published) {
+      setAnnouncements(prev => prev.map(a => a.id === updated.id ? updated : a));
+      setScheduled(prev => prev.filter(a => a.id !== updated.id));
+    } else {
+      setScheduled(prev => prev.map(a => a.id === updated.id ? updated : a));
+    }
     setEditingAnnouncement(null);
     addToast({ type: 'success', message: 'Announcement updated.' });
   };
@@ -242,6 +309,7 @@ export default function GroupOverview({ group }) {
       if (type === 'announcement') {
         await announcementsAPI.delete(group.id, id);
         setAnnouncements(prev => prev.filter(a => a.id !== id));
+        setScheduled(prev => prev.filter(a => a.id !== id));
         addToast({ type: 'success', message: 'Announcement deleted.' });
       } else {
         await duesAPI.delete(group.id, id);
@@ -295,7 +363,13 @@ export default function GroupOverview({ group }) {
           <div className="space-y-3">
             {isTeacher && (
               <AnnouncementForm groupId={group.id}
-                onCreated={editingAnnouncement ? handleAnnouncementUpdate : (a => setAnnouncements(prev => [a, ...prev]))}
+                onCreated={editingAnnouncement
+                  ? handleAnnouncementUpdate
+                  : (a => {
+                      if (a.published) setAnnouncements(prev => [a, ...prev]);
+                      else setScheduled(prev => [...prev, a].sort((x, y) => new Date(x.scheduled_at) - new Date(y.scheduled_at)));
+                    })
+                }
                 editing={editingAnnouncement} onCancel={() => setEditingAnnouncement(null)}/>
             )}
             {loadingA ? [1,2].map(i => <div key={i} className="h-24 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>) :
@@ -330,6 +404,55 @@ export default function GroupOverview({ group }) {
             }
           </div>
         </section>
+
+        {/* Scheduled announcements — teachers only */}
+        {isTeacher && scheduled.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold dark:text-white text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
+                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                </svg>
+                Scheduled
+              </h2>
+              <span className="text-xs dark:text-gray-600 text-gray-400">{scheduled.length} pending</span>
+            </div>
+            <div className="space-y-3">
+              {scheduled.map(a => {
+                const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
+                const sendAt = new Date(a.scheduled_at);
+                return (
+                  <div key={a.id} className={`card p-4 group border-l-4 ${tag.border} opacity-80`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${tag.badge}`}>
+                            <TagIcon type={a.tag || 'general'} />{tag.label}
+                          </span>
+                          <span className="text-xs dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:border-surface-4 border-gray-200 border px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                            </svg>
+                            {sendAt.toLocaleDateString([], { day: 'numeric', month: 'short' })} at {sendAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium dark:text-white text-gray-900">{a.title}</p>
+                        <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{a.users?.name}</p>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition">Edit</button>
+                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition">Delete</button>
+                      </div>
+                    </div>
+                    <p className="text-sm dark:text-gray-400 text-gray-600 mt-3 leading-relaxed whitespace-pre-wrap line-clamp-2">{a.content}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Upcoming dues */}
         <section>

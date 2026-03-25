@@ -9,6 +9,7 @@ const groupRoutes = require('./routes/groups');
 const messageRoutes = require('./routes/messages');
 const fileRoutes = require('./routes/files');
 const initSocket = require('./config/socket');
+const startAnnouncementScheduler = require('./config/announcementScheduler');
 
 const announcementRoutes = require('./routes/announcements');
 const dueRoutes          = require('./routes/dues');
@@ -53,6 +54,7 @@ app.get('/', (req, res) => {
 
 // Initialize Socket.io
 initSocket(io);
+startAnnouncementScheduler(io);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
