@@ -176,12 +176,12 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                   className={`rounded-xl transition-colors ${dragFolderId === folder.id ? 'ring-1 ring-brand-500/50 dark:bg-brand-900/20 bg-brand-50' : ''}`}>
 
                   {/* Folder header */}
-                  <div className="flex items-center gap-1 px-2 py-1.5">
+                  <div className="flex items-center gap-1 px-2 py-2">
                     {/* Collapse toggle + label */}
                     <button onClick={() => setCollapsed(p => ({ ...p, [folder.id]: !p[folder.id] }))}
                       className="flex items-center gap-2 flex-1 min-w-0 group/fhdr">
                       {/* Folder icon — open/closed */}
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"
+                      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"
                         className="flex-shrink-0 dark:text-brand-400/70 text-brand-500/70">
                         {isCollapsed
                           ? <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
@@ -202,12 +202,12 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                           className="flex-1 min-w-0 bg-transparent text-xs font-semibold dark:text-white text-gray-900 outline-none border-b dark:border-brand-500 border-brand-400"
                         />
                       ) : (
-                        <span className="text-xs font-semibold dark:text-gray-300 text-gray-600 truncate group-hover/fhdr:dark:text-white group-hover/fhdr:text-gray-900 transition">
+                        <span className="text-sm font-semibold dark:text-gray-300 text-gray-600 truncate group-hover/fhdr:dark:text-white group-hover/fhdr:text-gray-900 transition">
                           {folder.name}
                         </span>
                       )}
-                      <span className="text-[10px] dark:text-gray-600 text-gray-400 flex-shrink-0 tabular-nums">{folderGroups.length}</span>
-                      <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"
+                      <span className="text-xs dark:text-gray-600 text-gray-400 flex-shrink-0 tabular-nums">{folderGroups.length}</span>
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"
                         className={`flex-shrink-0 dark:text-gray-600 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}>
                         <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                       </svg>
@@ -218,7 +218,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                       <button
                         onClick={e => { e.stopPropagation(); setFolderMenu(menuOpen ? null : folder.id); }}
                         className="p-1 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-100 transition">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                           <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                         </svg>
                       </button>
