@@ -63,11 +63,12 @@ export const filesAPI = {
 };
 
 export const announcementsAPI = {
-  list:      (groupId)          => api.get(`/announcements/${groupId}`),
-  scheduled: (groupId)          => api.get(`/announcements/${groupId}/scheduled`),
-  create:    (groupId, data)    => api.post(`/announcements/${groupId}`, data),
+  list:      (groupId)           => api.get(`/announcements/${groupId}`),
+  scheduled: (groupId)           => api.get(`/announcements/${groupId}/scheduled`),
+  create:    (groupId, data)     => api.post(`/announcements/${groupId}`, data),
   update:    (groupId, id, data) => api.put(`/announcements/${groupId}/${id}`, data),
-  delete:    (groupId, id)      => api.delete(`/announcements/${groupId}/${id}`)
+  delete:    (groupId, id)       => api.delete(`/announcements/${groupId}/${id}`),
+  react:     (groupId, id, emoji) => api.post(`/announcements/${groupId}/${id}/reactions`, { emoji }),
 };
 
 export const duesAPI = {

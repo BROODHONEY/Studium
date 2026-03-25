@@ -269,19 +269,35 @@ export default function GroupOverview({ group }) {
   const [editingDue, setEditingDue]               = useState(null);
 
   useEffect(() => {
-    if (!group) return;
+    if (!group || !socket) return;
     setLoadingA(true); setLoadingD(true);
     announcementsAPI.list(group.id).then(res => setAnnouncements(res.data)).catch(console.error).finally(() => setLoadingA(false));
     if (isTeacher) announcementsAPI.scheduled(group.id).then(res => setScheduled(res.data)).catch(console.error);
     duesAPI.list(group.id).then(res => setDues(res.data)).catch(console.error).finally(() => setLoadingD(false));
 
-    if (socket) {
-      socket.on('new_announcement', (a) => setAnnouncements(prev => prev.find(x => x.id === a.id) ? prev : [a, ...prev]));
-      socket.on('update_announcement', (a) => setAnnouncements(prev => prev.map(x => x.id === a.id ? a : x)));
-      socket.on('new_due', (d) => setDues(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date))));
-      socket.on('update_due', (d) => setDues(prev => prev.map(x => x.id === d.id ? d : x).sort((a, b) => new Date(a.due_date) - new Date(b.due_date))));
-    }
-    return () => { socket?.off('new_announcement'); socket?.off('update_announcement'); socket?.off('new_due'); socket?.off('update_due'); };
+    // Ensure we're in the socket room (ChatPanel may not be mounted)
+    socket.emit('join_group', group.id);
+
+    const onNewAnnouncement   = (a) => setAnnouncements(prev => prev.find(x => x.id === a.id) ? prev : [a, ...prev]);
+    const onUpdateAnnouncement = (a) => setAnnouncements(prev => prev.map(x => x.id === a.id ? a : x));
+    const onReaction = ({ announcementId, reactions }) =>
+      setAnnouncements(prev => prev.map(a => a.id === announcementId ? { ...a, announcement_reactions: reactions } : a));
+    const onNewDue    = (d) => setDues(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+    const onUpdateDue = (d) => setDues(prev => prev.map(x => x.id === d.id ? d : x).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+
+    socket.on('new_announcement',    onNewAnnouncement);
+    socket.on('update_announcement', onUpdateAnnouncement);
+    socket.on('announcement_reaction', onReaction);
+    socket.on('new_due',    onNewDue);
+    socket.on('update_due', onUpdateDue);
+
+    return () => {
+      socket.off('new_announcement',    onNewAnnouncement);
+      socket.off('update_announcement', onUpdateAnnouncement);
+      socket.off('announcement_reaction', onReaction);
+      socket.off('new_due',    onNewDue);
+      socket.off('update_due', onUpdateDue);
+    };
   }, [group?.id, socket]);
 
   const handleAnnouncementUpdate = (updated) => {
@@ -299,6 +315,13 @@ export default function GroupOverview({ group }) {
     setDues(prev => prev.map(d => d.id === updated.id ? updated : d).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
     setEditingDue(null);
     addToast({ type: 'success', message: 'Due date updated.' });
+  };
+
+  const handleReact = async (announcementId, emoji) => {
+    try {
+      await announcementsAPI.react(group.id, announcementId, emoji);
+      // socket event updates state
+    } catch (err) { console.error(err); }
   };
 
   const handleConfirmDelete = async () => {
@@ -399,6 +422,46 @@ export default function GroupOverview({ group }) {
                     )}
                   </div>
                   <p className="text-sm dark:text-gray-300 text-gray-700 mt-3 leading-relaxed whitespace-pre-wrap">{a.content}</p>
+
+                  {/* Reactions */}
+                  {(() => {
+                    const reactionMap = {};
+                    (a.announcement_reactions || []).forEach(r => {
+                      if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+                      reactionMap[r.emoji].push(r.user_id);
+                    });
+                    const EMOJIS = ['👍', '❤️', '😮', '🙏', '🔥'];
+                    return (
+                      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                        {/* Existing reactions */}
+                        {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                          <button key={emoji} onClick={() => handleReact(a.id, emoji)}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
+                              ${userIds.includes(user?.id)
+                                ? 'bg-brand-500/20 border-brand-500/40 text-brand-300'
+                                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
+                            <span>{emoji}</span><span>{userIds.length}</span>
+                          </button>
+                        ))}
+                        {/* Add reaction picker — visible on hover */}
+                        <div className="relative group/react opacity-0 group-hover:opacity-100 transition">
+                          <button className="flex items-center justify-center w-6 h-6 rounded-full dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 transition text-xs">
+                            +
+                          </button>
+                          <div className="absolute bottom-full left-0 mb-1 hidden group-hover/react:flex
+                            dark:bg-gray-900 bg-white border dark:border-gray-700 border-gray-200
+                            rounded-xl shadow-xl px-2 py-1.5 gap-1 z-10">
+                            {EMOJIS.map(e => (
+                              <button key={e} onClick={() => handleReact(a.id, e)}
+                                className="text-base hover:scale-125 transition-transform leading-none p-0.5">
+                                {e}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               ))
             }

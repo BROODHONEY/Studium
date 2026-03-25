@@ -6,7 +6,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 const VALID_TAGS = ['general', 'urgent', 'exam', 'assignment', 'event'];
-const SELECT_FIELDS = `id, title, content, tag, scheduled_at, published, created_at, users!created_by (id, name)`;
+const SELECT_FIELDS = `id, title, content, tag, scheduled_at, published, created_at, users!created_by (id, name), announcement_reactions (emoji, user_id)`;
 const SELECT_FALLBACK = `id, title, content, created_at, users!created_by (id, name)`;
 
 const normalize = (a) => ({
@@ -207,3 +207,51 @@ router.delete('/:groupId/:id', async (req, res) => {
 });
 
 module.exports = router;
+
+// ── Toggle a reaction on an announcement ──────────────
+router.post('/:groupId/:id/reactions', async (req, res) => {
+  const { emoji } = req.body;
+  if (!emoji) return res.status(400).json({ error: 'Emoji is required' });
+
+  try {
+    const { data: membership } = await supabase
+      .from('group_members').select('role')
+      .eq('group_id', req.params.groupId).eq('user_id', req.user.id).single();
+
+    if (!membership) return res.status(403).json({ error: 'Not a member' });
+
+    const { data: existing } = await supabase
+      .from('announcement_reactions')
+      .select('id')
+      .eq('announcement_id', req.params.id)
+      .eq('user_id', req.user.id)
+      .eq('emoji', emoji)
+      .single();
+
+    if (existing) {
+      await supabase.from('announcement_reactions').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('announcement_reactions').insert({
+        announcement_id: req.params.id,
+        user_id: req.user.id,
+        emoji,
+      });
+    }
+
+    const { data: reactions } = await supabase
+      .from('announcement_reactions')
+      .select('emoji, user_id')
+      .eq('announcement_id', req.params.id);
+
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('announcement_reaction', {
+      announcementId: req.params.id,
+      reactions: reactions || [],
+    });
+
+    res.json({ reactions: reactions || [] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not react' });
+  }
+});
