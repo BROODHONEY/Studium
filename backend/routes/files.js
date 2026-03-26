@@ -164,7 +164,12 @@ router.delete('/:groupId/:fileId', async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    // Only the uploader or a teacher can delete
+    // Students can never delete files
+    if (req.user.role === 'student') {
+      return res.status(403).json({ error: 'Students cannot delete files' });
+    }
+
+    // Only the uploader or an admin/teacher can delete
     if (file.uploaded_by !== req.user.id && req.user.role !== 'teacher') {
       return res.status(403).json({ error: 'Not authorised to delete this file' });
     }
