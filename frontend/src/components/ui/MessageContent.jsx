@@ -93,26 +93,33 @@ export default function MessageContent({ content, isOwn, onFileRef }) {
   }
 
   const parts = parseContent(content);
+  const textParts = parts.filter(p => p.type !== 'file');
+  const fileParts = parts.filter(p => p.type === 'file');
 
   return (
     <span className="leading-relaxed">
-      {parts.map((part, i) => {
-        if (part.type === 'file') {
-          return <FileChip key={i} filename={part.filename} fileUrl={part.fileUrl} fileId={part.id} isOwn={isOwn} onFileRef={onFileRef} />;
-        }
-        if (part.type === 'mention') {
-          return (
-            <span key={i} className={`inline font-semibold rounded px-0.5
-              ${isOwn ? 'text-brand-200 bg-white/10' : 'text-brand-400 dark:bg-brand-900/40 bg-brand-100'}`}>
-              @{part.name}
-            </span>
-          );
-        }
-        // Plain text — render inline, preserving whitespace/newlines
-        return part.value
-          ? <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{part.value}</span>
-          : null;
-      })}
+      <span>
+        {textParts.map((part, i) => {
+          if (part.type === 'mention') {
+            return (
+              <span key={i} className={`inline font-semibold rounded px-0.5
+                ${isOwn ? 'text-brand-200 bg-white/10' : 'text-brand-400 dark:bg-brand-900/40 bg-brand-100'}`}>
+                @{part.name}
+              </span>
+            );
+          }
+          return part.value
+            ? <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{part.value}</span>
+            : null;
+        })}
+      </span>
+      {fileParts.length > 0 && (
+        <span className="flex flex-col gap-1 mt-1.5">
+          {fileParts.map((part, i) => (
+            <FileChip key={i} filename={part.filename} fileUrl={part.fileUrl} fileId={part.id} isOwn={isOwn} onFileRef={onFileRef} />
+          ))}
+        </span>
+      )}
     </span>
   );
 }

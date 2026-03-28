@@ -32,6 +32,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   const mentionStartRef                 = useRef(null); // caret position where @ was typed
   const mentionListRef                  = useRef(null);
 
+  // ── File reference state ─────────────────────────────
+  const [fileRefs, setFileRefs] = useState([]); // [{ id, filename, file_url, file_type }]
+
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const highlightTimeoutRef = useRef(null);
   const messageRefs = useRef(new Map()); // messageId -> HTMLElement
@@ -249,14 +252,17 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   };
 
   const sendMessage = () => {
-    if (!text.trim() || !socket || !connected || !canSend) return;
+    if ((!text.trim() && fileRefs.length === 0) || !socket || !connected || !canSend) return;
+    const fileTokens = fileRefs.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
+    const encoded = encodeForSend(text.trim());
+    const content = [encoded, fileTokens].filter(Boolean).join(' ');
     socket.emit('send_message', {
       groupId: group.id,
-      content: encodeForSend(text.trim()),
+      content,
       type: 'text',
       ...(replyTo ? { replyTo: replyTo.id } : {})
     });
-    setText(''); mentionsRef.current = {};
+    setText(''); mentionsRef.current = {}; setFileRefs([]);
     setReplyTo(null);
     clearTimeout(typingTimeoutRef.current);
     isTypingRef.current = false;
@@ -265,15 +271,18 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   };
 
   const handlePrivateReply = async () => {
-    if (!privateReply || !text.trim()) return;
+    if (!privateReply || (!text.trim() && fileRefs.length === 0)) return;
     try {
+      const fileTokens = fileRefs.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
+      const encoded = encodeForSend(text.trim());
+      const content = [encoded, fileTokens].filter(Boolean).join(' ');
       await messagesAPI.replyPrivate({
         targetUserId: privateReply.senderId,
-        content: encodeForSend(text.trim()),
+        content,
         quotedContent: privateReply.content,
         quotedSenderName: privateReply.senderName,
       });
-      setText(''); mentionsRef.current = {};
+      setText(''); mentionsRef.current = {}; setFileRefs([]);
       setPrivateReply(null);
     } catch (err) {
       console.error(err);
@@ -1008,7 +1017,22 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
               </svg>
             </button>
             <div className="flex-1 flex flex-col">
-              <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id} />
+              <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id}
+                onFilePick={file => setFileRefs(prev => prev.find(f => f.id === file.id) ? prev : [...prev, file])} />
+              {/* Attached file pills */}
+              {fileRefs.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                  {fileRefs.map(f => (
+                    <span key={f.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium
+                      dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border dark:text-gray-200 text-gray-700">
+                      <span>📎</span>
+                      <span className="truncate max-w-[140px]">{f.filename}</span>
+                      <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
+                        className="dark:text-gray-500 text-gray-400 hover:text-red-400 transition leading-none ml-0.5">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="relative">
                 {/* @mention popover */}
                 {mentionQuery !== null && filteredMembers.length > 0 && (

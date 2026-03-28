@@ -35,7 +35,7 @@ const FORMAT_TOOLS = [
   { title: 'Link',      action: (r, s) => wrap(r, s, '[', '](url)'), icon: '🔗' },
 ];
 
-export default function FormatToolbar({ textareaRef, setText, groupId }) {
+export default function FormatToolbar({ textareaRef, setText, groupId, onFilePick }) {
   const [showFilePicker, setShowFilePicker] = useState(false);
   const fileButtonRef = useRef(null);
 
@@ -69,7 +69,11 @@ export default function FormatToolbar({ textareaRef, setText, groupId }) {
         <FilePickerPopover
           groupId={groupId}
           triggerRef={fileButtonRef}
-          onPick={ref => insertAtCursor(textareaRef, setText, ref)}
+          onPick={file => {
+            if (onFilePick) onFilePick(file);
+            else insertAtCursor(textareaRef, setText, `{{file:${file.id}:${file.filename}:${file.file_url}}}`);
+            setShowFilePicker(false);
+          }}
           onClose={() => setShowFilePicker(false)}
         />
       )}

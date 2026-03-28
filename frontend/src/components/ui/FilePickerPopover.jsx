@@ -58,8 +58,7 @@ export default function FilePickerPopover({ groupId, onPick, onClose, triggerRef
   );
 
   const handlePick = (file) => {
-    const token = `{{file:${file.id}:${file.filename}:${file.file_url}}}`;
-    onPick(token);
+    onPick(file);
     onClose();
   };
 
