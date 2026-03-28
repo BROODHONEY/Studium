@@ -265,6 +265,10 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
               const isOwn = msg.sender?.id === user?.id;
               const isTemp = msg.id?.startsWith?.('temp-');
 
+              // Show avatar only on first message of a consecutive run
+              const prevMsg = i > 0 ? filteredMessages[i - 1] : null;
+              const showName = !prevMsg || prevMsg.sender?.id !== msg.sender?.id;
+
               // Build reaction map
               const reactionMap = {};
               (msg.dm_reactions || []).forEach(r => {
@@ -285,22 +289,23 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
               els.push(
                 <div key={msg.id}
                   ref={el => { if (el) messageRefs.current[msg.id] = el; }}
-                  className={`flex gap-2.5 items-end group/msg ${isOwn ? 'flex-row-reverse' : ''}`}>
+                  className={`flex gap-2.5 items-start group/msg ${isOwn ? 'flex-row-reverse' : ''}`}>
 
-                  {/* Other avatar */}
-                  {!isOwn && (
-                    <button onClick={() => onViewProfile?.(other?.id)}
-                      className={`w-7 h-7 rounded-full ${avatarColor(other?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0 mb-1 hover:ring-2 hover:ring-white/20 transition`}>
-                      {initials(other?.name)}
-                    </button>
-                  )}
+                  {/* Avatar — only on first of a consecutive run */}
+                  <div className="flex-shrink-0 w-8 mt-0.5">
+                    {showName ? (
+                      <button onClick={() => onViewProfile?.(isOwn ? user?.id : other?.id)}
+                        className={`w-8 h-8 rounded-full ${avatarColor(isOwn ? user?.name : other?.name)} flex items-center justify-center text-xs font-semibold text-white hover:ring-2 hover:ring-white/20 transition`}>
+                        {initials(isOwn ? user?.name : other?.name)}
+                      </button>
+                    ) : null}
+                  </div>
 
-                  <div className={`flex flex-col max-w-xs lg:max-w-md ${isOwn ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col min-w-0 max-w-xs lg:max-w-md ${isOwn ? 'items-end' : 'items-start'}`}>
 
                     {/* Bubble + actions row */}
                     <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
 
-                      {/* Edit mode */}
                       {editingId === msg.id ? (
                         <div className="flex flex-col gap-1.5 min-w-[200px]">
                           <textarea
@@ -316,47 +321,47 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                           />
                           <div className="flex gap-1.5">
                             <button onClick={() => handleEditSave(msg.id)}
-                              className="text-xs px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition">
-                              Save
-                            </button>
+                              className="text-xs px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition">Save</button>
                             <button onClick={() => { setEditingId(null); setEditText(''); }}
-                              className="text-xs px-3 py-1 rounded-lg dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 transition">
-                              Cancel
-                            </button>
+                              className="text-xs px-3 py-1 rounded-lg dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 transition">Cancel</button>
                           </div>
                         </div>
                       ) : (
-                        <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
+                        <div className={`px-3 py-2 rounded-xl text-sm leading-relaxed break-words
                           ${isOwn
-                            ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white rounded-br-sm'
-                            : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-100 text-gray-900 rounded-bl-sm'}`}>
+                            ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white'
+                            : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900'}`}>
                           {msg.replied_message && (
                             <button
                               onClick={() => {
                                 const el = messageRefs.current[msg.replied_message.id];
                                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                               }}
-                              className={`block w-full text-left mb-2 pl-2 border-l-2 ${isOwn ? 'border-white/40' : 'border-brand-400'} opacity-70 hover:opacity-100 transition`}>
-                              <span className={`text-xs font-semibold block ${isOwn ? 'text-white/80' : 'text-brand-300'}`}>
-                                {msg.replied_message.sender?.name}
-                              </span>
-                              <span className="text-xs truncate block max-w-[200px]">
-                                {msg.replied_message.content}
-                              </span>
+                              className={`block w-full text-left mb-2 pl-2 border-l-2 text-xs opacity-70 hover:opacity-100 transition
+                                ${isOwn ? 'border-white/40 text-white/80' : 'border-brand-400 dark:text-gray-300 text-gray-600'}`}>
+                              <span className="font-semibold block">{msg.replied_message.sender?.name}</span>
+                              <span className="truncate block max-w-[200px]">{msg.replied_message.content}</span>
                             </button>
                           )}
                           <MessageContent content={msg.content} isOwn={isOwn} />
-                          {msg.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
+                          {msg.edited && <span className="text-xs opacity-40 ml-1">(edited)</span>}
+                          {/* Timestamp inside bubble */}
+                          <div className={`flex mt-0.5 -mb-0.5 ${isOwn ? 'justify-end' : 'justify-end'}`}>
+                            <span className={`text-[10px] leading-none select-none
+                              ${isOwn ? 'text-brand-200/70' : 'dark:text-gray-500 text-gray-400'}`}>
+                              {formatTime(msg.created_at)}
+                              {isOwn && msg.read && <span className="ml-1 opacity-70">· seen</span>}
+                            </span>
+                          </div>
                         </div>
                       )}
 
                       {/* Three-dot menu */}
                       {!isTemp && editingId !== msg.id && (
-                        <div className="relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0">
+                        <div className="relative opacity-0 group-hover/msg:opacity-100 transition flex-shrink-0">
                           <button
                             onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
-                            className="p-1.5 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-200 transition"
-                            title="Message actions">
+                            className="p-1.5 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-200 transition">
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                             </svg>
@@ -378,35 +383,19 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
 
                     {/* Reactions */}
                     {Object.keys(reactionMap).length > 0 && (
-                      <div className={`flex flex-wrap gap-1 mt-1 px-1 ${isOwn ? 'justify-end' : ''}`}>
+                      <div className={`flex flex-wrap gap-1 mt-1 ${isOwn ? 'justify-end' : ''}`}>
                         {Object.entries(reactionMap).map(([emoji, userIds]) => (
-                          <button key={emoji}
-                            onClick={() => handleReact(msg.id, emoji)}
+                          <button key={emoji} onClick={() => handleReact(msg.id, emoji)}
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
                               ${userIds.includes(user?.id)
                                 ? 'bg-brand-500/20 border-brand-500/40 text-brand-300'
-                                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
-                            <span>{emoji}</span>
-                            <span>{userIds.length}</span>
+                                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600'}`}>
+                            <span>{emoji}</span><span>{userIds.length}</span>
                           </button>
                         ))}
                       </div>
                     )}
-
-                    {/* Timestamp */}
-                    <span className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
-                      {formatTime(msg.created_at)}
-                      {isOwn && msg.read && <span className="ml-1">· seen</span>}
-                    </span>
                   </div>
-
-                  {/* Own avatar */}
-                  {isOwn && (
-                    <button onClick={() => onViewProfile?.(user?.id)}
-                      className={`w-7 h-7 rounded-full ${avatarColor(user?.name)} flex items-center justify-center text-xs font-semibold text-white flex-shrink-0 mb-1 hover:ring-2 hover:ring-white/20 transition`}>
-                      {initials(user?.name)}
-                    </button>
-                  )}
                 </div>
               );
               return els;
