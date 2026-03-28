@@ -261,6 +261,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
     clearTimeout(typingTimeoutRef.current);
     isTypingRef.current = false;
     socket.emit('typing_stop', { groupId: group.id });
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
   const handlePrivateReply = async () => {
@@ -1040,7 +1041,12 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                   className="w-full dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
                     text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
                     focus:outline-none focus:ring-2 focus:ring-brand-500
-                    resize-none transition"
+                    resize-none transition overflow-y-auto"
+                  style={{ minHeight: '42px', maxHeight: '130px' }}
+                  onInput={e => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px';
+                  }}
                   disabled={!connected}
                 />
               </div>
