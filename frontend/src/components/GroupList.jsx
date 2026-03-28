@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 // ── Persistence ────────────────────────────────────────
 const storageKey = (uid) => `group_folders_${uid}`;
@@ -33,7 +34,7 @@ const initials = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slic
 const roleColor = (r) => r === 'admin' ? 'text-neon-yellow' : r === 'teacher' ? 'text-neon-cyan' : 'dark:text-gray-500 text-gray-400';
 
 // ── GroupItem ──────────────────────────────────────────
-function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived, noColorBorder }) {
+function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived, noColorBorder, hasUnread }) {
   const pressTimer = useRef(null);
 
   const handleTouchStart = (e) => {
@@ -84,6 +85,9 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
             {label}
           </span>
         )}
+        {hasUnread && !active && (
+          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-brand-500"/>
+        )}
       </div>
       <p className={`text-xs mt-0.5 truncate ${roleColor(group.my_role)}`}>
         {group.subject} · {group.my_role}
@@ -95,6 +99,7 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
 // ── Main ───────────────────────────────────────────────
 export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal, loading }) {
   const { user } = useAuth();
+  const { groupUnreads } = useNotifications();
 
   const [folders, setFolders]         = useState([]);
   const [collapsed, setCollapsed]     = useState({});
@@ -262,6 +267,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     color: colors[group.id] || inheritColor || null,
     label: labels[group.id] || null,
     isArchived: archivedIds.has(group.id),
+    hasUnread: groupUnreads?.has(group.id) || false,
   });
 
   return (

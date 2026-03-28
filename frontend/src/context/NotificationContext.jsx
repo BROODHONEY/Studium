@@ -80,6 +80,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
 
           dues
             .filter(d => {
+              if (d.users?.id === user.id) return false;
               const createdMs = new Date(d.created_at.endsWith('Z') ? d.created_at : d.created_at + 'Z').getTime();
               return createdMs > new Date(dueLastSeen).getTime();
             })
@@ -104,10 +105,8 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
     const now = new Date().toISOString();
     setLastSeen(user.id, activeGroupId, now, lastSeenKey);
     setLastSeen(user.id, activeGroupId, now, lastSeenDueKey);
-    // Remove announcement + due notifications for this group
-    setNotifications(prev => prev.filter(n =>
-      n.groupId !== activeGroupId || (n.type !== 'announcement' && n.type !== 'due')
-    ));
+    // Remove all notifications for this group when it becomes active
+    setNotifications(prev => prev.filter(n => n.groupId !== activeGroupId));
   }, [activeGroupId, user?.id]);
 
   // ── Browser notification permission ──
@@ -161,6 +160,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
       const group = groupsRef.current?.find(g => g.id === d.group_id);
       const groupName = group?.name;
       if (!groupName) return;
+      if (d.users?.id === user.id) return; // own due
 
       const title = `New due date in ${groupName}`;
       const body  = d.title || 'New due date added';
@@ -173,18 +173,39 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
       }
     };
 
+    const handleNewFile = (f) => {
+      if (f.group_id === activeGroupRef.current) return;
+      if (f.uploaded_by === user.id) return;
+      const group = groupsRef.current?.find(g => g.id === f.group_id);
+      const groupName = group?.name;
+      if (!groupName) return;
+
+      const title = `New file in ${groupName}`;
+      const body  = f.file?.filename || 'A file was uploaded';
+      add({ type: 'file', title, body, groupId: f.group_id, groupName });
+
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/favicon.svg', tag: `file-${f.file?.id}` });
+      }
+    };
+
     socket.on('new_message',      handleNewMessage);
     socket.on('new_announcement', handleNewAnnouncement);
     socket.on('new_due',          handleNewDue);
+    socket.on('new_file',         handleNewFile);
     return () => {
       socket.off('new_message',      handleNewMessage);
       socket.off('new_announcement', handleNewAnnouncement);
       socket.off('new_due',          handleNewDue);
+      socket.off('new_file',         handleNewFile);
     };
   }, [socket, user, add]);
 
+  // Set of groupIds that have unread activity (messages, announcements, dues)
+  const groupUnreads = new Set(notifications.map(n => n.groupId).filter(Boolean));
+
   return (
-    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss }}>
+    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss, groupUnreads }}>
       {children}
     </NotificationContext.Provider>
   );

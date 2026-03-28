@@ -105,6 +105,10 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
 
     if (dbError) throw dbError;
 
+    // Emit socket event so other members see the unread indicator
+    const io = req.app.get('io');
+    if (io) io.to(groupId).emit('new_file', { group_id: groupId, uploaded_by: req.user.id, file });
+
     res.status(201).json(file);
   } catch (err) {
     console.error(err);
