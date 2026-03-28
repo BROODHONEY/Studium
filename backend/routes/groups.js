@@ -371,11 +371,20 @@ router.patch('/:id', async (req, res) => {
       return res.status(403).json({ error: 'Only admins can edit the group' });
     }
 
-    const { description } = req.body;
+    const { name, subject, description } = req.body;
+
+    const updates = {};
+    if (name?.trim())    updates.name = name.trim();
+    if (subject?.trim()) updates.subject = subject.trim();
+    if (description !== undefined) updates.description = description;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'Nothing to update' });
+    }
 
     const { data, error } = await supabase
       .from('groups')
-      .update({ description })
+      .update(updates)
       .eq('id', req.params.id)
       .select('id, name, subject, description, invite_code, admins_only, created_at')
       .single();

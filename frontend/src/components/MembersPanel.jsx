@@ -26,7 +26,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   const [error, setError]           = useState('');
 
   const [editingDesc, setEditingDesc] = useState(false);
-  const [descValue, setDescValue]     = useState(group?.description || '');
+  const [editForm, setEditForm]       = useState({ name: group?.name || '', subject: group?.subject || '', description: group?.description || '' });
   const [savingDesc, setSavingDesc]   = useState(false);
 
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -42,7 +42,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
   useEffect(() => {
     if (!group) return;
-    setDescValue(group.description || '');
+    setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' });
     setLoading(true);
     groupsAPI.get(group.id)
       .then(res => { setMembers(res.data.members || []); setAdminsOnly(res.data.admins_only || false); })
@@ -74,12 +74,17 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   };
 
   const handleSaveDescription = async () => {
+    if (!editForm.name.trim() || !editForm.subject.trim()) return;
     setSavingDesc(true);
     try {
-      const res = await groupsAPI.update(group.id, { description: descValue });
+      const res = await groupsAPI.update(group.id, {
+        name: editForm.name.trim(),
+        subject: editForm.subject.trim(),
+        description: editForm.description,
+      });
       setEditingDesc(false);
-      onGroupUpdate?.({ ...group, description: res.data.description });
-    } catch (err) { setError(err.response?.data?.error || 'Could not update description'); }
+      onGroupUpdate?.({ ...group, name: res.data.name, subject: res.data.subject, description: res.data.description });
+    } catch (err) { setError(err.response?.data?.error || 'Could not update group'); }
     finally { setSavingDesc(false); }
   };
 
@@ -157,10 +162,10 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               </div>
             </div>
 
-            {/* Edit description */}
+            {/* Edit group info */}
             <div className="pt-3 border-t dark:border-brand-900/40 border-gray-200 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs dark:text-gray-300 text-gray-700 font-medium">Description</p>
+                <p className="text-xs dark:text-gray-300 text-gray-700 font-medium">Group info</p>
                 {!editingDesc && (
                   <button onClick={() => setEditingDesc(true)}
                     className="text-xs text-brand-400 hover:text-brand-300 transition">Edit</button>
@@ -168,24 +173,38 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               </div>
               {editingDesc ? (
                 <div className="space-y-2">
-                  <textarea value={descValue} onChange={e => setDescValue(e.target.value)} rows={3}
-                    placeholder="Add a description..."
-                    className="form-input resize-none"/>
+                  <div>
+                    <label className="form-label">Group name</label>
+                    <input className="form-input" value={editForm.name} required
+                      onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Group name"/>
+                  </div>
+                  <div>
+                    <label className="form-label">Subject</label>
+                    <input className="form-input" value={editForm.subject} required
+                      onChange={e => setEditForm(p => ({ ...p, subject: e.target.value }))}
+                      placeholder="e.g. Mathematics"/>
+                  </div>
+                  <div>
+                    <label className="form-label">Description <span className="dark:text-gray-600 text-gray-400">(optional)</span></label>
+                    <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2}
+                      placeholder="Add a description..." className="form-input resize-none"/>
+                  </div>
                   <div className="flex gap-2">
-                    <button onClick={handleSaveDescription} disabled={savingDesc}
+                    <button onClick={handleSaveDescription} disabled={savingDesc || !editForm.name.trim() || !editForm.subject.trim()}
                       className="text-xs px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white transition">
                       {savingDesc ? 'Saving...' : 'Save'}
                     </button>
-                    <button onClick={() => { setEditingDesc(false); setDescValue(group.description || ''); }}
+                    <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
                       className="text-xs px-3 py-1.5 rounded-lg dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-400 text-gray-600 transition">
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs dark:text-gray-500 text-gray-500">
-                  {group.description || <span className="italic">No description</span>}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-xs dark:text-gray-500 text-gray-500">{group.description || <span className="italic opacity-50">No description</span>}</p>
+                </div>
               )}
             </div>
 
