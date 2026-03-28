@@ -802,12 +802,26 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
             const canDelete = isOwn || myRole === 'admin';
             const canEdit   = isOwn && item.type !== 'system';
 
+            // Role-based name color
+            const nameColor = sender?.role === 'admin'
+              ? 'text-neon-yellow'
+              : sender?.role === 'teacher'
+              ? 'text-neon-cyan'
+              : isOwn
+              ? 'text-brand-400'
+              : 'text-green-400';
+
             // Group reactions: { emoji -> [userIds] }
             const reactionMap = {};
             (item.message_reactions || []).forEach(r => {
               if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
               reactionMap[r.emoji].push(r.user_id);
             });
+
+            // Show sender name only when sender changes
+            const prevItem = i > 0 ? timeline[i - 1] : null;
+            const prevSender = prevItem?._kind !== 'system' ? (prevItem?.users || prevItem?.sender) : null;
+            const showSenderName = !prevSender || prevSender.id !== sender?.id;
 
             els.push(
               <div
@@ -817,34 +831,33 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                   if (el) messageRefs.current.set(item.id, el);
                   else messageRefs.current.delete(item.id);
                 }}
-                className={`flex gap-2.5 items-end group/msg ${isOwn ? 'flex-row-reverse' : ''}`}
+                className="flex gap-2.5 items-start group/msg"
               >
-
-                {/* Avatar */}
-                {!isOwn && (
-                  <button
-                    onClick={() => onViewProfile?.(sender?.id)}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center
-                      text-xs font-semibold text-white flex-shrink-0 mb-1
-                      ${avatarColor(senderName)} hover:ring-2 hover:ring-white/20 transition`}>
-                    {initials(sender?.name)}
-                  </button>
-                )}
+                {/* Avatar — left side always, shown only on first message of a run */}
+                <div className="flex-shrink-0 w-8 mt-0.5">
+                  {showSenderName ? (
+                    <button
+                      onClick={() => onViewProfile?.(sender?.id)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center
+                        text-xs font-semibold text-white
+                        ${avatarColor(sender?.name)} hover:ring-2 hover:ring-white/20 transition`}>
+                      {initials(sender?.name)}
+                    </button>
+                  ) : null}
+                </div>
 
                 {/* Bubble group */}
-                <div className={`flex flex-col max-w-xs lg:max-w-md xl:max-w-lg
-                  ${isOwn ? 'items-end' : 'items-start'}`}>
+                <div className="flex flex-col flex-1 min-w-0 max-w-xs lg:max-w-md xl:max-w-lg">
 
-                  {/* Sender name — only for others */}
-                  {!isOwn && (
-                    <span className="text-xs dark:text-gray-500 text-gray-500 mb-1 px-1">
+                  {/* Sender name */}
+                  {showSenderName && (
+                    <span className={`text-xs font-semibold mb-1 ${nameColor}`}>
                       {senderName}
                     </span>
                   )}
 
                   {/* Bubble + actions */}
-                  <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                    {/* Edit mode vs normal bubble */}
+                  <div className="flex items-end gap-1.5">
                     {editingId === item.id ? (
                       <div className="flex flex-col gap-1.5 min-w-[200px]">
                         <textarea
@@ -871,19 +884,15 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                         </div>
                       </div>
                     ) : (
-                      <div className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed break-words
-                        ${isOwn
-                          ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white rounded-br-sm'
-                          : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900 rounded-bl-sm'}
+                      <div className={`px-3 py-2 rounded-xl text-sm leading-relaxed break-words
+                        dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900
                         ${highlightedMessageId === item.id ? 'ring-2 ring-brand-400/70 shadow-[0_0_0_3px_rgba(168,85,247,0.15)]' : ''}`}>
                         {/* Replied-to preview */}
                         {item.replied_message && (
                           <button
                             onClick={() => scrollToMessage(item.replied_message.id)}
-                            className={`block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
-                              ${isOwn
-                                ? 'bg-brand-700/50 border-brand-300/50 text-brand-200'
-                                : 'dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600'}`}>
+                            className="block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
+                              dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600">
                             <span className="font-medium block truncate">
                               {item.replied_message.users?.name || 'Unknown'}
                             </span>
@@ -892,15 +901,21 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                             </span>
                           </button>
                         )}
-                        <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
-                        {item.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
+                        {/* Message text + inline timestamp */}
+                        <span className="break-words">
+                          <MessageContent content={item.content} isOwn={false} onFileRef={onFileRef} />
+                          {item.edited && <span className="text-xs opacity-40 ml-1">(edited)</span>}
+                          <span className="inline-block text-[11px] dark:text-gray-500 text-gray-400 ml-2 align-bottom leading-none select-none">
+                            {formatTime(item.created_at)}
+                          </span>
+                        </span>
                         {item.files && <FilePreview file={item.files} />}
                       </div>
                     )}
 
                     {/* Three-dot menu */}
                     {editingId !== item.id && (
-                      <div className="relative opacity-0 group-hover/msg:opacity-100 transition mb-1 flex-shrink-0">
+                      <div className="relative opacity-0 group-hover/msg:opacity-100 transition flex-shrink-0">
                         <button
                           onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
                           className="p-1.5 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-200 transition"
@@ -927,9 +942,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                     )}
                   </div>
 
-                  {/* Reactions display */}
+                  {/* Reactions */}
                   {Object.keys(reactionMap).length > 0 && (
-                    <div className={`flex flex-wrap gap-1 mt-1 px-1 ${isOwn ? 'justify-end' : ''}`}>
+                    <div className="flex flex-wrap gap-1 mt-1">
                       {Object.entries(reactionMap).map(([emoji, userIds]) => (
                         <button key={emoji}
                           onClick={() => handleReact(item.id, emoji)}
@@ -943,23 +958,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                       ))}
                     </div>
                   )}
-
-                  {/* Timestamp */}
-                  <span className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
-                    {formatTime(item.created_at)}
-                  </span>
                 </div>
-
-                {/* Own avatar on the right */}
-                {isOwn && (
-                  <button
-                    onClick={() => onViewProfile?.(user?.id)}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center
-                      text-xs font-semibold text-white flex-shrink-0 mb-1
-                      ${avatarColor(user?.name)} hover:ring-2 hover:ring-white/20 transition`}>
-                    {initials(user?.name)}
-                  </button>
-                )}
               </div>
             );
             return els;
