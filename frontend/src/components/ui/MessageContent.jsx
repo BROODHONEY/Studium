@@ -12,17 +12,15 @@ const fileIcon = (name = '') => {
 };
 
 // File ref format stored in content: {{file:id:filename:url}}
-// We split content on this pattern and render chips inline.
 const FILE_REF_RE = /\{\{file:([^:]+):([^:]+):([^}]+)\}\}/g;
+
+// Mention format: @[Name](userId)
+const MENTION_RE = /@\[([^\]]+)\]\(([^)]+)\)/g;
 
 function FileChip({ filename, fileUrl, fileId, isOwn, onFileRef }) {
   const handleClick = (e) => {
-    if (onFileRef) {
-      e.preventDefault();
-      onFileRef(fileId);
-    }
+    if (onFileRef) { e.preventDefault(); onFileRef(fileId); }
   };
-
   return (
     <a href={fileUrl} target="_blank" rel="noreferrer noopener"
       onClick={handleClick}
@@ -40,17 +38,22 @@ function FileChip({ filename, fileUrl, fileId, isOwn, onFileRef }) {
 }
 
 /**
- * Splits content into text segments and file-ref chips.
- * Returns an array of { type: 'text'|'file', ... }
+ * Splits content into text, file-ref, and mention segments.
  */
 function parseContent(content) {
+  // Combine both patterns, process left-to-right
+  const combined = /\{\{file:([^:]+):([^:]+):([^}]+)\}\}|@\[([^\]]+)\]\(([^)]+)\)/g;
   const parts = [];
   let last = 0;
   let match;
-  FILE_REF_RE.lastIndex = 0;
-  while ((match = FILE_REF_RE.exec(content)) !== null) {
+  combined.lastIndex = 0;
+  while ((match = combined.exec(content)) !== null) {
     if (match.index > last) parts.push({ type: 'text', value: content.slice(last, match.index) });
-    parts.push({ type: 'file', id: match[1], filename: match[2], fileUrl: match[3] });
+    if (match[1]) {
+      parts.push({ type: 'file', id: match[1], filename: match[2], fileUrl: match[3] });
+    } else {
+      parts.push({ type: 'mention', name: match[4], userId: match[5] });
+    }
     last = match.index + match[0].length;
   }
   if (last < content.length) parts.push({ type: 'text', value: content.slice(last) });
@@ -80,24 +83,36 @@ export default function MessageContent({ content, isOwn, onFileRef }) {
     ),
   };
 
-  // If no file refs, render normally
-  if (!FILE_REF_RE.test(content)) {
-    FILE_REF_RE.lastIndex = 0;
+  const hasMention = MENTION_RE.test(content);
+  MENTION_RE.lastIndex = 0;
+  const hasFile = FILE_REF_RE.test(content);
+  FILE_REF_RE.lastIndex = 0;
+
+  if (!hasMention && !hasFile) {
     return <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{content}</ReactMarkdown>;
   }
 
-  FILE_REF_RE.lastIndex = 0;
   const parts = parseContent(content);
 
   return (
-    <span>
-      {parts.map((part, i) =>
-        part.type === 'file'
-          ? <FileChip key={i} filename={part.filename} fileUrl={part.fileUrl} fileId={part.id} isOwn={isOwn} onFileRef={onFileRef} />
-          : part.value
-            ? <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} components={mdComponents}>{part.value}</ReactMarkdown>
-            : null
-      )}
+    <span className="leading-relaxed">
+      {parts.map((part, i) => {
+        if (part.type === 'file') {
+          return <FileChip key={i} filename={part.filename} fileUrl={part.fileUrl} fileId={part.id} isOwn={isOwn} onFileRef={onFileRef} />;
+        }
+        if (part.type === 'mention') {
+          return (
+            <span key={i} className={`inline font-semibold rounded px-0.5
+              ${isOwn ? 'text-brand-200 bg-white/10' : 'text-brand-400 dark:bg-brand-900/40 bg-brand-100'}`}>
+              @{part.name}
+            </span>
+          );
+        }
+        // Plain text — render inline, preserving whitespace/newlines
+        return part.value
+          ? <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{part.value}</span>
+          : null;
+      })}
     </span>
   );
 }

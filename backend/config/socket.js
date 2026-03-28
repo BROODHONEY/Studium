@@ -193,6 +193,21 @@ module.exports = (io) => {
         if (error) throw error;
 
         io.to(groupId).emit('new_message', { ...message, group_id: groupId });
+
+        // Notify mentioned users
+        const mentionRe = /@\[([^\]]+)\]\(([^)]+)\)/g;
+        let m;
+        while ((m = mentionRe.exec(content)) !== null) {
+          const mentionedUserId = m[2];
+          if (mentionedUserId !== socket.user.id) {
+            io.to(`user:${mentionedUserId}`).emit('user_mentioned', {
+              group_id: groupId,
+              message_id: message.id,
+              sender_name: socket.user.name || 'Someone',
+              content: content.slice(0, 80),
+            });
+          }
+        }
       } catch (err) {
         console.error(err);
         socket.emit('error', { message: 'Could not send message' });

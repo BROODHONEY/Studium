@@ -123,7 +123,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   }, [user?.id, groups?.length]);
 
   // notification type → tab name
-  const TYPE_TO_TAB = { message: 'Chat', announcement: 'Overview', due: 'Dues', file: 'Files' };
+  const TYPE_TO_TAB = { message: 'Chat', mention: 'Chat', announcement: 'Overview', due: 'Dues', file: 'Files' };
 
   const activeGroupRef2 = useRef(activeGroupId);
   useEffect(() => { activeGroupRef2.current = activeGroupId; }, [activeGroupId]);
@@ -227,6 +227,16 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
       }
     };
 
+    const handleMention = (data) => {
+      if (data.group_id === activeGroupRef.current) return;
+      const group = groupsRef.current?.find(g => g.id === data.group_id);
+      const groupName = group?.name || 'a group';
+      add({ type: 'mention', title: `${data.sender_name} mentioned you in ${groupName}`, body: data.content, groupId: data.group_id, groupName });
+      if (Notification.permission === 'granted') {
+        new Notification(`${data.sender_name} mentioned you`, { body: data.content, icon: '/favicon.svg', tag: `mention-${data.message_id}` });
+      }
+    };
+
     const handleNewFile = (f) => {
       if (f.group_id === activeGroupRef.current) return;
       if (f.uploaded_by === user.id) return;
@@ -247,11 +257,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     socket.on('new_announcement', handleNewAnnouncement);
     socket.on('new_due',          handleNewDue);
     socket.on('new_file',         handleNewFile);
+    socket.on('user_mentioned',   handleMention);
     return () => {
       socket.off('new_message',      handleNewMessage);
       socket.off('new_announcement', handleNewAnnouncement);
       socket.off('new_due',          handleNewDue);
       socket.off('new_file',         handleNewFile);
+      socket.off('user_mentioned',   handleMention);
     };
   }, [socket, user, add]);
 

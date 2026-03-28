@@ -16,6 +16,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
 
   const [messages, setMessages]     = useState([]);
   const [text, setText]             = useState('');
+  const mentionsRef = useRef({}); // { '@Name': '@[Name](id)' } — populated on mention insert
   const [loading, setLoading]       = useState(true);
   const [adminsOnly, setAdminsOnly] = useState(false);
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
@@ -23,6 +24,13 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch]   = useState(false);
   const [typingUsers, setTypingUsers] = useState({}); // { userId: { name, timer } }
+
+  // ── @mention state ──────────────────────────────────
+  const [members, setMembers]           = useState([]);
+  const [mentionQuery, setMentionQuery] = useState(null); // null = closed, string = filter
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const mentionStartRef                 = useRef(null); // caret position where @ was typed
+  const mentionListRef                  = useRef(null);
 
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const highlightTimeoutRef = useRef(null);
@@ -98,7 +106,10 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
 
     // Fetch fresh group state for admins_only
     groupsAPI.get(group.id)
-      .then(res => setAdminsOnly(res.data.admins_only || false))
+      .then(res => {
+        setAdminsOnly(res.data.admins_only || false);
+        setMembers(res.data.members || []);
+      })
       .catch(console.error);
 
     // Join socket room only once per group per session
@@ -241,11 +252,11 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
     if (!text.trim() || !socket || !connected || !canSend) return;
     socket.emit('send_message', {
       groupId: group.id,
-      content: text.trim(),
+      content: encodeForSend(text.trim()),
       type: 'text',
       ...(replyTo ? { replyTo: replyTo.id } : {})
     });
-    setText('');
+    setText(''); mentionsRef.current = {};
     setReplyTo(null);
     clearTimeout(typingTimeoutRef.current);
     isTypingRef.current = false;
@@ -257,11 +268,11 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
     try {
       await messagesAPI.replyPrivate({
         targetUserId: privateReply.senderId,
-        content: text.trim(),
+        content: encodeForSend(text.trim()),
         quotedContent: privateReply.content,
         quotedSenderName: privateReply.senderName,
       });
-      setText('');
+      setText(''); mentionsRef.current = {};
       setPrivateReply(null);
     } catch (err) {
       console.error(err);
@@ -359,6 +370,14 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   };
 
   const handleKeyDown = (e) => {
+    // Navigate mention popover
+    if (mentionQuery !== null && filteredMembers.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIndex(i => (i + 1) % filteredMembers.length); return; }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); setMentionIndex(i => (i - 1 + filteredMembers.length) % filteredMembers.length); return; }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); insertMention(filteredMembers[mentionIndex]); return; }
+      if (e.key === 'Escape') { setMentionQuery(null); return; }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (privateReply) handlePrivateReply();
@@ -371,7 +390,23 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   };
 
   const handleTextChange = (e) => {
-    setText(e.target.value);
+    const val = e.target.value;
+    setText(val);
+    // If text is cleared, reset mentions map
+    if (!val) mentionsRef.current = {};
+
+    // Detect @mention trigger
+    const pos = e.target.selectionStart;
+    const textUpToCaret = val.slice(0, pos);
+    const mentionMatch = textUpToCaret.match(/@(\w*)$/);
+    if (mentionMatch) {
+      mentionStartRef.current = pos - mentionMatch[0].length;
+      setMentionQuery(mentionMatch[1].toLowerCase());
+      setMentionIndex(0);
+    } else {
+      setMentionQuery(null);
+    }
+
     if (!socket || !group || !connected) return;
     if (!isTypingRef.current) {
       isTypingRef.current = true;
@@ -382,6 +417,43 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
       isTypingRef.current = false;
       socket.emit('typing_stop', { groupId: group.id });
     }, 2000);
+  };
+
+  const filteredMembers = mentionQuery !== null
+    ? members
+        .map(m => m.users)
+        .filter(u => u && u.id !== user?.id && u.name?.toLowerCase().includes(mentionQuery))
+        .slice(0, 6)
+    : [];
+
+  // Replace @Name display tokens with @[Name](id) for storage
+  const encodeForSend = (t) => {
+    let out = t;
+    for (const [display, encoded] of Object.entries(mentionsRef.current)) {
+      out = out.split(display).join(encoded);
+    }
+    return out;
+  };
+
+  const insertMention = (member) => {
+    const caretPos = textareaRef.current?.selectionStart ?? mentionStartRef.current;
+    const before = text.slice(0, mentionStartRef.current);
+    const after  = text.slice(caretPos);
+    const displayToken = `@${member.name}`;
+    const encodedToken = `@[${member.name}](${member.id})`;
+    mentionsRef.current[displayToken] = encodedToken;
+
+    const newText = before + displayToken + ' ' + after;
+    setText(newText);
+    setMentionQuery(null);
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const pos = before.length + displayToken.length + 1;
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(pos, pos);
+      }
+    }, 0);
   };
 
   // formatTime imported from utils/time
@@ -936,19 +1008,42 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
             </button>
             <div className="flex-1 flex flex-col">
               <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id} />
-              <textarea
-                ref={textareaRef}
-                value={text}
-                onChange={handleTextChange}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                placeholder={connected ? 'Type a message... ' : 'Disconnected... reconnecting'}
-                className="dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
-                  text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
-                  focus:outline-none focus:ring-2 focus:ring-brand-500
-                  resize-none transition"
-                disabled={!connected}
-              />
+              <div className="relative">
+                {/* @mention popover */}
+                {mentionQuery !== null && filteredMembers.length > 0 && (
+                  <div ref={mentionListRef}
+                    className="absolute bottom-full mb-1 left-0 w-56 z-50 rounded-xl overflow-hidden shadow-2xl
+                      dark:bg-surface-2 bg-white border dark:border-surface-3 border-gray-200">
+                    {filteredMembers.map((m, i) => (
+                      <button key={m.id}
+                        onMouseDown={e => { e.preventDefault(); insertMention(m); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition
+                          ${i === mentionIndex
+                            ? 'dark:bg-brand-900/60 bg-brand-50 dark:text-brand-300 text-brand-700'
+                            : 'dark:text-gray-200 text-gray-800 dark:hover:bg-surface-3 hover:bg-gray-50'}`}>
+                        <span className="w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
+                          {m.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                        </span>
+                        <span className="truncate">{m.name}</span>
+                        <span className="text-xs dark:text-gray-600 text-gray-400 ml-auto capitalize flex-shrink-0">{m.role}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <textarea
+                  ref={textareaRef}
+                  value={text}
+                  onChange={handleTextChange}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  placeholder={connected ? 'Type a message… use @ to mention' : 'Disconnected... reconnecting'}
+                  className="w-full dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
+                    text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
+                    focus:outline-none focus:ring-2 focus:ring-brand-500
+                    resize-none transition"
+                  disabled={!connected}
+                />
+              </div>
             </div>
             <button
               onClick={privateReply ? handlePrivateReply : sendMessage}
