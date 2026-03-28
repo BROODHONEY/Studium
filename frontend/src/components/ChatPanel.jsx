@@ -831,9 +831,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                   if (el) messageRefs.current.set(item.id, el);
                   else messageRefs.current.delete(item.id);
                 }}
-                className="flex gap-2.5 items-start group/msg"
+                className={`flex gap-2.5 items-start group/msg ${isOwn ? 'flex-row-reverse' : ''}`}
               >
-                {/* Avatar — left side always, shown only on first message of a run */}
+                {/* Avatar */}
                 <div className="flex-shrink-0 w-8 mt-0.5">
                   {showSenderName ? (
                     <button
@@ -847,17 +847,17 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                 </div>
 
                 {/* Bubble group */}
-                <div className="flex flex-col flex-1 min-w-0 max-w-xs lg:max-w-md xl:max-w-lg">
+                <div className={`flex flex-col min-w-0 max-w-xs lg:max-w-md xl:max-w-lg ${isOwn ? 'items-end' : 'items-start'}`}>
 
-                  {/* Sender name */}
-                  {showSenderName && (
+                  {/* Sender name — only for others, only on first of a run */}
+                  {!isOwn && showSenderName && (
                     <span className={`text-xs font-semibold mb-1 ${nameColor}`}>
                       {senderName}
                     </span>
                   )}
 
                   {/* Bubble + actions */}
-                  <div className="flex items-end gap-1.5">
+                  <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
                     {editingId === item.id ? (
                       <div className="flex flex-col gap-1.5 min-w-[200px]">
                         <textarea
@@ -885,14 +885,18 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                       </div>
                     ) : (
                       <div className={`px-3 py-2 rounded-xl text-sm leading-relaxed break-words
-                        dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900
+                        ${isOwn
+                          ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white'
+                          : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900'}
                         ${highlightedMessageId === item.id ? 'ring-2 ring-brand-400/70 shadow-[0_0_0_3px_rgba(168,85,247,0.15)]' : ''}`}>
                         {/* Replied-to preview */}
                         {item.replied_message && (
                           <button
                             onClick={() => scrollToMessage(item.replied_message.id)}
-                            className="block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
-                              dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600">
+                            className={`block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
+                              ${isOwn
+                                ? 'bg-brand-700/50 border-brand-300/50 text-brand-200'
+                                : 'dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600'}`}>
                             <span className="font-medium block truncate">
                               {item.replied_message.users?.name || 'Unknown'}
                             </span>
@@ -901,15 +905,16 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                             </span>
                           </button>
                         )}
-                        {/* Message text + inline timestamp */}
-                        <span className="break-words">
-                          <MessageContent content={item.content} isOwn={false} onFileRef={onFileRef} />
-                          {item.edited && <span className="text-xs opacity-40 ml-1">(edited)</span>}
-                          <span className="inline-block text-[11px] dark:text-gray-500 text-gray-400 ml-2 align-bottom leading-none select-none">
+                        <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
+                        {item.edited && <span className="text-xs opacity-40 ml-1">(edited)</span>}
+                        {item.files && <FilePreview file={item.files} />}
+                        {/* Timestamp row — always on its own line, right-aligned */}
+                        <div className={`flex justify-end mt-0.5 -mb-0.5
+                          ${isOwn ? 'text-brand-200/70' : 'dark:text-gray-500 text-gray-400'}`}>
+                          <span className="text-[10px] leading-none select-none">
                             {formatTime(item.created_at)}
                           </span>
-                        </span>
-                        {item.files && <FilePreview file={item.files} />}
+                        </div>
                       </div>
                     )}
 
@@ -944,7 +949,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
 
                   {/* Reactions */}
                   {Object.keys(reactionMap).length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <div className={`flex flex-wrap gap-1 mt-1 ${isOwn ? 'justify-end' : ''}`}>
                       {Object.entries(reactionMap).map(([emoji, userIds]) => (
                         <button key={emoji}
                           onClick={() => handleReact(item.id, emoji)}
