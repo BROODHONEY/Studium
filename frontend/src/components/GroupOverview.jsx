@@ -43,6 +43,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const [open, setOpen]         = useState(false);
   const [showFilePicker, setShowFilePicker] = useState(false);
   const contentRef = useRef(null);
+  const fileButtonRef = useRef(null);
 
   useEffect(() => {
     if (editing) {
@@ -118,7 +119,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
       <div className="relative">
         <textarea ref={contentRef} className="form-input resize-none" rows={3} placeholder="Write your announcement..."
           required value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}/>
-        <button type="button" title="Attach file reference"
+        <button ref={fileButtonRef} type="button" title="Attach file reference"
           onClick={() => setShowFilePicker(v => !v)}
           className={`absolute bottom-2 right-2 p-1.5 rounded-lg transition
             ${showFilePicker ? 'bg-brand-600 text-white' : 'dark:text-gray-500 text-gray-400 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
@@ -129,6 +130,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
         {showFilePicker && (
           <FilePickerPopover
             groupId={groupId}
+            triggerRef={fileButtonRef}
             onPick={ref => {
               const el = contentRef.current;
               if (!el) { setForm(p => ({ ...p, content: p.content + ref })); }
@@ -345,6 +347,7 @@ export default function GroupOverview({ group, onFileRef }) {
                   </div>
                   <div className="text-sm dark:text-gray-300 text-gray-700 mt-3 leading-relaxed">
                     <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
+                  </div>
                   {(() => {
                     const reactionMap = {};
                     (a.announcement_reactions || []).forEach(r => {
@@ -431,7 +434,7 @@ export default function GroupOverview({ group, onFileRef }) {
                       </div>
                     </div>
                     <div className="text-sm dark:text-gray-400 text-gray-600 mt-3 leading-relaxed line-clamp-2">
-                      <MessageContent content={a.content} isOwn={false} />
+                      <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
                     </div>
                   </div>
                 );

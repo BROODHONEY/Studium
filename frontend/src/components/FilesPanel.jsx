@@ -50,9 +50,9 @@ function ConfirmUploadModal({ file, onConfirm, onCancel }) {
   );
 }
 
-function FileRow({ file, selecting, selected, onToggle, canAssign, onAssign }) {
+function FileRow({ file, selecting, selected, onToggle, canAssign, onAssign, rowRef }) {
   return (
-    <div onClick={() => selecting && onToggle(file.id)}
+    <div ref={rowRef} onClick={() => selecting && onToggle(file.id)}
       className={`card-hover flex items-center gap-4 px-4 py-3 transition group
         ${selecting ? 'cursor-pointer' : ''}
         ${selected ? 'dark:bg-brand-900/30 bg-brand-50 dark:border-brand-700/40 border-brand-200 border' : ''}`}>
@@ -90,7 +90,7 @@ function FileRow({ file, selecting, selected, onToggle, canAssign, onAssign }) {
   );
 }
 
-export default function FilesPanel({ group }) {
+export default function FilesPanel({ group, highlightFileId, onHighlightClear }) {
   const { user }     = useAuth();
   const { addToast } = useToast();
 
@@ -104,6 +104,21 @@ export default function FilesPanel({ group }) {
   const teacherInputRef = useRef(null);
   const studentInputRef = useRef(null);
   const catNameInput    = useRef(null);
+  const fileRowRefs     = useRef({});  // fileId -> DOM element
+
+  // Scroll to and highlight the referenced file
+  useEffect(() => {
+    if (!highlightFileId) return;
+    const attempt = (tries) => {
+      const el = fileRowRefs.current[highlightFileId];
+      if (!el) { if (tries > 0) setTimeout(() => attempt(tries - 1), 200); return; }
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('file-highlight');
+      const t = setTimeout(() => { el.classList.remove('file-highlight'); onHighlightClear?.(); }, 2000);
+      return () => clearTimeout(t);
+    };
+    attempt(5);
+  }, [highlightFileId]);
 
   const [files, setFiles]         = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -282,6 +297,7 @@ export default function FilesPanel({ group }) {
                           onToggle={toggleSelect}
                           canAssign={canDelete}
                           onAssign={setAssignTarget}
+                          rowRef={el => { if (el) fileRowRefs.current[file.id] = el; else delete fileRowRefs.current[file.id]; }}
                         />
                       ))}
                     </div>
@@ -305,7 +321,8 @@ export default function FilesPanel({ group }) {
                   {teacherFiles.map(file => (
                     <FileRow key={file.id} file={file}
                       selecting={selecting} selected={selected.has(file.id)} onToggle={toggleSelect}
-                      canAssign={canDelete} onAssign={setAssignTarget}/>
+                      canAssign={canDelete} onAssign={setAssignTarget}
+                      rowRef={el => { if (el) fileRowRefs.current[file.id] = el; else delete fileRowRefs.current[file.id]; }}/>
                   ))}
                 </div>
           }
@@ -325,7 +342,8 @@ export default function FilesPanel({ group }) {
                     {studentFiles.map(file => (
                       <FileRow key={file.id} file={file}
                         selecting={selecting && canDelete} selected={selected.has(file.id)} onToggle={toggleSelect}
-                        canAssign={canDelete} onAssign={setAssignTarget}/>
+                        canAssign={canDelete} onAssign={setAssignTarget}
+                        rowRef={el => { if (el) fileRowRefs.current[file.id] = el; else delete fileRowRefs.current[file.id]; }}/>
                     ))}
                   </div>
             }

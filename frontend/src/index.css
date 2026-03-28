@@ -256,3 +256,13 @@ html.dark .card-hover:hover {
 
 /* ── Safe area bottom padding for mobile nav ── */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* File reference highlight */
+@keyframes file-highlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); background-color: transparent; }
+  30%       { box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.4); background-color: rgba(168, 85, 247, 0.1); }
+}
+.file-highlight {
+  animation: file-highlight-pulse 2s ease-out forwards;
+  border-radius: 0.75rem;
+}

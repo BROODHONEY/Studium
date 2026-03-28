@@ -149,12 +149,16 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
   }, [contextMenu]);
 
-  // Close folder menu on next click anywhere
+  // Close folder menu on outside click
+  const folderMenuJustOpened = useRef(false);
   useEffect(() => {
     if (!folderMenu) return;
-    const h = () => setFolderMenu(null);
-    const t = setTimeout(() => document.addEventListener('click', h, { once: true }), 0);
-    return () => { clearTimeout(t); document.removeEventListener('click', h); };
+    const h = () => {
+      if (folderMenuJustOpened.current) { folderMenuJustOpened.current = false; return; }
+      setFolderMenu(null);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, [folderMenu]);
 
   useEffect(() => { if (folderModal) setTimeout(() => folderInput.current?.focus(), 50); }, [folderModal]);
@@ -422,7 +426,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
                           {/* Three-dot menu */}
                           <div className="relative flex-shrink-0 flex items-center pr-2">
-                            <button onClick={e => { e.stopPropagation(); setFolderMenu(menuOpen ? null : folder.id); }}
+                            <button onClick={e => { e.stopPropagation(); folderMenuJustOpened.current = true; setFolderMenu(menuOpen ? null : folder.id); }}
                               className="p-1.5 rounded-lg dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-100 transition">
                               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
@@ -444,6 +448,13 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                     <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07zM8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                                   </svg>
                                   Set color
+                                </button>
+                                <button onClick={() => { setCatPickTarget(folder.id); setFolderMenu(null); }}
+                                  className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                                  </svg>
+                                  Assign to category
                                 </button>
                                 <button onClick={() => { setDeleteConfirm(folder.id); setFolderMenu(null); }}
                                   className="w-full text-left px-3 py-2.5 text-xs text-red-400 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import FilePickerPopover from './FilePickerPopover';
 
 function wrap(textareaRef, setText, before, after = before) {
@@ -37,6 +37,7 @@ const FORMAT_TOOLS = [
 
 export default function FormatToolbar({ textareaRef, setText, groupId }) {
   const [showFilePicker, setShowFilePicker] = useState(false);
+  const fileButtonRef = useRef(null);
 
   return (
     <div className="flex items-center gap-0.5 mb-1.5 relative">
@@ -52,7 +53,7 @@ export default function FormatToolbar({ textareaRef, setText, groupId }) {
 
       {/* File reference button — only shown when groupId is provided */}
       {groupId && (
-        <button type="button" title="Attach file reference"
+        <button ref={fileButtonRef} type="button" title="Attach file reference"
           onMouseDown={e => { e.preventDefault(); setShowFilePicker(v => !v); }}
           className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs transition select-none
             ${showFilePicker
@@ -67,6 +68,7 @@ export default function FormatToolbar({ textareaRef, setText, groupId }) {
       {showFilePicker && groupId && (
         <FilePickerPopover
           groupId={groupId}
+          triggerRef={fileButtonRef}
           onPick={ref => insertAtCursor(textareaRef, setText, ref)}
           onClose={() => setShowFilePicker(false)}
         />
