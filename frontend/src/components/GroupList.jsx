@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 
 // ── Persistence ────────────────────────────────────────
@@ -105,6 +106,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   const [folderName, setFolderName]   = useState('');
   const [folderPickTarget, setFolderPickTarget] = useState(null);
   const [folderMenu, setFolderMenu]   = useState(null);
+  const [folderMenuPos, setFolderMenuPos] = useState({ x: 0, y: 0 });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [renamingId, setRenamingId]   = useState(null);
   const [renameVal, setRenameVal]     = useState('');
@@ -148,18 +150,6 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     document.addEventListener('touchstart', h);
     return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
   }, [contextMenu]);
-
-  // Close folder menu on outside click
-  const folderMenuJustOpened = useRef(false);
-  useEffect(() => {
-    if (!folderMenu) return;
-    const h = () => {
-      if (folderMenuJustOpened.current) { folderMenuJustOpened.current = false; return; }
-      setFolderMenu(null);
-    };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, [folderMenu]);
 
   useEffect(() => { if (folderModal) setTimeout(() => folderInput.current?.focus(), 50); }, [folderModal]);
 
@@ -426,45 +416,19 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
                           {/* Three-dot menu */}
                           <div className="relative flex-shrink-0 flex items-center pr-2">
-                            <button onClick={e => { e.stopPropagation(); folderMenuJustOpened.current = true; setFolderMenu(menuOpen ? null : folder.id); }}
+                            <button onClick={e => {
+                                e.stopPropagation();
+                                if (menuOpen) { setFolderMenu(null); return; }
+                                const r = e.currentTarget.getBoundingClientRect();
+                                setFolderMenuPos({ x: r.right, y: r.bottom + 4 });
+                                setFolderMenu(folder.id);
+                              }}
                               className="p-1.5 rounded-lg dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-100 transition">
                               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                               </svg>
                             </button>
-                            {menuOpen && (
-                              <div className="absolute right-0 top-full mt-1 z-30 dark:bg-gray-900 bg-white border dark:border-gray-700 border-gray-200 rounded-xl shadow-xl py-1 min-w-[130px]"
-                                onClick={e => e.stopPropagation()}>
-                                <button onClick={() => { setRenameVal(folder.name); setRenamingId(folder.id); setFolderMenu(null); }}
-                                  className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
-                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
-                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                                  </svg>
-                                  Rename
-                                </button>
-                                <button onClick={() => { setColorPickTarget({ id: folder.id, type: 'folder' }); setFolderMenu(null); }}
-                                  className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
-                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
-                                    <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07zM8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                                  </svg>
-                                  Set color
-                                </button>
-                                <button onClick={() => { setCatPickTarget(folder.id); setFolderMenu(null); }}
-                                  className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
-                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
-                                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
-                                  </svg>
-                                  Assign to category
-                                </button>
-                                <button onClick={() => { setDeleteConfirm(folder.id); setFolderMenu(null); }}
-                                  className="w-full text-left px-3 py-2.5 text-xs text-red-400 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
-                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
-                                  </svg>
-                                  Delete
-                                </button>
-                              </div>
-                            )}
+                            {/* dropdown rendered via portal below */}
                           </div>
                         </div>
 
@@ -659,6 +623,54 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             </div>
           </div>
         </div>
+      )}
+
+      {/* Folder three-dot menu — portal so it's never clipped */}
+      {folderMenu && createPortal(
+        <>
+          {/* Backdrop to close on outside click */}
+          <div className="fixed inset-0 z-[9998]" onClick={() => setFolderMenu(null)}/>
+          <div
+            style={{
+              position: 'fixed',
+              top: Math.min(folderMenuPos.y, window.innerHeight - 200),
+              left: Math.max(folderMenuPos.x - 160, 8),
+              zIndex: 9999,
+            }}
+            className="dark:bg-gray-900 bg-white border dark:border-gray-700 border-gray-200 rounded-xl shadow-2xl py-1 w-40"
+            onClick={e => e.stopPropagation()}>
+            {(() => {
+              const folder = folders.find(f => f.id === folderMenu);
+              if (!folder) return null;
+              return (
+                <>
+                  <button onClick={() => { setRenameVal(folder.name); setRenamingId(folder.id); setFolderMenu(null); }}
+                    className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                      <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                    </svg>
+                    Rename
+                  </button>
+                  <button onClick={() => { setColorPickTarget({ id: folder.id, type: 'folder' }); setFolderMenu(null); }}
+                    className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                      <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07zM8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                    </svg>
+                    Set color
+                  </button>
+                  <button onClick={() => { setDeleteConfirm(folder.id); setFolderMenu(null); }}
+                    className="w-full text-left px-3 py-2.5 text-xs text-red-400 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                    </svg>
+                    Delete
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>,
+        document.body
       )}
 
       {/* Context menu */}
