@@ -997,15 +997,20 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
         {(replyTo || privateReply) && (() => {
           const r = replyTo || privateReply;
           const isPrivate = !!privateReply;
+          // Strip mention encoding and file tokens for display
+          const displayContent = (r.content || '')
+            .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
+            .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1')
+            .slice(0, 60);
           return (
             <div className={`flex items-center gap-2 mb-2 px-3 py-2 rounded-xl border text-xs
               ${isPrivate
                 ? 'bg-brand-500/10 border-brand-500/20 text-brand-300'
                 : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-300 text-gray-700'}`}>
               <div className="flex-1 min-w-0">
-                <span className="font-medium">{isPrivate ? '🔒 Private reply to ' : '↩ Replying to '}</span>
+                <span className="font-medium">{isPrivate ? 'Private reply to ' : '↩ Replying to '}</span>
                 <span className="font-semibold">{r.senderName}</span>
-                <span className="opacity-60 ml-1 truncate block">{r.content?.slice(0, 60)}{r.content?.length > 60 ? '…' : ''}</span>
+                <span className="opacity-60 ml-1 truncate block">{displayContent}{(r.content?.length || 0) > 60 ? '…' : ''}</span>
               </div>
               <button onClick={() => { setReplyTo(null); setPrivateReply(null); }}
                 className="text-gray-500 hover:text-gray-300 transition flex-shrink-0 text-base leading-none">×</button>

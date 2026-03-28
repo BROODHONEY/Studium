@@ -527,8 +527,14 @@ router.post('/reply-privately', async (req, res) => {
     }
 
     // Build message with structured private reply prefix
+    // Strip file tokens from quoted content to avoid breaking the token boundary
+    const cleanQuoted = (quotedContent || '')
+      .replace(/\{\{file:[^}]+:[^:}]+:[^}]+\}\}/g, '[file]')
+      .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
+      .replace(/\n/g, ' ')
+      .slice(0, 200);
     const fullContent = quotedContent
-      ? `{{private_reply:${req.body.groupId || ''}:${(req.body.groupName || '').replace(/:/g, '·')}:${(quotedSenderName || '').replace(/:/g, '·')}:${quotedContent.replace(/\n/g, ' ').slice(0, 200)}}}\n${content.trim()}`
+      ? `{{private_reply:${req.body.groupId || ''}:${(req.body.groupName || '').replace(/:/g, '·')}:${(quotedSenderName || '').replace(/:/g, '·')}:${cleanQuoted}}}\n${content.trim()}`
       : content.trim();
 
     const { data: message, error } = await supabase

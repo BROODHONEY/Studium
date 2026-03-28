@@ -45,22 +45,32 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   const other = conversation?.other;
 
   // Parse {{private_reply:groupId:groupName:senderName:quotedContent}} token
+  const cleanTokens = (text) => (text || '')
+    .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
+    .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1');
+
   const parsePrivateReply = (content) => {
     if (!content?.startsWith('{{private_reply:')) return null;
-    const end = content.indexOf('}}');
-    if (end === -1) return null;
-    const inner = content.slice('{{private_reply:'.length, end);
+    // Find the closing }} that ends the token — it's followed by \n or end of string
+    // We can't just use indexOf('}}') because file tokens inside quoted content also contain }}
+    // The token ends at the first \n after the opening, or we use a greedy approach:
+    // The message part starts after the first \n
+    const newlineIdx = content.indexOf('\n');
+    if (newlineIdx === -1) return null;
+    const tokenLine = content.slice(0, newlineIdx);
+    if (!tokenLine.endsWith('}}')) return null;
+    const inner = tokenLine.slice('{{private_reply:'.length, -2);
     const firstColon = inner.indexOf(':');
     const rest1 = inner.slice(firstColon + 1);
     const secondColon = rest1.indexOf(':');
     const rest2 = rest1.slice(secondColon + 1);
     const thirdColon = rest2.indexOf(':');
     return {
-      groupId:     inner.slice(0, firstColon),
-      groupName:   rest1.slice(0, secondColon).replace(/·/g, ':'),
-      senderName:  rest2.slice(0, thirdColon).replace(/·/g, ':'),
-      quoted:      rest2.slice(thirdColon + 1),
-      message:     content.slice(end + 2).replace(/^\n/, ''),
+      groupId:    inner.slice(0, firstColon),
+      groupName:  rest1.slice(0, secondColon).replace(/·/g, ':'),
+      senderName: rest2.slice(0, thirdColon).replace(/·/g, ':'),
+      quoted:     cleanTokens(rest2.slice(thirdColon + 1)),
+      message:    content.slice(newlineIdx + 1),
     };
   };
 

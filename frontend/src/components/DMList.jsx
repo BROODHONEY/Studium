@@ -8,6 +8,22 @@ const initials = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase(
 const COLORS = ['bg-brand-600','bg-teal-600','bg-purple-600','bg-pink-600','bg-amber-600','bg-green-600'];
 const avatarColor = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
+const cleanPreview = (content) => {
+  if (!content) return '';
+  if (content.startsWith('{{private_reply:')) {
+    const end = content.indexOf('}}');
+    const msg = end !== -1 ? content.slice(end + 2).replace(/^\n/, '') : '';
+    return msg
+      .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
+      .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1')
+      .slice(0, 60) || '📎 Private reply';
+  }
+  return content
+    .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
+    .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1')
+    .slice(0, 60);
+};
+
 export default function DMList({ activeConvoId, onSelect }) {
   const { user } = useAuth();
   const [convos, setConvos]     = useState([]);
@@ -119,7 +135,7 @@ export default function DMList({ activeConvoId, onSelect }) {
                 <div className="flex items-center justify-between mt-0.5">
                   <p className="text-xs dark:text-gray-500 text-gray-400 truncate">
                     {convo.last_message
-                      ? (convo.last_message.sender_id === user?.id ? 'You: ' : '') + convo.last_message.content
+                      ? (convo.last_message.sender_id === user?.id ? 'You: ' : '') + cleanPreview(convo.last_message.content)
                       : 'No messages yet'}
                   </p>
                   {convo.unread_count > 0 && (
