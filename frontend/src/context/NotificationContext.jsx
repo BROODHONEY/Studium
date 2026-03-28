@@ -18,7 +18,7 @@ const setLastSeen = (userId, groupId, ts, key = lastSeenKey) => {
   try { localStorage.setItem(key(userId, groupId), ts); } catch {}
 };
 
-export function NotificationProvider({ activeGroupId, activeConvoId, groups, children }) {
+export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, groups, children }) {
   const { socket } = useSocket();
   const { user }   = useAuth();
 
@@ -122,16 +122,42 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, groups?.length]);
 
-  // ── Update last-seen when user views a group ──
+  // notification type → tab name
+  const TYPE_TO_TAB = { message: 'Chat', announcement: 'Overview', due: 'Dues', file: 'Files' };
+
+  const activeGroupRef2 = useRef(activeGroupId);
+  useEffect(() => { activeGroupRef2.current = activeGroupId; }, [activeGroupId]);
+
+  // ── Stamp last-seen timestamps when a group is opened ──
   useEffect(() => {
     if (!activeGroupId || !user?.id) return;
     const now = new Date().toISOString();
     setLastSeen(user.id, activeGroupId, now, lastSeenKey);
     setLastSeen(user.id, activeGroupId, now, lastSeenDueKey);
     setLastSeen(user.id, activeGroupId, now, lastSeenMsgKey);
-    // Remove all notifications for this group when it becomes active
-    setNotifications(prev => prev.filter(n => n.groupId !== activeGroupId));
   }, [activeGroupId, user?.id]);
+
+  // ── Clear tab-level unreads only when that tab is actually opened ──
+  const prevTabRef = useRef(activeTab);
+  const prevGroupRef = useRef(activeGroupId);
+  useEffect(() => {
+    const groupChanged = prevGroupRef.current !== activeGroupId;
+    prevGroupRef.current = activeGroupId;
+    prevTabRef.current = activeTab;
+
+    // Don't clear on initial group open — let each tab clear itself when visited
+    if (groupChanged) return;
+    if (!activeGroupId || !activeTab) return;
+
+    const clearedTypes = Object.entries(TYPE_TO_TAB)
+      .filter(([, tab]) => tab === activeTab)
+      .map(([type]) => type);
+    if (clearedTypes.length === 0) return;
+    setNotifications(prev =>
+      prev.filter(n => n.groupId !== activeGroupId || !clearedTypes.includes(n.type))
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, activeGroupId]);
 
   // ── Browser notification permission ──
   useEffect(() => {
@@ -232,8 +258,18 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
   // Set of groupIds that have unread activity (messages, announcements, dues)
   const groupUnreads = new Set(notifications.map(n => n.groupId).filter(Boolean));
 
+  // Map of groupId → Set of tab names with unread content
+  const groupTabUnreads = notifications.reduce((acc, n) => {
+    if (!n.groupId) return acc;
+    const tab = TYPE_TO_TAB[n.type];
+    if (!tab) return acc;
+    if (!acc[n.groupId]) acc[n.groupId] = new Set();
+    acc[n.groupId].add(tab);
+    return acc;
+  }, {});
+
   return (
-    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss, groupUnreads }}>
+    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss, groupUnreads, groupTabUnreads }}>
       {children}
     </NotificationContext.Provider>
   );

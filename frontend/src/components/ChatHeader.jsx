@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 export default function ChatHeader({ group, activeTab, onTabChange }) {
   const { user } = useAuth();
+  const { groupTabUnreads } = useNotifications();
   const tabs = ['Overview', 'Chat', 'Dues', 'Files', 'Members'];
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -19,6 +21,7 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
   }, [dropdownOpen]);
 
   const handleSelect = (tab) => { onTabChange(tab); setDropdownOpen(false); };
+  const tabUnreads = groupTabUnreads?.[group?.id] || new Set();
 
   return (
     <div className="px-4 py-3 border-b dark:border-brand-900/40 border-gray-200 flex items-center justify-between flex-shrink-0 dark:bg-surface-1 bg-white gap-3">
@@ -40,7 +43,12 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
         {tabs.map(tab => (
           <button key={tab} onClick={() => onTabChange(tab)}
             className={activeTab === tab ? 'tab-btn-active' : 'tab-btn-inactive'}>
-            {tab}
+            <span className="relative inline-flex items-center">
+              {tab}
+              {tabUnreads.has(tab) && (
+                <span className="absolute -top-1.5 -right-2.5 w-2 h-2 rounded-full bg-brand-500"/>
+              )}
+            </span>
           </button>
         ))}
       </div>
@@ -64,11 +72,14 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
             rounded-xl shadow-2xl overflow-hidden">
             {tabs.map(tab => (
               <button key={tab} onClick={() => handleSelect(tab)}
-                className={`w-full text-left px-4 py-2.5 text-sm transition
+                className={`w-full text-left px-4 py-2.5 text-sm transition flex items-center justify-between
                   ${activeTab === tab
                     ? 'bg-brand-600/20 text-brand-300 font-medium'
                     : 'dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50'}`}>
                 {tab}
+                {tabUnreads.has(tab) && (
+                  <span className="w-2 h-2 rounded-full bg-brand-500 flex-shrink-0"/>
+                )}
               </button>
             ))}
           </div>

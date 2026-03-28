@@ -102,7 +102,7 @@ export default function DashboardPage() {
   const showDM    = activeConvo && !activeGroup;
 
   return (
-    <NotificationProvider activeGroupId={activeGroup?.id} activeConvoId={activeConvo?.id} groups={groups}>
+    <NotificationProvider activeGroupId={activeGroup?.id} activeConvoId={activeConvo?.id} activeTab={activeTab} groups={groups}>
     <div className="h-screen flex flex-col dark:bg-surface bg-gray-50 transition-colors duration-300">
 
       {/* Top bar */}
