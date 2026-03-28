@@ -169,8 +169,19 @@ router.delete('/:groupId/:fileId', async (req, res) => {
       return res.status(403).json({ error: 'Students cannot delete files' });
     }
 
-    // Only the uploader or an admin/teacher can delete
-    if (file.uploaded_by !== req.user.id && req.user.role !== 'teacher') {
+    // Check group membership role — group admins and teachers can delete any file
+    const { data: membership } = await supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', groupId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    const isGroupAdmin   = membership?.role === 'admin';
+    const isGroupTeacher = membership?.role === 'teacher';
+    const isUploader     = file.uploaded_by === req.user.id;
+
+    if (!isGroupAdmin && !isGroupTeacher && !isUploader) {
       return res.status(403).json({ error: 'Not authorised to delete this file' });
     }
 

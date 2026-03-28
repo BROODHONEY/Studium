@@ -21,8 +21,12 @@ const formatSize = (bytes) => {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
-
 const formatDate = (ts) => formatDateIST(ts);
+
+// ── Category persistence ───────────────────────────────
+const catKey = (groupId) => `file_categories_${groupId}`;
+const loadCats = (groupId) => { try { return JSON.parse(localStorage.getItem(catKey(groupId))) || []; } catch { return []; } };
+const saveCats = (groupId, cats) => localStorage.setItem(catKey(groupId), JSON.stringify(cats));
 
 function ConfirmUploadModal({ file, onConfirm, onCancel }) {
   return (
@@ -38,57 +42,49 @@ function ConfirmUploadModal({ file, onConfirm, onCancel }) {
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl text-sm dark:text-gray-400 text-gray-600 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 transition">
-            Cancel
-          </button>
-          <button onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 transition">
-            Upload
-          </button>
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm dark:text-gray-400 text-gray-600 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 transition">Cancel</button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 transition">Upload</button>
         </div>
       </div>
     </div>
   );
 }
 
-function FileRow({ file, selecting, selected, onToggle }) {
+function FileRow({ file, selecting, selected, onToggle, canAssign, onAssign }) {
   return (
-    <div
-      onClick={() => selecting && onToggle(file.id)}
-      className={`card-hover flex items-center gap-4 px-4 py-3 transition
+    <div onClick={() => selecting && onToggle(file.id)}
+      className={`card-hover flex items-center gap-4 px-4 py-3 transition group
         ${selecting ? 'cursor-pointer' : ''}
         ${selected ? 'dark:bg-brand-900/30 bg-brand-50 dark:border-brand-700/40 border-brand-200 border' : ''}`}>
-
-      {/* Checkbox (select mode) */}
       {selecting && (
         <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition
           ${selected ? 'bg-brand-600 border-brand-600' : 'dark:border-gray-600 border-gray-300'}`}>
-          {selected && (
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="white">
-              <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-            </svg>
-          )}
+          {selected && <svg width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
         </div>
       )}
-
       <div style={{ fontSize: 26 }} className="flex-shrink-0">{FILE_ICONS[file.file_type] || '📎'}</div>
-
       <div className="flex-1 min-w-0">
         <p className="text-sm dark:text-white text-gray-900 font-medium truncate">{file.filename}</p>
         <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">
-          {formatSize(file.size_bytes)}
-          {file.users?.name && ` · ${file.users.name}`}
-          {` · ${formatDate(file.created_at)}`}
+          {formatSize(file.size_bytes)}{file.users?.name && ` · ${file.users.name}`}{` · ${formatDate(file.created_at)}`}
         </p>
       </div>
-
       {!selecting && (
-        <a href={file.file_url} target="_blank" rel="noreferrer"
-          onClick={e => e.stopPropagation()}
-          className="text-xs text-brand-400 hover:text-brand-300 px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 transition flex-shrink-0">
-          Download
-        </a>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {canAssign && (
+            <button onClick={e => { e.stopPropagation(); onAssign(file.id); }}
+              className="opacity-0 group-hover:opacity-100 transition text-xs dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 px-2 py-1.5 rounded-lg dark:hover:bg-surface-3 hover:bg-gray-100"
+              title="Assign to category">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+              </svg>
+            </button>
+          )}
+          <a href={file.file_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+            className="text-xs text-brand-400 hover:text-brand-300 px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 transition">
+            Download
+          </a>
+        </div>
       )}
     </div>
   );
@@ -102,11 +98,12 @@ export default function FilesPanel({ group }) {
   const isAdmin   = myRole === 'admin';
   const isTeacher = myRole === 'teacher';
   const isStudent = myRole === 'student';
-  const canUploadAll   = isAdmin || isTeacher;
-  const canDelete      = isAdmin || isTeacher; // students can NEVER delete
+  const canUploadAll = isAdmin || isTeacher;
+  const canDelete    = isAdmin || isTeacher;
 
   const teacherInputRef = useRef(null);
   const studentInputRef = useRef(null);
+  const catNameInput    = useRef(null);
 
   const [files, setFiles]         = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -120,6 +117,13 @@ export default function FilesPanel({ group }) {
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [deleting, setDeleting]     = useState(false);
 
+  // Categories (localStorage per group)
+  const [categories, setCategories]   = useState([]);   // [{ id, name, fileIds[], collapsed }]
+  const [catModal, setCatModal]       = useState(false);
+  const [catName, setCatName]         = useState('');
+  const [assignTarget, setAssignTarget] = useState(null); // fileId being assigned
+  const [catCollapsed, setCatCollapsed] = useState({});
+
   useEffect(() => {
     if (!group) return;
     setLoading(true); setError('');
@@ -127,10 +131,34 @@ export default function FilesPanel({ group }) {
       .then(res => setFiles(res.data))
       .catch(() => setError('Could not load files'))
       .finally(() => setLoading(false));
+    setCategories(loadCats(group.id));
   }, [group?.id]);
 
-  // Exit select mode when switching groups
   useEffect(() => { setSelecting(false); setSelected(new Set()); }, [group?.id]);
+  useEffect(() => { if (catModal) setTimeout(() => catNameInput.current?.focus(), 50); }, [catModal]);
+
+  const persistCats = (next) => { setCategories(next); saveCats(group.id, next); };
+
+  const createCategory = () => {
+    const name = catName.trim();
+    if (!name) return;
+    persistCats([...categories, { id: Date.now().toString(), name, fileIds: [] }]);
+    setCatName(''); setCatModal(false);
+  };
+
+  const deleteCategory = (catId) => {
+    persistCats(categories.filter(c => c.id !== catId));
+  };
+
+  const assignFileToCategory = (fileId, catId) => {
+    const next = categories.map(c => ({ ...c, fileIds: c.fileIds.filter(id => id !== fileId) }));
+    if (catId) {
+      const i = next.findIndex(c => c.id === catId);
+      if (i >= 0) next[i] = { ...next[i], fileIds: [...next[i].fileIds, fileId] };
+    }
+    persistCats(next);
+    setAssignTarget(null);
+  };
 
   const handleFilePick = (e) => {
     const file = e.target.files?.[0];
@@ -153,75 +181,57 @@ export default function FilesPanel({ group }) {
   };
 
   const toggleSelect = (id) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   };
 
   const toggleSelectAll = (fileList) => {
     const allIds = fileList.map(f => f.id);
-    const allSelected = allIds.every(id => selected.has(id));
-    setSelected(allSelected ? new Set() : new Set(allIds));
+    setSelected(allIds.every(id => selected.has(id)) ? new Set() : new Set(allIds));
   };
 
   const handleBulkDelete = async () => {
-    setConfirmBulkDelete(false);
-    setDeleting(true);
+    setConfirmBulkDelete(false); setDeleting(true);
     const ids = [...selected];
     let failed = 0;
-    for (const id of ids) {
-      try { await filesAPI.delete(group.id, id); }
-      catch { failed++; }
-    }
+    for (const id of ids) { try { await filesAPI.delete(group.id, id); } catch { failed++; } }
     setFiles(prev => prev.filter(f => !selected.has(f.id)));
-    setSelected(new Set());
-    setSelecting(false);
-    setDeleting(false);
+    // Remove deleted files from categories
+    persistCats(categories.map(c => ({ ...c, fileIds: c.fileIds.filter(id => !selected.has(id)) })));
+    setSelected(new Set()); setSelecting(false); setDeleting(false);
     if (failed > 0) addToast({ type: 'error', message: `${failed} file(s) could not be deleted` });
     else addToast({ type: 'success', message: `${ids.length} file(s) deleted` });
   };
 
-  const teacherFiles = files.filter(f => f.uploaded_by_role !== 'student');
-  const studentFiles = files.filter(f => f.uploaded_by_role === 'student');
+  const fileMap = Object.fromEntries(files.map(f => [f.id, f]));
+  const categorizedIds = new Set(categories.flatMap(c => c.fileIds));
+  const teacherFiles = files.filter(f => f.uploaded_by_role !== 'student' && !categorizedIds.has(f.id));
+  const studentFiles = files.filter(f => f.uploaded_by_role === 'student' && !categorizedIds.has(f.id));
+  const allUncategorized = [...teacherFiles, ...studentFiles];
 
   const SectionHeader = ({ title, subtitle, fileList, uploadRef, showUpload, uploadLabel }) => (
     <div className="flex items-center justify-between mb-3">
       <div>
         <h3 className="text-sm font-medium dark:text-white text-gray-900">{title}</h3>
-        <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">{subtitle}</p>
+        {subtitle && <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-2">
-        {/* Select / Cancel */}
         {canDelete && fileList.length > 0 && (
-          <button
-            onClick={() => {
-              if (selecting) { setSelecting(false); setSelected(new Set()); }
-              else setSelecting(true);
-            }}
-            className={`text-xs font-medium px-3 py-1.5 rounded-xl transition
-              ${selecting
-                ? 'dark:bg-surface-3 bg-gray-200 dark:text-gray-300 text-gray-700'
-                : 'dark:text-gray-400 text-gray-500 dark:hover:text-gray-200 hover:text-gray-700'}`}>
+          <button onClick={() => { if (selecting) { setSelecting(false); setSelected(new Set()); } else setSelecting(true); }}
+            className={`text-xs font-medium px-3 py-1.5 rounded-xl transition ${selecting ? 'dark:bg-surface-3 bg-gray-200 dark:text-gray-300 text-gray-700' : 'dark:text-gray-400 text-gray-500 dark:hover:text-gray-200 hover:text-gray-700'}`}>
             {selecting ? 'Cancel' : 'Select'}
           </button>
         )}
-        {/* Select all */}
         {selecting && fileList.length > 0 && (
-          <button onClick={() => toggleSelectAll(fileList)}
-            className="text-xs dark:text-gray-400 text-gray-500 dark:hover:text-gray-200 hover:text-gray-700 transition">
+          <button onClick={() => toggleSelectAll(fileList)} className="text-xs dark:text-gray-400 text-gray-500 dark:hover:text-gray-200 hover:text-gray-700 transition">
             {fileList.every(f => selected.has(f.id)) ? 'Deselect all' : 'All'}
           </button>
         )}
-        {/* Delete selected */}
         {selecting && selected.size > 0 && (
           <button onClick={() => setConfirmBulkDelete(true)} disabled={deleting}
             className="text-xs font-medium px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition disabled:opacity-50">
             Delete {selected.size}
           </button>
         )}
-        {/* Upload */}
         {showUpload && !selecting && (
           <>
             <input ref={uploadRef} type="file" className="hidden" onChange={handleFilePick}
@@ -238,21 +248,71 @@ export default function FilesPanel({ group }) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 dark:bg-surface bg-gray-50 overflow-y-auto">
-      <div className="p-5 space-y-8">
+      <div className="p-5 space-y-6">
+        {error && <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs">{error}</div>}
 
-        {error && (
-          <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs">{error}</div>
+        {/* ── Categories ── */}
+        {categories.map(cat => {
+          const catFiles = cat.fileIds.map(id => fileMap[id]).filter(Boolean);
+          const isCollapsed = catCollapsed[cat.id];
+          return (
+            <section key={cat.id}>
+              <div className="flex items-center gap-2 mb-3 group/cat">
+                <button onClick={() => setCatCollapsed(p => ({ ...p, [cat.id]: !p[cat.id] }))}
+                  className="flex items-center gap-2 flex-1 min-w-0">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
+                    className={`flex-shrink-0 dark:text-gray-500 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}>
+                    <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                  </svg>
+                  <span className="text-xs font-bold uppercase tracking-widest dark:text-gray-300 text-gray-600">{cat.name}</span>
+                  <span className="text-xs dark:text-gray-600 text-gray-400 tabular-nums">{catFiles.length}</span>
+                </button>
+                {canDelete && (
+                  <button onClick={() => deleteCategory(cat.id)}
+                    className="opacity-0 group-hover/cat:opacity-100 transition p-1 dark:text-gray-600 text-gray-400 hover:text-red-400"
+                    title="Delete category">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+              {!isCollapsed && (
+                catFiles.length === 0
+                  ? <div className="py-6 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
+                      <p className="dark:text-gray-600 text-gray-400 text-xs">No files — assign files using the grid icon on each file</p>
+                    </div>
+                  : <div className="space-y-2">
+                      {catFiles.map(file => (
+                        <FileRow key={file.id} file={file}
+                          selecting={selecting && canDelete}
+                          selected={selected.has(file.id)}
+                          onToggle={toggleSelect}
+                          canAssign={canDelete}
+                          onAssign={setAssignTarget}
+                        />
+                      ))}
+                    </div>
+              )}
+            </section>
+          );
+        })}
+
+        {/* ── New category button (teachers only) ── */}
+        {canDelete && (
+          <button onClick={() => setCatModal(true)}
+            className="w-full py-2 border border-dashed dark:border-brand-900/50 border-gray-300 rounded-xl text-xs dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:border-brand-700/50 hover:border-gray-400 transition flex items-center justify-center gap-1.5">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+            </svg>
+            New category
+          </button>
         )}
 
-        {/* Study materials */}
+        {/* ── Study materials (uncategorized) ── */}
         <section>
-          <SectionHeader
-            title="Study materials" subtitle="Uploaded by teachers"
-            fileList={teacherFiles}
-            uploadRef={teacherInputRef}
-            showUpload={canUploadAll}
-            uploadLabel="+ Upload"
-          />
+          <SectionHeader title="Study materials" subtitle="Uploaded by teachers"
+            fileList={teacherFiles} uploadRef={teacherInputRef} showUpload={canUploadAll} uploadLabel="+ Upload"/>
           {loading
             ? <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)}</div>
             : teacherFiles.length === 0
@@ -262,25 +322,19 @@ export default function FilesPanel({ group }) {
               : <div className="space-y-2">
                   {teacherFiles.map(file => (
                     <FileRow key={file.id} file={file}
-                      selecting={selecting}
-                      selected={selected.has(file.id)}
-                      onToggle={toggleSelect}
-                    />
+                      selecting={selecting} selected={selected.has(file.id)} onToggle={toggleSelect}
+                      canAssign={canDelete} onAssign={setAssignTarget}/>
                   ))}
                 </div>
           }
         </section>
 
-        {/* Student media */}
+        {/* ── Student media (uncategorized) ── */}
         {(isStudent || canUploadAll) && (
           <section>
-            <SectionHeader
-              title="Student media" subtitle="Images and PDFs from students"
-              fileList={studentFiles}
-              uploadRef={studentInputRef}
-              showUpload={isStudent || canUploadAll}
-              uploadLabel={isStudent ? '+ Upload media' : '+ Upload'}
-            />
+            <SectionHeader title="Student media" subtitle="Images and PDFs from students"
+              fileList={studentFiles} uploadRef={studentInputRef}
+              showUpload={isStudent || canUploadAll} uploadLabel={isStudent ? '+ Upload media' : '+ Upload'}/>
             {loading
               ? <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)}</div>
               : studentFiles.length === 0
@@ -290,10 +344,8 @@ export default function FilesPanel({ group }) {
                 : <div className="space-y-2">
                     {studentFiles.map(file => (
                       <FileRow key={file.id} file={file}
-                        selecting={selecting && canDelete}
-                        selected={selected.has(file.id)}
-                        onToggle={toggleSelect}
-                      />
+                        selecting={selecting && canDelete} selected={selected.has(file.id)} onToggle={toggleSelect}
+                        canAssign={canDelete} onAssign={setAssignTarget}/>
                     ))}
                   </div>
             }
@@ -301,19 +353,73 @@ export default function FilesPanel({ group }) {
         )}
       </div>
 
-      {pendingFile && (
-        <ConfirmUploadModal file={pendingFile} onConfirm={handleConfirmUpload} onCancel={() => setPendingFile(null)}/>
-      )}
+      {pendingFile && <ConfirmUploadModal file={pendingFile} onConfirm={handleConfirmUpload} onCancel={() => setPendingFile(null)}/>}
 
-      <ConfirmDialog
-        open={confirmBulkDelete} danger
+      <ConfirmDialog open={confirmBulkDelete} danger
         title={`Delete ${selected.size} file${selected.size !== 1 ? 's' : ''}?`}
         description="This will permanently remove the selected files for everyone."
-        confirmText="Delete"
-        onCancel={() => setConfirmBulkDelete(false)}
-        onConfirm={handleBulkDelete}
-        disabled={deleting}
-      />
+        confirmText="Delete" onCancel={() => setConfirmBulkDelete(false)} onConfirm={handleBulkDelete} disabled={deleting}/>
+
+      {/* New category modal */}
+      {catModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm px-4 pb-6 sm:pb-0"
+          onClick={() => { setCatModal(false); setCatName(''); }}>
+          <div className="w-full max-w-sm dark:bg-surface-1 bg-white rounded-2xl shadow-2xl p-5 space-y-4"
+            onClick={e => e.stopPropagation()}>
+            <div>
+              <h3 className="text-sm font-semibold dark:text-white text-gray-900">New category</h3>
+              <p className="text-xs dark:text-gray-500 text-gray-400 mt-1">A labeled section to group files together.</p>
+            </div>
+            <input ref={catNameInput} value={catName} onChange={e => setCatName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') createCategory(); if (e.key === 'Escape') { setCatModal(false); setCatName(''); } }}
+              placeholder="e.g. Week 1, Assignments, Slides…" className="w-full form-input"/>
+            <div className="flex gap-2">
+              <button onClick={createCategory} disabled={!catName.trim()}
+                className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition">Create</button>
+              <button onClick={() => { setCatModal(false); setCatName(''); }}
+                className="flex-1 py-2.5 dark:bg-surface-3 bg-gray-100 dark:text-gray-300 text-gray-700 text-sm rounded-xl transition">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign file to category modal */}
+      {assignTarget && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm px-4 pb-6 sm:pb-0"
+          onClick={() => setAssignTarget(null)}>
+          <div className="w-full max-w-xs dark:bg-surface-1 bg-white rounded-2xl shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+            <p className="text-xs font-semibold uppercase tracking-wider dark:text-gray-400 text-gray-500 px-4 pt-4 pb-2">Assign to category</p>
+            <div className="divide-y dark:divide-gray-800 divide-gray-100">
+              <button onClick={() => assignFileToCategory(assignTarget, null)}
+                className="w-full text-left px-4 py-3 text-sm dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-500 text-gray-400">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+                </svg>
+                No category
+              </button>
+              {categories.map(cat => {
+                const isAssigned = cat.fileIds.includes(assignTarget);
+                return (
+                  <button key={cat.id} onClick={() => assignFileToCategory(assignTarget, cat.id)}
+                    className={`w-full text-left px-4 py-3 text-sm dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2 ${isAssigned ? 'dark:bg-brand-900/20 bg-brand-50' : ''}`}>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                      <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                    </svg>
+                    {cat.name}
+                    {isAssigned && <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="ml-auto dark:text-brand-400 text-brand-500"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
+                  </button>
+                );
+              })}
+              {categories.length === 0 && <p className="px-4 py-3 text-sm dark:text-gray-500 text-gray-400 italic">No categories yet — create one first</p>}
+            </div>
+            <div className="p-3 border-t dark:border-gray-800 border-gray-100">
+              <button onClick={() => setAssignTarget(null)}
+                className="w-full py-2 rounded-xl dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-600 text-sm transition dark:hover:bg-surface-4 hover:bg-gray-200">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -17,20 +17,22 @@ const savePrefs = (uid, key, val) => localStorage.setItem(`${key}_${uid}`, JSON.
 
 // ── Color options ──────────────────────────────────────
 const COLORS = {
-  purple: { label: 'Purple', border: 'border-l-purple-500', dot: 'bg-purple-500' },
-  blue:   { label: 'Blue',   border: 'border-l-blue-500',   dot: 'bg-blue-500' },
-  green:  { label: 'Green',  border: 'border-l-green-500',  dot: 'bg-green-500' },
-  amber:  { label: 'Amber',  border: 'border-l-amber-500',  dot: 'bg-amber-500' },
-  red:    { label: 'Red',    border: 'border-l-red-500',    dot: 'bg-red-500' },
-  teal:   { label: 'Teal',   border: 'border-l-teal-500',   dot: 'bg-teal-500' },
+  purple: { label: 'Purple', border: 'border-l-purple-500', dot: 'bg-purple-500', accent: 'bg-purple-500' },
+  blue:   { label: 'Blue',   border: 'border-l-blue-500',   dot: 'bg-blue-500',   accent: 'bg-blue-500' },
+  green:  { label: 'Green',  border: 'border-l-green-500',  dot: 'bg-green-500',  accent: 'bg-green-500' },
+  amber:  { label: 'Amber',  border: 'border-l-amber-500',  dot: 'bg-amber-500',  accent: 'bg-amber-500' },
+  red:    { label: 'Red',    border: 'border-l-red-500',    dot: 'bg-red-500',    accent: 'bg-red-500' },
+  teal:   { label: 'Teal',   border: 'border-l-teal-500',   dot: 'bg-teal-500',   accent: 'bg-teal-500' },
 };
+
+const DEFAULT_ACCENTS = ['bg-brand-500', 'bg-teal-500', 'bg-purple-500', 'bg-amber-500', 'bg-pink-500', 'bg-green-500'];
 
 // ── Helpers ────────────────────────────────────────────
 const initials = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 const roleColor = (r) => r === 'admin' ? 'text-neon-yellow' : r === 'teacher' ? 'text-neon-cyan' : 'dark:text-gray-500 text-gray-400';
 
 // ── GroupItem ──────────────────────────────────────────
-function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived }) {
+function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived, noColorBorder }) {
   const pressTimer = useRef(null);
 
   const handleTouchStart = (e) => {
@@ -41,7 +43,7 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
   };
   const cancelPress = () => clearTimeout(pressTimer.current);
 
-  const colorBorder = color && COLORS[color] ? `border-l-2 ${COLORS[color].border}` : '';
+  const colorBorder = (!noColorBorder && color && COLORS[color]) ? `border-l-2 ${COLORS[color].border}` : '';
 
   return (
     <button
@@ -54,10 +56,11 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
       onTouchMove={cancelPress}
       onContextMenu={e => { e.preventDefault(); onLongPress(group.id, e.clientX, e.clientY); }}
       onClick={() => onSelect(group)}
-      className={`w-full text-left px-3 py-2.5 rounded-xl transition select-none
+      className={`w-full text-left px-3 py-2.5 transition select-none
         ${colorBorder}
         ${isArchived ? 'opacity-50' : ''}
         ${dragging ? 'opacity-40' : ''}
+        ${noColorBorder ? 'rounded-none' : 'rounded-xl'}
         ${active
           ? 'dark:bg-brand-900/60 dark:border dark:border-brand-700/40 bg-brand-50 border border-brand-200'
           : 'dark:hover:bg-surface-3 hover:bg-gray-50'}`}>
@@ -105,13 +108,16 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [renamingId, setRenamingId]   = useState(null);
   const [renameVal, setRenameVal]     = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // New prefs state
   const [pins, setPins]               = useState([]);
   const [colors, setColors]           = useState({});
+  const [folderColors, setFolderColors] = useState({});
   const [labels, setLabels]           = useState({});
   const [archived, setArchived]       = useState([]);
   const [showArchived, setShowArchived] = useState(false);
+  // colorPickTarget: { id, type: 'group'|'folder' }
   const [colorPickTarget, setColorPickTarget] = useState(null);
   const [labelPickTarget, setLabelPickTarget] = useState(null);
   const [labelInput, setLabelInput]   = useState('');
@@ -124,6 +130,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     setFolders(loadFolders(user.id));
     setPins(loadPrefs(user.id, 'group_pins'));
     setColors(loadPrefs(user.id, 'group_colors'));
+    setFolderColors(loadPrefs(user.id, 'folder_colors'));
     setLabels(loadPrefs(user.id, 'group_labels'));
     setArchived(loadPrefs(user.id, 'group_archived'));
   }, [user?.id]);
@@ -142,6 +149,14 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
   }, [contextMenu]);
 
+  // Close folder menu on next click anywhere
+  useEffect(() => {
+    if (!folderMenu) return;
+    const h = () => setFolderMenu(null);
+    const t = setTimeout(() => document.addEventListener('click', h, { once: true }), 0);
+    return () => { clearTimeout(t); document.removeEventListener('click', h); };
+  }, [folderMenu]);
+
   useEffect(() => { if (folderModal) setTimeout(() => folderInput.current?.focus(), 50); }, [folderModal]);
 
   // ── Prefs helpers ──────────────────────────────────
@@ -151,12 +166,22 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     savePrefs(user.id, 'group_pins', next);
   };
 
-  const setColor = (groupId, colorKey) => {
-    const next = colorKey
-      ? { ...colors, [groupId]: colorKey }
-      : Object.fromEntries(Object.entries(colors).filter(([k]) => k !== groupId));
-    setColors(next);
-    savePrefs(user.id, 'group_colors', next);
+  const setColor = (colorKey) => {
+    if (!colorPickTarget) return;
+    const { id, type } = colorPickTarget;
+    if (type === 'folder') {
+      const next = colorKey
+        ? { ...folderColors, [id]: colorKey }
+        : Object.fromEntries(Object.entries(folderColors).filter(([k]) => k !== id));
+      setFolderColors(next);
+      savePrefs(user.id, 'folder_colors', next);
+    } else {
+      const next = colorKey
+        ? { ...colors, [id]: colorKey }
+        : Object.fromEntries(Object.entries(colors).filter(([k]) => k !== id));
+      setColors(next);
+      savePrefs(user.id, 'group_colors', next);
+    }
     setColorPickTarget(null);
   };
 
@@ -221,9 +246,12 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   const pinnedIds   = new Set(pins);
   const archivedIds = new Set(archived);
 
-  const pinnedGroups   = pins.map(id => groupMap[id]).filter(Boolean);
-  const archivedGroups = archived.map(id => groupMap[id]).filter(Boolean);
-  const ungrouped      = groups.filter(g => !folderedIds.has(g.id) && !pinnedIds.has(g.id) && !archivedIds.has(g.id));
+  const q = searchQuery.trim().toLowerCase();
+  const matchesSearch = (g) => !q || g.name.toLowerCase().includes(q) || g.subject?.toLowerCase().includes(q);
+
+  const pinnedGroups   = pins.map(id => groupMap[id]).filter(g => g && matchesSearch(g));
+  const archivedGroups = archived.map(id => groupMap[id]).filter(g => g && matchesSearch(g));
+  const ungrouped      = groups.filter(g => !folderedIds.has(g.id) && !pinnedIds.has(g.id) && !archivedIds.has(g.id) && matchesSearch(g));
 
   const handleLongPress = (groupId, x, y) => {
     const menuW = 190, menuH = 220;
@@ -235,15 +263,15 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   };
 
   // Shared GroupItem props helper
-  const itemProps = (group) => ({
+  const itemProps = (group, inheritColor = null) => ({
     pinned: pinnedIds.has(group.id),
-    color: colors[group.id] || null,
+    color: colors[group.id] || inheritColor || null,
     label: labels[group.id] || null,
     isArchived: archivedIds.has(group.id),
   });
 
   return (
-    <div className="flex flex-col h-full relative" onClick={() => { setContextMenu(null); setFabOpen(false); setFolderMenu(null); }}>
+    <div className="flex flex-col h-full relative" onClick={() => { setContextMenu(null); setFabOpen(false); }}>
 
       {/* User info */}
       <div className="px-4 py-3 border-b dark:border-brand-900/30 border-gray-100 flex-shrink-0">
@@ -256,6 +284,28 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             <p className="text-sm font-semibold dark:text-white text-gray-900 truncate">{user?.name}</p>
             <p className="text-xs dark:text-gray-500 text-gray-400 capitalize">{user?.role}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Search bar */}
+      <div className="px-3 pt-3 pb-1 flex-shrink-0">
+        <div className="flex items-center gap-2 dark:bg-surface-3 bg-gray-100 rounded-2xl px-3 py-2.5">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-500 text-gray-400 flex-shrink-0">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+          </svg>
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search"
+            className="flex-1 bg-transparent text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 outline-none"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 transition">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -293,110 +343,149 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               </div>
             )}
 
-            {/* ── Folders ── */}
-            {folders.map(folder => {
-              const folderGroups = folder.groupIds
-                .map(id => groupMap[id])
-                .filter(g => g && !pinnedIds.has(g.id) && !archivedIds.has(g.id));
-              const isCollapsed  = collapsed[folder.id];
-              const menuOpen     = folderMenu === folder.id;
-              return (
-                <div key={folder.id}
-                  onDragOver={e => { e.preventDefault(); setDragFolderId(folder.id); }}
-                  onDragLeave={() => setDragFolderId(p => p === folder.id ? null : p)}
-                  onDrop={e => { e.preventDefault(); handleDropOnFolder(folder.id); }}
-                  className={`rounded-xl transition-colors ${dragFolderId === folder.id ? 'ring-1 ring-brand-500/50 dark:bg-brand-900/20 bg-brand-50' : ''}`}>
-
-                  {/* Folder header */}
-                  <div className="flex items-center gap-1 px-2 py-2">
-                    <button onClick={() => setCollapsed(p => ({ ...p, [folder.id]: !p[folder.id] }))}
-                      className="flex items-center gap-2 flex-1 min-w-0 group/fhdr">
-                      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"
-                        className="flex-shrink-0 dark:text-brand-400/70 text-brand-500/70">
-                        {isCollapsed
-                          ? <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
-                          : <><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zm1.5-.5a.5.5 0 0 0-.5.5v2.5h13V5.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5z"/></>
-                        }
+            {/* ── Folders section ── */}
+            {folders.length > 0 && (
+              <div className="mb-1">
+                {/* Section header */}
+                <div className="flex items-center justify-between px-1 mb-2">
+                  <span className="text-sm font-bold dark:text-white text-gray-900">Folders</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setFolderModal(true)}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:hover:bg-surface-4 hover:bg-gray-200 transition">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
                       </svg>
-                      {renamingId === folder.id ? (
-                        <input
-                          autoFocus
-                          value={renameVal}
-                          onChange={e => setRenameVal(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') { if (renameVal.trim()) { persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); } setRenamingId(null); }
-                            if (e.key === 'Escape') setRenamingId(null);
-                          }}
-                          onBlur={() => { if (renameVal.trim()) persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); setRenamingId(null); }}
-                          onClick={e => e.stopPropagation()}
-                          className="flex-1 min-w-0 bg-transparent text-xs font-semibold dark:text-white text-gray-900 outline-none border-b dark:border-brand-500 border-brand-400"
-                        />
-                      ) : (
-                        <span className="text-sm font-semibold dark:text-gray-300 text-gray-600 truncate group-hover/fhdr:dark:text-white group-hover/fhdr:text-gray-900 transition">
-                          {folder.name}
-                        </span>
-                      )}
-                      <span className="text-xs dark:text-gray-600 text-gray-400 flex-shrink-0 tabular-nums">{folderGroups.length}</span>
-                      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"
-                        className={`flex-shrink-0 dark:text-gray-600 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}>
+                    </button>
+                    <button
+                      onClick={() => setCollapsed(p => {
+                        const allCollapsed = folders.every(f => p[f.id]);
+                        return Object.fromEntries(folders.map(f => [f.id, !allCollapsed]));
+                      })}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:hover:bg-surface-4 hover:bg-gray-200 transition">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                       </svg>
                     </button>
-
-                    {/* Three-dot menu */}
-                    <div className="relative flex-shrink-0">
-                      <button
-                        onClick={e => { e.stopPropagation(); setFolderMenu(menuOpen ? null : folder.id); }}
-                        className="p-1 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-100 transition">
-                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                          <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                        </svg>
-                      </button>
-                      {menuOpen && (
-                        <div className="absolute right-0 top-full mt-1 z-30 dark:bg-gray-900 bg-white border dark:border-gray-700 border-gray-200 rounded-xl shadow-xl py-1 min-w-[130px]"
-                          onClick={e => e.stopPropagation()}>
-                          <button onClick={() => { setRenameVal(folder.name); setRenamingId(folder.id); setFolderMenu(null); }}
-                            className="w-full text-left px-3 py-2 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
-                            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
-                              <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                            </svg>
-                            Rename
-                          </button>
-                          <button onClick={() => { setDeleteConfirm(folder.id); setFolderMenu(null); }}
-                            className="w-full text-left px-3 py-2 text-xs text-red-400 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
-                            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
-                            </svg>
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
-
-                  {/* Folder contents */}
-                  {!isCollapsed && (
-                    <div className="pl-3 pb-1 space-y-0.5">
-                      {folderGroups.length === 0
-                        ? <p className="text-xs dark:text-gray-600 text-gray-400 px-3 py-2 italic">Empty — drag or move groups here</p>
-                        : folderGroups.map(group => (
-                          <GroupItem key={group.id} group={group}
-                            active={activeGroupId === group.id}
-                            onSelect={onSelect}
-                            dragging={dragGroupId === group.id}
-                            onLongPress={handleLongPress}
-                            onDragStart={() => setDragGroupId(group.id)}
-                            onDragOver={() => {}}
-                            onDrop={() => handleDropOnGroup(group.id, folder.id)}
-                            {...itemProps(group)}
-                          />
-                        ))
-                      }
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+
+                {/* Folder cards */}
+                <div className="space-y-2">
+                  {folders.map((folder, fi) => {
+                    const folderGroups = folder.groupIds
+                      .map(id => groupMap[id])
+                      .filter(g => g && !pinnedIds.has(g.id) && !archivedIds.has(g.id) && matchesSearch(g));
+                    const isCollapsed = collapsed[folder.id];
+                    const menuOpen    = folderMenu === folder.id;
+                    const fColor = folderColors[folder.id];
+                    const accent = fColor && COLORS[fColor] ? COLORS[fColor].accent : DEFAULT_ACCENTS[fi % DEFAULT_ACCENTS.length];
+
+                    return (
+                      <div key={folder.id}
+                        onDragOver={e => { e.preventDefault(); setDragFolderId(folder.id); }}
+                        onDragLeave={() => setDragFolderId(p => p === folder.id ? null : p)}
+                        onDrop={e => { e.preventDefault(); handleDropOnFolder(folder.id); }}
+                        className={`rounded-xl overflow-hidden transition ${dragFolderId === folder.id ? 'ring-2 ring-brand-500/60' : ''}`}>
+
+                        {/* Folder card header */}
+                        <div className={`flex items-stretch dark:bg-surface-2 bg-white border dark:border-surface-3/60 border-gray-200 rounded-xl overflow-hidden
+                          ${!isCollapsed && folderGroups.length > 0 ? 'rounded-b-none border-b-0' : ''}`}
+                          onClick={e => e.stopPropagation()}>
+                          {/* Colored left accent bar */}
+                          <div className={`w-1.5 flex-shrink-0 ${accent}`}/>
+
+                          {/* Content */}
+                          <button
+                            onClick={() => setCollapsed(p => ({ ...p, [folder.id]: !p[folder.id] }))}
+                            className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3.5 text-left">
+                            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"
+                              className="flex-shrink-0 dark:text-gray-400 text-gray-500">
+                              <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
+                            </svg>
+                            {renamingId === folder.id ? (
+                              <input autoFocus value={renameVal}
+                                onChange={e => setRenameVal(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') { if (renameVal.trim()) persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); setRenamingId(null); }
+                                  if (e.key === 'Escape') setRenamingId(null);
+                                }}
+                                onBlur={() => { if (renameVal.trim()) persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); setRenamingId(null); }}
+                                onClick={e => e.stopPropagation()}
+                                className="flex-1 min-w-0 bg-transparent text-sm font-semibold dark:text-white text-gray-900 outline-none border-b dark:border-brand-500 border-brand-400"
+                              />
+                            ) : (
+                              <span className="text-sm font-semibold dark:text-white text-gray-900 truncate flex-1">
+                                {folder.name}
+                              </span>
+                            )}
+                          </button>
+
+                          {/* Three-dot menu */}
+                          <div className="relative flex-shrink-0 flex items-center pr-2">
+                            <button onClick={e => { e.stopPropagation(); setFolderMenu(menuOpen ? null : folder.id); }}
+                              className="p-1.5 rounded-lg dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-100 transition">
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                              </svg>
+                            </button>
+                            {menuOpen && (
+                              <div className="absolute right-0 top-full mt-1 z-30 dark:bg-gray-900 bg-white border dark:border-gray-700 border-gray-200 rounded-xl shadow-xl py-1 min-w-[130px]"
+                                onClick={e => e.stopPropagation()}>
+                                <button onClick={() => { setRenameVal(folder.name); setRenamingId(folder.id); setFolderMenu(null); }}
+                                  className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                                  </svg>
+                                  Rename
+                                </button>
+                                <button onClick={() => { setColorPickTarget({ id: folder.id, type: 'folder' }); setFolderMenu(null); }}
+                                  className="w-full text-left px-3 py-2.5 text-xs dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                                    <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07zM8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                                  </svg>
+                                  Set color
+                                </button>
+                                <button onClick={() => { setDeleteConfirm(folder.id); setFolderMenu(null); }}
+                                  className="w-full text-left px-3 py-2.5 text-xs text-red-400 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
+                                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
+                                  </svg>
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Folder contents */}
+                        {!isCollapsed && (
+                          <div className="dark:bg-surface-2 bg-white border dark:border-surface-3/60 border-gray-200 border-t-0 rounded-b-xl overflow-hidden">
+                            {folderGroups.length === 0
+                              ? <p className="text-xs dark:text-gray-600 text-gray-400 px-4 py-3 italic">Empty — drag or move groups here</p>
+                              : folderGroups.map(group => (
+                                <div key={group.id} className="border-t dark:border-surface-3/40 border-gray-100 first:border-t-0">
+                                  <GroupItem group={group}
+                                    active={activeGroupId === group.id}
+                                    onSelect={onSelect}
+                                    dragging={dragGroupId === group.id}
+                                    onLongPress={handleLongPress}
+                                    onDragStart={() => setDragGroupId(group.id)}
+                                    onDragOver={() => {}}
+                                    onDrop={() => handleDropOnGroup(group.id, folder.id)}
+                                    noColorBorder
+                                    {...itemProps(group, folderColors[folder.id] || null)}
+                                  />
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* ── Ungrouped / drop-to-remove zone ── */}
             <div
@@ -581,7 +670,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             </svg>
             {pins.includes(contextMenu.groupId) ? 'Unpin' : 'Pin to top'}
           </button>
-          <button onClick={() => { setColorPickTarget(contextMenu.groupId); setContextMenu(null); }}
+          <button onClick={() => { setColorPickTarget({ id: contextMenu.groupId, type: 'group' }); setContextMenu(null); }}
             className="w-full text-left px-3 py-2.5 text-sm dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-50 transition flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
               <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07zM8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
@@ -648,20 +737,28 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm px-4 pb-6 sm:pb-0"
           onClick={() => setColorPickTarget(null)}>
           <div className="w-full max-w-xs dark:bg-surface-1 bg-white rounded-2xl shadow-2xl p-5"
-            onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-semibold dark:text-white text-gray-900 mb-4">Set color</p>
+            onClick={e => { e.stopPropagation(); }}>
+            <p className="text-sm font-semibold dark:text-white text-gray-900 mb-1">Set color</p>
+            <p className="text-xs dark:text-gray-500 text-gray-400 mb-4">
+              {colorPickTarget?.type === 'folder' ? 'All groups in this folder will inherit this color.' : 'Color for this group.'}
+            </p>
             <div className="grid grid-cols-3 gap-3">
-              {Object.entries(COLORS).map(([key, c]) => (
-                <button key={key} onClick={() => setColor(colorPickTarget, key)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition text-xs font-medium
-                    ${colors[colorPickTarget] === key
-                      ? 'border-brand-500 dark:bg-brand-900/30 bg-brand-50'
-                      : 'dark:border-surface-4 border-gray-200 dark:hover:bg-surface-3 hover:bg-gray-50'}`}>
-                  <span className={`w-3 h-3 rounded-full flex-shrink-0 ${c.dot}`}/>
-                  {c.label}
-                </button>
-              ))}
-              <button onClick={() => setColor(colorPickTarget, null)}
+              {Object.entries(COLORS).map(([key, c]) => {
+                const currentColor = colorPickTarget?.type === 'folder'
+                  ? folderColors[colorPickTarget?.id]
+                  : colors[colorPickTarget?.id];
+                return (
+                  <button key={key} onClick={() => setColor(key)}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition text-xs font-medium
+                      ${currentColor === key
+                        ? 'border-brand-500 dark:bg-brand-900/30 bg-brand-50'
+                        : 'dark:border-surface-4 border-gray-200 dark:hover:bg-surface-3 hover:bg-gray-50'}`}>
+                    <span className={`w-3 h-3 rounded-full flex-shrink-0 ${c.dot}`}/>
+                    {c.label}
+                  </button>
+                );
+              })}
+              <button onClick={() => setColor(null)}
                 className="flex items-center gap-2 px-3 py-2.5 rounded-xl border dark:border-surface-4 border-gray-200 dark:hover:bg-surface-3 hover:bg-gray-50 transition text-xs dark:text-gray-400 text-gray-500">
                 None
               </button>
