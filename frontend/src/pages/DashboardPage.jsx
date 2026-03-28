@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const [groups, setGroups]               = useState([]);
   const [activeGroup, setActiveGroup]     = useState(null);
   const [activeTab, setActiveTab]         = useState('Overview');
+  const [highlightFileId, setHighlightFileId] = useState(null);
   const [showModal, setShowModal]         = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [kickNotice, setKickNotice]       = useState(null);
@@ -175,14 +176,14 @@ export default function DashboardPage() {
           {showGroup && sidebarTab !== 'settings' && (
             <>
               <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
-              {activeTab === 'Overview' && <GroupOverview group={activeGroup} />}
+              {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
               {activeTab === 'Chat' && (
                 <div className="flex-1 min-h-0">
-                  <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} />
+                  <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />
                 </div>
               )}
               {activeTab === 'Dues'  && <DuesPanel group={activeGroup} />}
-              {activeTab === 'Files' && <FilesPanel group={activeGroup} />}
+              {activeTab === 'Files' && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
               {activeTab === 'Members' && (
                 <div className="flex-1 flex flex-col min-h-0">
                   <MembersPanel group={activeGroup}

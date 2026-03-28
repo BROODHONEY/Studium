@@ -10,7 +10,7 @@ import { formatTime, getDateLabel } from '../utils/time';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
-export default function ChatPanel({ group, onViewProfile }) {
+export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   const { user }   = useAuth();
   const { socket, connected } = useSocket();
 
@@ -810,7 +810,7 @@ export default function ChatPanel({ group, onViewProfile }) {
                             </span>
                           </button>
                         )}
-                        <MessageContent content={item.content} isOwn={isOwn} />
+                        <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
                         {item.edited && <span className="text-xs opacity-50 ml-1.5">(edited)</span>}
                         {item.files && <FilePreview file={item.files} />}
                       </div>
@@ -935,7 +935,7 @@ export default function ChatPanel({ group, onViewProfile }) {
               </svg>
             </button>
             <div className="flex-1 flex flex-col">
-              <FormatToolbar textareaRef={textareaRef} setText={setText} />
+              <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id} />
               <textarea
                 ref={textareaRef}
                 value={text}

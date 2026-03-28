@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { announcementsAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { formatDateTime, toISTDateInput, toISTTimeInput } from '../utils/time';
+import FilePickerPopover from './ui/FilePickerPopover';
+import MessageContent from './ui/MessageContent';
 
 // ── Announcement tag config ────────────────────────────
 const TagIcon = ({ type }) => {
@@ -39,6 +41,8 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const [schedTime, setSchedTime] = useState('');
   const [loading, setLoading]   = useState(false);
   const [open, setOpen]         = useState(false);
+  const [showFilePicker, setShowFilePicker] = useState(false);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     if (editing) {
@@ -111,8 +115,33 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
 
       <input className="form-input" placeholder="Announcement title" required
         value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
-      <textarea className="form-input resize-none" rows={3} placeholder="Write your announcement..."
-        required value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}/>
+      <div className="relative">
+        <textarea ref={contentRef} className="form-input resize-none" rows={3} placeholder="Write your announcement..."
+          required value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}/>
+        <button type="button" title="Attach file reference"
+          onClick={() => setShowFilePicker(v => !v)}
+          className={`absolute bottom-2 right-2 p-1.5 rounded-lg transition
+            ${showFilePicker ? 'bg-brand-600 text-white' : 'dark:text-gray-500 text-gray-400 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+          </svg>
+        </button>
+        {showFilePicker && (
+          <FilePickerPopover
+            groupId={groupId}
+            onPick={ref => {
+              const el = contentRef.current;
+              if (!el) { setForm(p => ({ ...p, content: p.content + ref })); }
+              else {
+                const start = el.selectionStart;
+                const next = el.value.slice(0, start) + ref + el.value.slice(start);
+                setForm(p => ({ ...p, content: next }));
+              }
+            }}
+            onClose={() => setShowFilePicker(false)}
+          />
+        )}
+      </div>
 
       {/* Schedule toggle */}
       <div className="flex items-center gap-2.5 pt-1">
@@ -156,7 +185,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   );
 }
 
-export default function GroupOverview({ group }) {
+export default function GroupOverview({ group, onFileRef }) {
   const { user }     = useAuth();
   const { socket }   = useSocket();
   const { addToast } = useToast();
@@ -314,9 +343,8 @@ export default function GroupOverview({ group }) {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm dark:text-gray-300 text-gray-700 mt-3 leading-relaxed whitespace-pre-wrap">{a.content}</p>
-
-                  {/* Reactions */}
+                  <div className="text-sm dark:text-gray-300 text-gray-700 mt-3 leading-relaxed">
+                    <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
                   {(() => {
                     const reactionMap = {};
                     (a.announcement_reactions || []).forEach(r => {
@@ -402,7 +430,9 @@ export default function GroupOverview({ group }) {
                         <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
                       </div>
                     </div>
-                    <p className="text-sm dark:text-gray-400 text-gray-600 mt-3 leading-relaxed whitespace-pre-wrap line-clamp-2">{a.content}</p>
+                    <div className="text-sm dark:text-gray-400 text-gray-600 mt-3 leading-relaxed line-clamp-2">
+                      <MessageContent content={a.content} isOwn={false} />
+                    </div>
                   </div>
                 );
               })}
