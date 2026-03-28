@@ -19,7 +19,7 @@ const COLORS = [
 ];
 const avatarColor = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
-export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
+export default function DMPanel({ conversation, onNewMessage, onViewProfile, onNavigateToGroup }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
 
@@ -43,6 +43,26 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
   const messageRefs  = useRef({});
 
   const other = conversation?.other;
+
+  // Parse {{private_reply:groupId:groupName:senderName:quotedContent}} token
+  const parsePrivateReply = (content) => {
+    if (!content?.startsWith('{{private_reply:')) return null;
+    const end = content.indexOf('}}');
+    if (end === -1) return null;
+    const inner = content.slice('{{private_reply:'.length, end);
+    const firstColon = inner.indexOf(':');
+    const rest1 = inner.slice(firstColon + 1);
+    const secondColon = rest1.indexOf(':');
+    const rest2 = rest1.slice(secondColon + 1);
+    const thirdColon = rest2.indexOf(':');
+    return {
+      groupId:     inner.slice(0, firstColon),
+      groupName:   rest1.slice(0, secondColon).replace(/·/g, ':'),
+      senderName:  rest2.slice(0, thirdColon).replace(/·/g, ':'),
+      quoted:      rest2.slice(thirdColon + 1),
+      message:     content.slice(end + 2).replace(/^\n/, ''),
+    };
+  };
 
   // Close menu on outside click
   useEffect(() => {
@@ -331,24 +351,48 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile }) {
                           ${isOwn
                             ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white'
                             : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900'}`}>
-                          {msg.replied_message && (
-                            <button
-                              onClick={() => {
-                                const el = messageRefs.current[msg.replied_message.id];
-                                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              }}
-                              className={`block w-full text-left mb-2 pl-2 border-l-2 text-xs opacity-70 hover:opacity-100 transition
-                                ${isOwn ? 'border-white/40 text-white/80' : 'border-brand-400 dark:text-gray-300 text-gray-600'}`}>
-                              <span className="font-semibold block">{msg.replied_message.sender?.name}</span>
-                              <span className="truncate block max-w-[200px]">{msg.replied_message.content}</span>
-                            </button>
-                          )}
-                          <MessageContent content={msg.content} isOwn={isOwn} />
+                          {(() => {
+                            const pr = parsePrivateReply(msg.content);
+                            if (pr) return (
+                              <>
+                                <button
+                                  onClick={() => pr.groupId && onNavigateToGroup?.(pr.groupId)}
+                                  className={`block w-full text-left mb-2 rounded-lg overflow-hidden border-l-4 transition
+                                    ${isOwn
+                                      ? 'border-brand-300/60 bg-white/10 hover:bg-white/20'
+                                      : 'border-brand-500 dark:bg-surface-4/60 bg-gray-300/40 dark:hover:bg-surface-4/80 hover:bg-gray-300/60'}`}>
+                                  <div className="px-2.5 py-2">
+                                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                                      <span className={`text-xs font-semibold ${isOwn ? 'text-brand-200' : 'text-brand-400'}`}>{pr.senderName}</span>
+                                      {pr.groupName && <>
+                                        <span className={`text-xs ${isOwn ? 'text-brand-300/60' : 'dark:text-gray-500 text-gray-400'}`}>·</span>
+                                        <span className={`text-xs ${isOwn ? 'text-brand-300/80' : 'dark:text-gray-400 text-gray-500'}`}>{pr.groupName}</span>
+                                      </>}
+                                    </div>
+                                    <p className={`text-xs truncate ${isOwn ? 'text-brand-100/70' : 'dark:text-gray-400 text-gray-500'}`}>{pr.quoted}</p>
+                                  </div>
+                                </button>
+                                <MessageContent content={pr.message} isOwn={isOwn} />
+                              </>
+                            );
+                            return (
+                              <>
+                                {msg.replied_message && (
+                                  <button
+                                    onClick={() => { const el = messageRefs.current[msg.replied_message.id]; el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                                    className={`block w-full text-left mb-2 pl-2 border-l-2 text-xs opacity-70 hover:opacity-100 transition
+                                      ${isOwn ? 'border-white/40 text-white/80' : 'border-brand-400 dark:text-gray-300 text-gray-600'}`}>
+                                    <span className="font-semibold block">{msg.replied_message.sender?.name}</span>
+                                    <span className="truncate block max-w-[200px]">{msg.replied_message.content}</span>
+                                  </button>
+                                )}
+                                <MessageContent content={msg.content} isOwn={isOwn} />
+                              </>
+                            );
+                          })()}
                           {msg.edited && <span className="text-xs opacity-40 ml-1">(edited)</span>}
-                          {/* Timestamp inside bubble */}
-                          <div className={`flex mt-0.5 -mb-0.5 ${isOwn ? 'justify-end' : 'justify-end'}`}>
-                            <span className={`text-[10px] leading-none select-none
-                              ${isOwn ? 'text-brand-200/70' : 'dark:text-gray-500 text-gray-400'}`}>
+                          <div className="flex justify-end mt-0.5 -mb-0.5">
+                            <span className={`text-[10px] leading-none select-none ${isOwn ? 'text-brand-200/70' : 'dark:text-gray-500 text-gray-400'}`}>
                               {formatTime(msg.created_at)}
                               {isOwn && msg.read && <span className="ml-1 opacity-70">· seen</span>}
                             </span>

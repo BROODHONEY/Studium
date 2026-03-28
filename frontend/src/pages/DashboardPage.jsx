@@ -210,7 +210,11 @@ export default function DashboardPage() {
           )}
 
           {showDM && sidebarTab !== 'settings' && (
-            <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId} />
+            <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
+              onNavigateToGroup={groupId => {
+                const g = groups.find(gr => gr.id === groupId);
+                if (g) { handleSelectGroup(g); setSidebarTab('groups'); }
+              }} />
           )}
 
           {sidebarTab === 'settings' && (

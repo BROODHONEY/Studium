@@ -526,9 +526,9 @@ router.post('/reply-privately', async (req, res) => {
       convo = newConvo;
     }
 
-    // Build message with quoted context prefix
+    // Build message with structured private reply prefix
     const fullContent = quotedContent
-      ? `> ${quotedSenderName}: ${quotedContent}\n\n${content.trim()}`
+      ? `{{private_reply:${req.body.groupId || ''}:${(req.body.groupName || '').replace(/:/g, '·')}:${(quotedSenderName || '').replace(/:/g, '·')}:${quotedContent.replace(/\n/g, ' ').slice(0, 200)}}}\n${content.trim()}`
       : content.trim();
 
     const { data: message, error } = await supabase

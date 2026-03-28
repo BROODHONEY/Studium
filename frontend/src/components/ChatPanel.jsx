@@ -281,6 +281,8 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
         content,
         quotedContent: privateReply.content,
         quotedSenderName: privateReply.senderName,
+        groupId: group?.id,
+        groupName: group?.name,
       });
       setText(''); mentionsRef.current = {}; setFileRefs([]);
       setPrivateReply(null);
