@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
-import { announcementsAPI, duesAPI } from '../services/api';
+import { announcementsAPI, duesAPI, messagesAPI } from '../services/api';
 
 const NotificationContext = createContext(null);
 
 // Per-user localStorage key for last-seen timestamp per group
 const lastSeenKey     = (userId, groupId) => `ann_seen_${userId}_${groupId}`;
 const lastSeenDueKey  = (userId, groupId) => `due_seen_${userId}_${groupId}`;
+const lastSeenMsgKey  = (userId, groupId) => `msg_seen_${userId}_${groupId}`;
 
 const getLastSeen = (userId, groupId, key = lastSeenKey) => {
   try { return localStorage.getItem(key(userId, groupId)) || '1970-01-01'; }
@@ -92,6 +93,28 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
               at: new Date(d.created_at),
             }));
         } catch { /* skip */ }
+
+        try {
+          // Messages
+          const msgLastSeen = getLastSeen(user.id, group.id, lastSeenMsgKey);
+          const msgRes = await messagesAPI.list(group.id, { limit: 1 });
+          const latest = msgRes.data?.[msgRes.data.length - 1]; // list returns oldest-first
+          if (latest) {
+            const sender = latest.users;
+            if (sender?.id !== user.id && latest.type !== 'system') {
+              const latestMs = new Date(latest.created_at.endsWith('Z') ? latest.created_at : latest.created_at + 'Z').getTime();
+              if (latestMs > new Date(msgLastSeen).getTime()) {
+                add({
+                  type: 'message',
+                  title: `Unread messages in ${group.name}`,
+                  body: latest.content?.slice(0, 80) || '📎 Sent a file',
+                  groupId: group.id, groupName: group.name,
+                  at: new Date(latest.created_at),
+                });
+              }
+            }
+          }
+        } catch { /* skip */ }
       }
     };
 
@@ -105,6 +128,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
     const now = new Date().toISOString();
     setLastSeen(user.id, activeGroupId, now, lastSeenKey);
     setLastSeen(user.id, activeGroupId, now, lastSeenDueKey);
+    setLastSeen(user.id, activeGroupId, now, lastSeenMsgKey);
     // Remove all notifications for this group when it becomes active
     setNotifications(prev => prev.filter(n => n.groupId !== activeGroupId));
   }, [activeGroupId, user?.id]);
@@ -122,9 +146,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, groups, chi
 
     const handleNewMessage = (msg) => {
       if (msg.type === 'system') return;
-      if (msg.group_id === activeGroupRef.current) return;
       const sender = msg.users || msg.sender;
-      if (sender?.id === user.id) return;
+      if (sender?.id === user.id) {
+        // Still stamp last-seen so we don't show a dot for our own messages on next login
+        if (user?.id && msg.group_id) setLastSeen(user.id, msg.group_id, new Date().toISOString(), lastSeenMsgKey);
+        return;
+      }
+      if (msg.group_id === activeGroupRef.current) return;
 
       const group = groupsRef.current?.find(g => g.id === msg.group_id);
       const groupName = group?.name || 'a group';

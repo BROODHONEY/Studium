@@ -192,7 +192,7 @@ module.exports = (io) => {
 
         if (error) throw error;
 
-        io.to(groupId).emit('new_message', message);
+        io.to(groupId).emit('new_message', { ...message, group_id: groupId });
       } catch (err) {
         console.error(err);
         socket.emit('error', { message: 'Could not send message' });
