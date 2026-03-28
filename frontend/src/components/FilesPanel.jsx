@@ -123,6 +123,7 @@ export default function FilesPanel({ group }) {
   const [catName, setCatName]         = useState('');
   const [assignTarget, setAssignTarget] = useState(null); // fileId being assigned
   const [catCollapsed, setCatCollapsed] = useState({});
+  const [fabOpen, setFabOpen]         = useState(false);
 
   useEffect(() => {
     if (!group) return;
@@ -208,7 +209,7 @@ export default function FilesPanel({ group }) {
   const studentFiles = files.filter(f => f.uploaded_by_role === 'student' && !categorizedIds.has(f.id));
   const allUncategorized = [...teacherFiles, ...studentFiles];
 
-  const SectionHeader = ({ title, subtitle, fileList, uploadRef, showUpload, uploadLabel }) => (
+  const SectionHeader = ({ title, subtitle, fileList }) => (
     <div className="flex items-center justify-between mb-3">
       <div>
         <h3 className="text-sm font-medium dark:text-white text-gray-900">{title}</h3>
@@ -232,23 +233,14 @@ export default function FilesPanel({ group }) {
             Delete {selected.size}
           </button>
         )}
-        {showUpload && !selecting && (
-          <>
-            <input ref={uploadRef} type="file" className="hidden" onChange={handleFilePick}
-              accept={canUploadAll ? '.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png' : '.pdf,.jpg,.jpeg,.png'}/>
-            <button onClick={() => uploadRef.current?.click()} disabled={uploading}
-              className="bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-xs font-medium px-4 py-2 rounded-xl transition">
-              {uploading ? 'Uploading...' : uploadLabel}
-            </button>
-          </>
-        )}
       </div>
     </div>
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 dark:bg-surface bg-gray-50 overflow-y-auto">
-      <div className="p-5 space-y-6">
+    <div className="flex-1 flex flex-col min-h-0 dark:bg-surface bg-gray-50 overflow-y-auto relative"
+      onClick={() => setFabOpen(false)}>
+      <div className="p-5 pb-24 space-y-6">
         {error && <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs">{error}</div>}
 
         {/* ── Categories ── */}
@@ -299,20 +291,10 @@ export default function FilesPanel({ group }) {
         })}
 
         {/* ── New category button (teachers only) ── */}
-        {canDelete && (
-          <button onClick={() => setCatModal(true)}
-            className="w-full py-2 border border-dashed dark:border-brand-900/50 border-gray-300 rounded-xl text-xs dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:border-brand-700/50 hover:border-gray-400 transition flex items-center justify-center gap-1.5">
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
-            </svg>
-            New category
-          </button>
-        )}
 
         {/* ── Study materials (uncategorized) ── */}
         <section>
-          <SectionHeader title="Study materials" subtitle="Uploaded by teachers"
-            fileList={teacherFiles} uploadRef={teacherInputRef} showUpload={canUploadAll} uploadLabel="+ Upload"/>
+          <SectionHeader title="Study materials" subtitle="Uploaded by teachers" fileList={teacherFiles}/>
           {loading
             ? <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)}</div>
             : teacherFiles.length === 0
@@ -332,9 +314,7 @@ export default function FilesPanel({ group }) {
         {/* ── Student media (uncategorized) ── */}
         {(isStudent || canUploadAll) && (
           <section>
-            <SectionHeader title="Student media" subtitle="Images and PDFs from students"
-              fileList={studentFiles} uploadRef={studentInputRef}
-              showUpload={isStudent || canUploadAll} uploadLabel={isStudent ? '+ Upload media' : '+ Upload'}/>
+          <SectionHeader title="Student media" subtitle="Images and PDFs from students" fileList={studentFiles}/>
             {loading
               ? <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)}</div>
               : studentFiles.length === 0
@@ -352,6 +332,66 @@ export default function FilesPanel({ group }) {
           </section>
         )}
       </div>
+
+      {/* Hidden file inputs */}
+      <input ref={teacherInputRef} type="file" className="hidden" onChange={handleFilePick}
+        accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"/>
+      <input ref={studentInputRef} type="file" className="hidden" onChange={handleFilePick}
+        accept=".pdf,.jpg,.jpeg,.png"/>
+
+      {/* FAB */}
+      {(canUploadAll || isStudent) && (
+        <div className="absolute bottom-5 right-5 flex flex-col items-end gap-2 z-20"
+          onClick={e => e.stopPropagation()}>
+          {fabOpen && (
+            <div className="flex flex-col items-end gap-2">
+              {canUploadAll && (
+                <button onClick={() => { setFabOpen(false); teacherInputRef.current?.click(); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
+                    dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
+                    dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                  </svg>
+                  Upload file
+                </button>
+              )}
+              {isStudent && (
+                <button onClick={() => { setFabOpen(false); studentInputRef.current?.click(); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
+                    dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
+                    dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                  </svg>
+                  Upload media
+                </button>
+              )}
+              {canDelete && (
+                <button onClick={() => { setFabOpen(false); setCatModal(true); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
+                    dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
+                    dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                  </svg>
+                  New category
+                </button>
+              )}
+            </div>
+          )}
+          <button onClick={() => setFabOpen(v => !v)}
+            className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition
+              bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-neon-purple
+              ${fabOpen ? 'rotate-45' : ''}`}>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+            </svg>
+          </button>
+        </div>
+      )}
 
       {pendingFile && <ConfirmUploadModal file={pendingFile} onConfirm={handleConfirmUpload} onCancel={() => setPendingFile(null)}/>}
 
