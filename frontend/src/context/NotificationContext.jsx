@@ -23,13 +23,16 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   const { user }   = useAuth();
 
   const activeGroupRef = useRef(activeGroupId);
+  const activeConvoRef = useRef(activeConvoId);
   const groupsRef      = useRef(groups);
 
   useEffect(() => { activeGroupRef.current = activeGroupId; }, [activeGroupId]);
+  useEffect(() => { activeConvoRef.current = activeConvoId; }, [activeConvoId]);
   useEffect(() => { groupsRef.current = groups; }, [groups]);
 
   const [notifications, setNotifications] = useState([]);
   const [hasUnread, setHasUnread]         = useState(false);
+  const [dmUnreads, setDmUnreads]         = useState(new Set()); // Set of convoIds with unread DMs
 
   const add = useCallback((n) => {
     setNotifications(prev => {
@@ -137,6 +140,12 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     setLastSeen(user.id, activeGroupId, now, lastSeenMsgKey);
   }, [activeGroupId, user?.id]);
 
+  // ── Clear DM unread when convo is opened ──
+  useEffect(() => {
+    if (!activeConvoId) return;
+    setDmUnreads(prev => { const next = new Set(prev); next.delete(activeConvoId); return next; });
+  }, [activeConvoId]);
+
   // ── Clear tab-level unreads only when that tab is actually opened ──
   const prevTabRef = useRef(activeTab);
   const prevGroupRef = useRef(activeGroupId);
@@ -237,6 +246,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
       }
     };
 
+    const handleNewDM = ({ conversationId, message }) => {
+      if (conversationId === activeConvoRef.current) return;
+      if (message?.sender?.id === user.id) return;
+      setDmUnreads(prev => new Set([...prev, conversationId]));
+      setHasUnread(true);
+    };
+
     const handleNewFile = (f) => {
       if (f.group_id === activeGroupRef.current) return;
       if (f.uploaded_by === user.id) return;
@@ -258,12 +274,14 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     socket.on('new_due',          handleNewDue);
     socket.on('new_file',         handleNewFile);
     socket.on('user_mentioned',   handleMention);
+    socket.on('new_dm',           handleNewDM);
     return () => {
       socket.off('new_message',      handleNewMessage);
       socket.off('new_announcement', handleNewAnnouncement);
       socket.off('new_due',          handleNewDue);
       socket.off('new_file',         handleNewFile);
       socket.off('user_mentioned',   handleMention);
+      socket.off('new_dm',           handleNewDM);
     };
   }, [socket, user, add]);
 
@@ -281,7 +299,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   }, {});
 
   return (
-    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss, groupUnreads, groupTabUnreads }}>
+    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss, groupUnreads, groupTabUnreads, dmUnreads }}>
       {children}
     </NotificationContext.Provider>
   );

@@ -16,7 +16,7 @@ import KickNotification from '../components/KickNotification';
 import ProfileModal     from '../components/ProfileModal';
 import SettingsPanel    from '../components/SettingsPanel';
 import NotificationBell from '../components/NotificationBell';
-import { NotificationProvider } from '../context/NotificationContext';
+import { NotificationProvider, useNotifications } from '../context/NotificationContext';
 
 function NavIcon({ icon, label, active, onClick }) {
   return (
@@ -29,6 +29,28 @@ function NavIcon({ icon, label, active, onClick }) {
         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-brand-400"/>
       )}
     </button>
+  );
+}
+
+function SidebarTabs({ sidebarTab, setSidebarTab }) {
+  const { groupUnreads, dmUnreads } = useNotifications();
+  const hasGroupUnread = groupUnreads?.size > 0;
+  const hasDMUnread    = dmUnreads?.size > 0;
+  return (
+    <div className="flex p-2 gap-1.5 border-b flex-shrink-0 dark:border-brand-900/40 border-gray-200">
+      {[['groups','Groups', hasGroupUnread], ['dms','Messages', hasDMUnread]].map(([key, label, dot]) => (
+        <button key={key} onClick={() => setSidebarTab(key)}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition relative
+            ${sidebarTab === key
+              ? 'bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-neon-purple'
+              : 'dark:text-gray-500 dark:hover:bg-surface-3 text-gray-500 hover:bg-gray-100'}`}>
+          {label}
+          {dot && sidebarTab !== key && (
+            <span className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-brand-400"/>
+          )}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -98,6 +120,29 @@ export default function DashboardPage() {
     return () => socket.off('member_kicked', onKicked);
   }, [socket, user?.id]);
 
+  // Bubble group to top on new message/announcement/due/file
+  useEffect(() => {
+    if (!socket) return;
+    const bumpGroup = ({ group_id }) => {
+      if (!group_id) return;
+      setGroups(prev => {
+        const idx = prev.findIndex(g => g.id === group_id);
+        if (idx <= 0) return prev; // already top or not found
+        return [prev[idx], ...prev.filter(g => g.id !== group_id)];
+      });
+    };
+    socket.on('new_message',      bumpGroup);
+    socket.on('new_announcement', ({ group_id }) => bumpGroup({ group_id }));
+    socket.on('new_due',          ({ group_id }) => bumpGroup({ group_id }));
+    socket.on('new_file',         ({ group_id }) => bumpGroup({ group_id }));
+    return () => {
+      socket.off('new_message',      bumpGroup);
+      socket.off('new_announcement', bumpGroup);
+      socket.off('new_due',          bumpGroup);
+      socket.off('new_file',         bumpGroup);
+    };
+  }, [socket]);
+
   const showGroup = activeGroup && !activeConvo;
   const showDM    = activeConvo && !activeGroup;
 
@@ -160,18 +205,7 @@ export default function DashboardPage() {
           w-full md:w-72
           ${mobileView === 'sidebar' ? 'flex' : 'hidden md:flex'}`}>
 
-          <div className="flex p-2 gap-1.5 border-b flex-shrink-0
-            dark:border-brand-900/40 border-gray-200">
-            {[['groups','Groups'],['dms','Messages']].map(([key, label]) => (
-              <button key={key} onClick={() => setSidebarTab(key)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition
-                  ${sidebarTab === key
-                    ? 'bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-neon-purple'
-                    : 'dark:text-gray-500 dark:hover:bg-surface-3 text-gray-500 hover:bg-gray-100'}`}>
-                {label}
-              </button>
-            ))}
-          </div>
+          <SidebarTabs sidebarTab={sidebarTab} setSidebarTab={setSidebarTab} />
 
           <div className="flex-1 min-h-0 overflow-hidden">
             {sidebarTab === 'groups'

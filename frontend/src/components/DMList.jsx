@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { dmAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
+import { useNotifications } from '../context/NotificationContext';
 import OnlineDot from './OnlineDot';
 import { formatShort } from '../utils/time';
 
@@ -26,6 +28,8 @@ const cleanPreview = (content) => {
 
 export default function DMList({ activeConvoId, onSelect }) {
   const { user } = useAuth();
+  const { socket } = useSocket();
+  const { dmUnreads } = useNotifications();
   const [convos, setConvos]     = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState('');
@@ -38,6 +42,21 @@ export default function DMList({ activeConvoId, onSelect }) {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  // Bubble convo to top on new DM
+  useEffect(() => {
+    if (!socket) return;
+    const handle = ({ conversationId, message }) => {
+      setConvos(prev => {
+        const idx = prev.findIndex(c => c.id === conversationId);
+        if (idx === -1) return prev; // unknown convo, skip
+        const updated = { ...prev[idx], last_message: { ...message, sender_id: message.sender?.id } };
+        return [updated, ...prev.filter(c => c.id !== conversationId)];
+      });
+    };
+    socket.on('new_dm', handle);
+    return () => socket.off('new_dm', handle);
+  }, [socket]);
 
   useEffect(() => {
     if (!search.trim()) { setResults([]); return; }
@@ -111,6 +130,7 @@ export default function DMList({ activeConvoId, onSelect }) {
         ) : convos.map(convo => {
           const other = convo.other;
           const active = activeConvoId === convo.id;
+          const hasUnread = dmUnreads?.has(convo.id) && !active;
           return (
             <button key={convo.id} onClick={() => onSelect(convo)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-left
@@ -133,16 +153,13 @@ export default function DMList({ activeConvoId, onSelect }) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-xs dark:text-gray-500 text-gray-400 truncate">
+                  <p className={`text-xs truncate ${hasUnread ? 'dark:text-white text-gray-800 font-medium' : 'dark:text-gray-500 text-gray-400'}`}>
                     {convo.last_message
                       ? (convo.last_message.sender_id === user?.id ? 'You: ' : '') + cleanPreview(convo.last_message.content)
                       : 'No messages yet'}
                   </p>
-                  {convo.unread_count > 0 && (
-                    <span className="ml-2 flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full
-                      bg-brand-600 text-white text-[10px] flex items-center justify-center font-bold">
-                      {convo.unread_count}
-                    </span>
+                  {hasUnread && (
+                    <span className="ml-2 flex-shrink-0 w-2 h-2 rounded-full bg-brand-500"/>
                   )}
                 </div>
               </div>
