@@ -22,7 +22,7 @@ router.get('/:groupId', async (req, res) => {
     const { data, error } = await supabase
       .from('dues')
       .select(`
-        id, title, description, due_date, created_at,
+        id, group_id, title, description, due_date, created_at,
         users!created_by (id, name)
       `)
       .eq('group_id', req.params.groupId)
@@ -70,7 +70,7 @@ router.post('/:groupId', async (req, res) => {
         due_date
       })
       .select(`
-        id, title, description, due_date, created_at,
+        id, group_id, title, description, due_date, created_at,
         users!created_by (id, name)
       `)
       .single();
@@ -79,7 +79,7 @@ router.post('/:groupId', async (req, res) => {
 
     const io = req.app.get('io');
     if (io) {
-      io.to(req.params.groupId).emit('new_due', data);
+      io.to(req.params.groupId).emit('new_due', { ...data, group_id: req.params.groupId });
     }
 
     res.status(201).json(data);

@@ -1,51 +1,190 @@
-import { createContext, useContext, useEffect, useRef } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
+import { announcementsAPI, duesAPI } from '../services/api';
 
 const NotificationContext = createContext(null);
 
-export function NotificationProvider({ activeGroupId, children }) {
+// Per-user localStorage key for last-seen timestamp per group
+const lastSeenKey     = (userId, groupId) => `ann_seen_${userId}_${groupId}`;
+const lastSeenDueKey  = (userId, groupId) => `due_seen_${userId}_${groupId}`;
+
+const getLastSeen = (userId, groupId, key = lastSeenKey) => {
+  try { return localStorage.getItem(key(userId, groupId)) || '1970-01-01'; }
+  catch { return '1970-01-01'; }
+};
+const setLastSeen = (userId, groupId, ts, key = lastSeenKey) => {
+  try { localStorage.setItem(key(userId, groupId), ts); } catch {}
+};
+
+export function NotificationProvider({ activeGroupId, activeConvoId, groups, children }) {
   const { socket } = useSocket();
   const { user }   = useAuth();
+
   const activeGroupRef = useRef(activeGroupId);
+  const groupsRef      = useRef(groups);
 
-  // Keep ref in sync so the socket listener always sees the latest value
   useEffect(() => { activeGroupRef.current = activeGroupId; }, [activeGroupId]);
+  useEffect(() => { groupsRef.current = groups; }, [groups]);
 
-  // Request permission once on mount
+  const [notifications, setNotifications] = useState([]);
+  const [hasUnread, setHasUnread]         = useState(false);
+
+  const add = useCallback((n) => {
+    setNotifications(prev => {
+      // Deduplicate by groupId + type + title
+      const dup = prev.find(p => p.groupId === n.groupId && p.type === n.type && p.title === n.title);
+      if (dup) return prev;
+      return [{ ...n, id: Date.now() + Math.random(), at: n.at || new Date() }, ...prev].slice(0, 50);
+    });
+    setHasUnread(true);
+  }, []);
+
+  const markRead = useCallback(() => setHasUnread(false), []);
+  const clear    = useCallback(() => { setNotifications([]); setHasUnread(false); }, []);
+  const dismiss  = useCallback((id) => setNotifications(prev => prev.filter(n => n.id !== id)), []);
+
+  // ── On login: fetch missed announcements + dues for all groups ──
+  useEffect(() => {
+    if (!user?.id || !groups?.length) return;
+
+    const fetchMissed = async () => {
+      for (const group of groups) {
+        try {
+          // Announcements
+          const annRes = await announcementsAPI.list(group.id);
+          const announcements = annRes.data || [];
+          const annLastSeen = getLastSeen(user.id, group.id, lastSeenKey);
+
+          announcements
+            .filter(a => {
+              if (!a.published) return false;
+              if (a.users?.id === user.id) return false;
+              const createdMs = new Date(a.created_at.endsWith('Z') ? a.created_at : a.created_at + 'Z').getTime();
+              return createdMs > new Date(annLastSeen).getTime();
+            })
+            .forEach(a => add({
+              type: 'announcement',
+              title: `New announcement in ${group.name}`,
+              body: a.title || a.content?.slice(0, 60) || 'New announcement',
+              groupId: group.id, groupName: group.name,
+              at: new Date(a.created_at),
+            }));
+        } catch { /* skip */ }
+
+        try {
+          // Dues
+          const dueRes = await duesAPI.list(group.id);
+          const dues = dueRes.data || [];
+          const dueLastSeen = getLastSeen(user.id, group.id, lastSeenDueKey);
+
+          dues
+            .filter(d => {
+              const createdMs = new Date(d.created_at.endsWith('Z') ? d.created_at : d.created_at + 'Z').getTime();
+              return createdMs > new Date(dueLastSeen).getTime();
+            })
+            .forEach(d => add({
+              type: 'due',
+              title: `New due date in ${group.name}`,
+              body: d.title || 'New due date added',
+              groupId: group.id, groupName: group.name,
+              at: new Date(d.created_at),
+            }));
+        } catch { /* skip */ }
+      }
+    };
+
+    fetchMissed();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, groups?.length]);
+
+  // ── Update last-seen when user views a group ──
+  useEffect(() => {
+    if (!activeGroupId || !user?.id) return;
+    const now = new Date().toISOString();
+    setLastSeen(user.id, activeGroupId, now, lastSeenKey);
+    setLastSeen(user.id, activeGroupId, now, lastSeenDueKey);
+    // Remove announcement + due notifications for this group
+    setNotifications(prev => prev.filter(n =>
+      n.groupId !== activeGroupId || (n.type !== 'announcement' && n.type !== 'due')
+    ));
+  }, [activeGroupId, user?.id]);
+
+  // ── Browser notification permission ──
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
+  // ── Live socket events ──
   useEffect(() => {
     if (!socket || !user) return;
 
     const handleNewMessage = (msg) => {
-      // Don't notify if the user is already looking at this group
+      if (msg.type === 'system') return;
       if (msg.group_id === activeGroupRef.current) return;
-      // Don't notify for own messages
       const sender = msg.users || msg.sender;
       if (sender?.id === user.id) return;
-      if (Notification.permission !== 'granted') return;
 
+      const group = groupsRef.current?.find(g => g.id === msg.group_id);
+      const groupName = group?.name || 'a group';
       const senderName = sender?.name || 'Someone';
       const body = msg.content?.slice(0, 80) || '📎 Sent a file';
 
-      new Notification(`${senderName}`, {
-        body,
-        icon: '/favicon.svg',
-        tag: msg.id, // prevents duplicate notifications
-      });
+      add({ type: 'message', title: `${senderName} in ${groupName}`, body, groupId: msg.group_id, groupName });
+
+      if (Notification.permission === 'granted') {
+        new Notification(senderName, { body, icon: '/favicon.svg', tag: msg.id });
+      }
     };
 
-    socket.on('new_message', handleNewMessage);
-    return () => socket.off('new_message', handleNewMessage);
-  }, [socket, user]);
+    const handleNewAnnouncement = (a) => {
+      const group = groupsRef.current?.find(g => g.id === a.group_id);
+      const groupName = group?.name;
+      if (!groupName) return;
+      if (a.users?.id === user.id) return; // own announcement
+
+      const title = `New announcement in ${groupName}`;
+      const body  = a.title || a.content?.slice(0, 60) || 'New announcement';
+      add({ type: 'announcement', title, body, groupId: a.group_id, groupName });
+
+      // Update last-seen so we don't show it again on next login
+      if (user?.id) setLastSeen(user.id, a.group_id, new Date().toISOString());
+
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/favicon.svg', tag: `ann-${a.id}` });
+      }
+    };
+
+    const handleNewDue = (d) => {
+      const group = groupsRef.current?.find(g => g.id === d.group_id);
+      const groupName = group?.name;
+      if (!groupName) return;
+
+      const title = `New due date in ${groupName}`;
+      const body  = d.title || 'New due date added';
+      add({ type: 'due', title, body, groupId: d.group_id, groupName });
+
+      if (user?.id) setLastSeen(user.id, d.group_id, new Date().toISOString(), lastSeenDueKey);
+
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/favicon.svg', tag: `due-${d.id}` });
+      }
+    };
+
+    socket.on('new_message',      handleNewMessage);
+    socket.on('new_announcement', handleNewAnnouncement);
+    socket.on('new_due',          handleNewDue);
+    return () => {
+      socket.off('new_message',      handleNewMessage);
+      socket.off('new_announcement', handleNewAnnouncement);
+      socket.off('new_due',          handleNewDue);
+    };
+  }, [socket, user, add]);
 
   return (
-    <NotificationContext.Provider value={null}>
+    <NotificationContext.Provider value={{ notifications, hasUnread, markRead, clear, dismiss }}>
       {children}
     </NotificationContext.Provider>
   );

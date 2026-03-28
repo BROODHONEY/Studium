@@ -15,6 +15,7 @@ import DuesPanel        from '../components/DuesPanel';
 import KickNotification from '../components/KickNotification';
 import ProfileModal     from '../components/ProfileModal';
 import SettingsPanel    from '../components/SettingsPanel';
+import NotificationBell from '../components/NotificationBell';
 import { NotificationProvider } from '../context/NotificationContext';
 
 function NavIcon({ icon, label, active, onClick }) {
@@ -101,7 +102,7 @@ export default function DashboardPage() {
   const showDM    = activeConvo && !activeGroup;
 
   return (
-    <NotificationProvider activeGroupId={activeGroup?.id}>
+    <NotificationProvider activeGroupId={activeGroup?.id} activeConvoId={activeConvo?.id} groups={groups}>
     <div className="h-screen flex flex-col dark:bg-surface bg-gray-50 transition-colors duration-300">
 
       {/* Top bar */}
@@ -123,8 +124,20 @@ export default function DashboardPage() {
             <span className="text-sm font-bold dark:text-white text-gray-900">Studi+</span>
           </div>
         </div>
-        <button
-          onClick={() => { setSidebarTab('settings'); setMobileView('main'); }}
+        <div className="flex items-center gap-2">
+          <NotificationBell onNavigate={n => {
+            if (n.groupId) {
+              const g = groups.find(gr => gr.id === n.groupId);
+              if (g) {
+                handleSelectGroup(g);
+                if (n.type === 'message') setActiveTab('Chat');
+                else if (n.type === 'due') setActiveTab('Dues');
+                else setActiveTab('Overview');
+              }
+            }
+          }}/>
+          <button
+            onClick={() => { setSidebarTab('settings'); setMobileView('main'); }}
           className={`p-1.5 rounded-lg border transition
             ${sidebarTab === 'settings'
               ? 'bg-brand-600 border-brand-500 text-white'
@@ -135,6 +148,7 @@ export default function DashboardPage() {
             <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.474l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
           </svg>
         </button>
+        </div>
       </header>
 
       {/* Body */}

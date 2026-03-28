@@ -6,8 +6,8 @@ const router = express.Router();
 router.use(authMiddleware);
 
 const VALID_TAGS = ['general', 'urgent', 'exam', 'assignment', 'event'];
-const SELECT_FIELDS = `id, title, content, tag, scheduled_at, published, created_at, users!created_by (id, name), announcement_reactions (emoji, user_id)`;
-const SELECT_FALLBACK = `id, title, content, created_at, users!created_by (id, name)`;
+const SELECT_FIELDS = `id, group_id, title, content, tag, scheduled_at, published, created_at, users!created_by (id, name), announcement_reactions (emoji, user_id)`;
+const SELECT_FALLBACK = `id, group_id, title, content, created_at, users!created_by (id, name)`;
 
 const normalize = (a) => ({
   ...a,
@@ -107,7 +107,7 @@ router.post('/:groupId', async (req, res) => {
       if (fbErr) throw fbErr;
       const result = normalize(fb);
       const io = req.app.get('io');
-      if (io) io.to(req.params.groupId).emit('new_announcement', result);
+      if (io) io.to(req.params.groupId).emit('new_announcement', { ...result, group_id: req.params.groupId });
       return res.status(201).json(result);
     }
 
@@ -116,7 +116,7 @@ router.post('/:groupId', async (req, res) => {
     // Only broadcast immediately if published now
     if (result.published) {
       const io = req.app.get('io');
-      if (io) io.to(req.params.groupId).emit('new_announcement', result);
+      if (io) io.to(req.params.groupId).emit('new_announcement', { ...result, group_id: req.params.groupId });
     }
 
     res.status(201).json(result);
