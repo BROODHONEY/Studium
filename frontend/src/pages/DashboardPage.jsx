@@ -1,312 +1,247 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
-import GroupList        from '../components/GroupList';
-import DMList           from '../components/DMList';
-import ChatPanel        from '../components/ChatPanel';
-import DMPanel          from '../components/DMPanel';
-import ChatHeader       from '../components/ChatHeader';
-import GroupModal       from '../components/GroupModal';
-import FilesPanel       from '../components/FilesPanel';
-import MembersPanel     from '../components/MembersPanel';
-import GroupOverview    from '../components/GroupOverview';
-import DuesPanel        from '../components/DuesPanel';
+import GroupList     from '../components/GroupList';
+import DMList        from '../components/DMList';
+import ChatPanel     from '../components/ChatPanel';
+import DMPanel       from '../components/DMPanel';
+import ChatHeader    from '../components/ChatHeader';
+import GroupModal    from '../components/GroupModal';
+import FilesPanel    from '../components/FilesPanel';
+import MembersPanel  from '../components/MembersPanel';
+import GroupOverview from '../components/GroupOverview';
+import DuesPanel     from '../components/DuesPanel';
 import KickNotification from '../components/KickNotification';
-import ProfileModal     from '../components/ProfileModal';
-import SettingsPanel    from '../components/SettingsPanel';
-import NotificationBell from '../components/NotificationBell';
+import ProfileModal  from '../components/ProfileModal';
+import SettingsPanel from '../components/SettingsPanel';
 import { NotificationProvider, useNotifications } from '../context/NotificationContext';
 
-function NavIcon({ icon, label, active, onClick }) {
+const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+function Ic({ d, s = 18 }) {
   return (
-    <button onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 px-4 py-2 flex-1 transition relative
-        ${active ? 'text-brand-400' : 'dark:text-gray-500 text-gray-400 hover:text-brand-400'}`}>
-      <span className="text-xl leading-none">{icon}</span>
-      <span className="text-[10px] font-medium">{label}</span>
-      {active && (
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-brand-400"/>
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: 'block', flexShrink: 0, overflow: 'visible' }}>
+      {(Array.isArray(d) ? d : [d]).map((p, i) => <path key={i} d={p} />)}
+    </svg>
+  );
+}
+
+function RailBtn({ icon, active, dot, onClick, title }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={onClick} title={title}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: active ? 'rgba(255,255,255,0.85)' : hov ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
+        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+        border: 'none', cursor: 'pointer', position: 'relative', transition: 'color 0.15s, background 0.15s',
+      }}>
+      {icon}
+      {dot && (
+        <span style={{
+          position: 'absolute', top: 5, right: 5, width: 6, height: 6,
+          borderRadius: '50%', background: '#7c3aed', border: '1.5px solid #0a0a0f',
+        }} />
       )}
     </button>
   );
 }
 
-function SidebarTabs({ sidebarTab, setSidebarTab }) {
-  const { groupUnreads, dmUnreads } = useNotifications();
-  const hasGroupUnread = groupUnreads?.size > 0;
-  const hasDMUnread    = dmUnreads?.size > 0;
+function Inner({
+  user, groups, setGroups, loadingGroups,
+  activeGroup, setActiveGroup,
+  activeConvo, setActiveConvo,
+  activeTab, setActiveTab,
+  highlightFileId, setHighlightFileId,
+  showModal, setShowModal,
+  kickNotice, setKickNotice,
+  profileUserId, setProfileUserId,
+  handleSelectGroup, handleSelectConvo, handleGroupAdded, handleLeft,
+}) {
+  const { groupUnreads, dmUnreads, notifications, dismiss } = useNotifications();
+  const hasGU = groupUnreads?.size > 0;
+  const hasDU = dmUnreads?.size > 0;
+  const hasN  = notifications?.length > 0;
+
+  const [rail, setRail] = useState('groups');
+  const [mob, setMob]   = useState('sidebar');
+
+  const showGroup = activeGroup && !activeConvo;
+  const showDM    = activeConvo && !activeGroup;
+
+  const pickGroup = (g) => { handleSelectGroup(g); setMob('main'); };
+  const pickConvo = (c) => { handleSelectConvo(c); setMob('main'); };
+
   return (
-    <div className="flex p-2 gap-1.5 border-b flex-shrink-0 dark:border-brand-900/40 border-gray-200">
-      {[['groups','Groups', hasGroupUnread], ['dms','Messages', hasDMUnread]].map(([key, label, dot]) => (
-        <button key={key} onClick={() => setSidebarTab(key)}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition relative
-            ${sidebarTab === key
-              ? 'bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-neon-purple'
-              : 'dark:text-gray-500 dark:hover:bg-surface-3 text-gray-500 hover:bg-gray-100'}`}>
-          {label}
-          {dot && sidebarTab !== key && (
-            <span className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-brand-400"/>
-          )}
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#0a0a0f', fontFamily: 'Inter, sans-serif' }}>
+
+      {/* Icon rail */}
+      <div
+        className={mob === 'sidebar' ? '' : 'hidden md:flex'}
+        style={{ width: 48, flexShrink: 0, background: '#0d0d14', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, marginBottom: 12, flexShrink: 0, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: '#fff', fontSize: 11, fontWeight: 500 }}>S</span>
+        </div>
+        <RailBtn title="Groups"   active={rail==='groups'}   dot={hasGU && rail!=='groups'} onClick={() => setRail('groups')}
+          icon={<Ic d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>} />
+        <RailBtn title="Messages" active={rail==='dms'}      dot={hasDU && rail!=='dms'}   onClick={() => setRail('dms')}
+          icon={<Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>} />
+        <RailBtn title="Settings" active={rail==='settings'}                               onClick={() => setRail('settings')}
+          icon={<Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']}/>} />
+        <div style={{ flex: 1 }} />
+        <RailBtn title="Notifications" active={rail==='notifications'} dot={hasN && rail!=='notifications'} onClick={() => setRail('notifications')}
+          icon={<Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']}/>} />
+        {/* Profile — below bell, initials only, clickable */}
+        <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          style={{
+            width: 36, height: 36, borderRadius: 8, marginTop: 2, flexShrink: 0,
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 0.15s',
+          }}>
+          <div style={{
+            width: 26, height: 26, borderRadius: '50%',
+            background: '#1f1f2e', border: '1.5px solid rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 400,
+          }}>
+            {ini(user?.name)}
+          </div>
         </button>
-      ))}
+      </div>
+
+      {/* List panel */}
+      <div
+        className={mob === 'sidebar' ? '' : 'hidden md:flex'}
+        style={{ width: 240, flexShrink: 0, background: '#0d0d14', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
+        {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
+        {rail === 'notifications' && (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Notifications</span>
+              {notifications.length > 0 && <button onClick={() => notifications.forEach(n => dismiss(n.id))} style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>}
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px' }}>
+              {notifications.length === 0
+                ? <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: 300, textAlign: 'center', paddingTop: 32 }}>No notifications.</p>
+                : notifications.map(n => (
+                  <button key={n.id} onClick={() => { if (n.groupId) { const g = groups.find(gr => gr.id === n.groupId); if (g) { pickGroup(g); setActiveTab(n.type === 'message' ? 'Chat' : n.type === 'due' ? 'Dues' : 'Overview'); setRail('groups'); } } dismiss(n.id); }}
+                    style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'none', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', marginBottom: 4, display: 'block' }}>
+                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</p>
+                    <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, marginTop: 2 }}>{n.body}</p>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+        )}
+        {rail === 'settings' && <SettingsPanel />}
+      </div>
+
+      {/* Main */}
+      <main
+        className={mob === 'main' ? '' : 'hidden md:flex'}
+        style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0a0a0f' }}>
+        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+          <button onClick={() => setMob('sidebar')} style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
+            <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
+          </button>
+          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 300 }}>
+            {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
+          </span>
+        </div>
+        {rail === 'settings' && <SettingsPanel />}
+        {rail !== 'settings' && showGroup && (
+          <>
+            <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
+            {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
+            {activeTab === 'Chat'    && <div style={{ flex: 1, minHeight: 0 }}><ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} /></div>}
+            {activeTab === 'Dues'    && <DuesPanel group={activeGroup} />}
+            {activeTab === 'Files'   && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
+            {activeTab === 'Members' && <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}><MembersPanel group={activeGroup} onGroupUpdate={u => { setActiveGroup(u); setGroups(prev => prev.map(g => g.id === u.id ? u : g)); }} onLeft={handleLeft} onGroupDeleted={handleLeft} onViewProfile={setProfileUserId} /></div>}
+          </>
+        )}
+        {rail !== 'settings' && showDM && (
+          <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
+            onNavigateToGroup={gid => { const g = groups.find(gr => gr.id === gid); if (g) { pickGroup(g); setRail('groups'); } }} />
+        )}
+        {rail !== 'settings' && !showGroup && !showDM && (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ color: 'rgba(255,255,255,0.12)', fontSize: 13, fontWeight: 300 }}>
+              {rail === 'groups' ? 'Select a group to start.' : rail === 'dms' ? 'Select a conversation.' : ''}
+            </p>
+          </div>
+        )}
+      </main>
+
+      {/* Mobile bottom nav */}
+      {showModal     && <GroupModal onClose={() => setShowModal(false)} onSuccess={handleGroupAdded} />}
+      {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
+      <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
     </div>
   );
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user }   = useAuth();
   const { socket } = useSocket();
-
-  const [sidebarTab, setSidebarTab]       = useState('groups');
-  const [groups, setGroups]               = useState([]);
-  const [activeGroup, setActiveGroup]     = useState(null);
-  const [activeTab, setActiveTab]         = useState('Overview');
+  const [groups, setGroups]           = useState([]);
+  const [activeGroup, setActiveGroup] = useState(null);
+  const [activeTab, setActiveTab]     = useState('Overview');
   const [highlightFileId, setHighlightFileId] = useState(null);
-  const [showModal, setShowModal]         = useState(false);
+  const [showModal, setShowModal]     = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
-  const [kickNotice, setKickNotice]       = useState(null);
-  const [activeConvo, setActiveConvo]     = useState(null);
+  const [kickNotice, setKickNotice]   = useState(null);
+  const [activeConvo, setActiveConvo] = useState(null);
   const [profileUserId, setProfileUserId] = useState(null);
-  const [mobileView, setMobileView]       = useState('sidebar');
+
   useEffect(() => {
-    groupsAPI.list()
-      .then(res => setGroups(res.data))
-      .catch(console.error)
-      .finally(() => setLoadingGroups(false));
+    groupsAPI.list().then(r => setGroups(r.data)).catch(console.error).finally(() => setLoadingGroups(false));
   }, []);
 
-  const handleSelectGroup = (group) => {
-    setActiveGroup(group); setActiveConvo(null);
-    setActiveTab('Overview'); setMobileView('main');
+  const handleSelectGroup = (g) => { setActiveGroup(g); setActiveConvo(null); setActiveTab('Overview'); };
+  const handleSelectConvo = (c) => { setActiveConvo(c); setActiveGroup(null); };
+  const handleGroupAdded  = async (group) => {
+    let full = group;
+    try { const r = await groupsAPI.get(group.id); full = { ...r.data, my_role: r.data.my_role ?? group.my_role }; } catch {}
+    setGroups(prev => prev.find(g => g.id === full.id) ? prev : [full, ...prev]);
+    setActiveGroup(full); setActiveConvo(null); setActiveTab('Overview');
   };
-
-  const handleSelectConvo = (convo) => {
-    setActiveConvo(convo); setActiveGroup(null); setMobileView('main');
-  };
-
-  const handleGroupAdded = async (group) => {
-    let fullGroup = group;
-    try {
-      const res = await groupsAPI.get(group.id);
-      fullGroup = { ...res.data, my_role: res.data.my_role ?? group.my_role };
-    } catch { /* fallback */ }
-    setGroups(prev => prev.find(g => g.id === fullGroup.id) ? prev : [fullGroup, ...prev]);
-    setActiveGroup(fullGroup); setActiveConvo(null);
-    setActiveTab('Overview'); setSidebarTab('groups'); setMobileView('main');
-  };
-
-  const handleLeft = (groupId) => {
-    setGroups(prev => prev.filter(g => g.id !== groupId));
-    setActiveGroup(prev => prev?.id === groupId ? null : prev);
-    setMobileView('sidebar');
-  };
-
-  const handleKicked = (groupId, groupName) => {
-    setGroups(prev => prev.filter(g => g.id !== groupId));
-    setActiveGroup(prev => prev?.id === groupId ? null : prev);
-    setKickNotice({ groupName }); setMobileView('sidebar');
-  };
-
-  const handleKickedRef = useRef(handleKicked);
-  useEffect(() => { handleKickedRef.current = handleKicked; });
-
+  const handleLeft = (gid) => { setGroups(prev => prev.filter(g => g.id !== gid)); setActiveGroup(prev => prev?.id === gid ? null : prev); };
+  const handleKicked = (gid, gname) => { setGroups(prev => prev.filter(g => g.id !== gid)); setActiveGroup(prev => prev?.id === gid ? null : prev); setKickNotice({ groupName: gname }); };
+  const kickRef = useRef(handleKicked);
+  useEffect(() => { kickRef.current = handleKicked; });
   useEffect(() => {
     if (!socket || !user?.id) return;
-    const onKicked = ({ kickedUserId, groupId, groupName }) => {
-      if (kickedUserId === user.id) handleKickedRef.current(groupId, groupName);
-    };
-    socket.on('member_kicked', onKicked);
-    return () => socket.off('member_kicked', onKicked);
+    const h = ({ kickedUserId, groupId, groupName }) => { if (kickedUserId === user.id) kickRef.current(groupId, groupName); };
+    socket.on('member_kicked', h); return () => socket.off('member_kicked', h);
   }, [socket, user?.id]);
-
-  // Bubble group to top on new message/announcement/due/file
   useEffect(() => {
     if (!socket) return;
-    const bumpGroup = ({ group_id }) => {
-      if (!group_id) return;
-      setGroups(prev => {
-        const idx = prev.findIndex(g => g.id === group_id);
-        if (idx <= 0) return prev; // already top or not found
-        return [prev[idx], ...prev.filter(g => g.id !== group_id)];
-      });
-    };
-    socket.on('new_message',      bumpGroup);
-    socket.on('new_announcement', ({ group_id }) => bumpGroup({ group_id }));
-    socket.on('new_due',          ({ group_id }) => bumpGroup({ group_id }));
-    socket.on('new_file',         ({ group_id }) => bumpGroup({ group_id }));
-    return () => {
-      socket.off('new_message',      bumpGroup);
-      socket.off('new_announcement', bumpGroup);
-      socket.off('new_due',          bumpGroup);
-      socket.off('new_file',         bumpGroup);
-    };
+    const bump = ({ group_id }) => { if (!group_id) return; setGroups(prev => { const i = prev.findIndex(g => g.id === group_id); return i <= 0 ? prev : [prev[i], ...prev.filter(g => g.id !== group_id)]; }); };
+    ['new_message','new_announcement','new_due','new_file'].forEach(e => socket.on(e, bump));
+    return () => ['new_message','new_announcement','new_due','new_file'].forEach(e => socket.off(e, bump));
   }, [socket]);
-
-  const showGroup = activeGroup && !activeConvo;
-  const showDM    = activeConvo && !activeGroup;
 
   return (
     <NotificationProvider activeGroupId={activeGroup?.id} activeConvoId={activeConvo?.id} activeTab={activeTab} groups={groups}>
-    <div className="h-screen flex flex-col dark:bg-surface bg-gray-50 transition-colors duration-300">
-
-      {/* Top bar */}
-      <header className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 border-b
-        dark:bg-surface-1 dark:border-brand-900/40 bg-white border-gray-200 shadow-sm">
-        <div className="flex items-center gap-3">
-          {mobileView === 'main' && (
-            <button onClick={() => setMobileView('sidebar')}
-              className="md:hidden p-1.5 rounded-lg dark:text-gray-400 text-gray-500 transition">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M19 12H5M12 5l-7 7 7 7"/>
-              </svg>
-            </button>
-          )}
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">S</span>
-            </div>
-            <span className="text-sm font-bold dark:text-white text-gray-900">Studi+</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <NotificationBell onNavigate={n => {
-            if (n.groupId) {
-              const g = groups.find(gr => gr.id === n.groupId);
-              if (g) {
-                handleSelectGroup(g);
-                if (n.type === 'message') setActiveTab('Chat');
-                else if (n.type === 'due') setActiveTab('Dues');
-                else setActiveTab('Overview');
-              }
-            }
-          }}/>
-          <button
-            onClick={() => { setSidebarTab('settings'); setMobileView('main'); }}
-          className={`p-1.5 rounded-lg border transition
-            ${sidebarTab === 'settings'
-              ? 'bg-brand-600 border-brand-500 text-white'
-              : 'dark:bg-surface-2 dark:border-brand-900/40 dark:text-gray-400 dark:hover:text-brand-300 bg-gray-100 border-gray-200 text-gray-500 hover:text-brand-600'}`}
-          title="Settings">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
-            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.474l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
-          </svg>
-        </button>
-        </div>
-      </header>
-
-      {/* Body */}
-      <div className="flex flex-1 min-h-0">
-
-        {/* Sidebar */}
-        <aside className={`flex-shrink-0 flex flex-col border-r
-          dark:bg-surface-1 dark:border-brand-900/40 bg-white border-gray-200
-          w-full md:w-72
-          ${mobileView === 'sidebar' ? 'flex' : 'hidden md:flex'}`}>
-
-          <SidebarTabs sidebarTab={sidebarTab} setSidebarTab={setSidebarTab} />
-
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {sidebarTab === 'groups'
-              ? <GroupList groups={groups} activeGroupId={activeGroup?.id}
-                  onSelect={handleSelectGroup} onOpenModal={() => setShowModal(true)}
-                  loading={loadingGroups} />
-              : <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
-            }
-          </div>
-        </aside>
-
-        {/* Main */}
-        <main className={`flex-1 flex flex-col min-w-0
-          ${mobileView === 'main' ? 'flex' : 'hidden md:flex'}`}>
-
-          {showGroup && sidebarTab !== 'settings' && (
-            <>
-              <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
-              {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
-              {activeTab === 'Chat' && (
-                <div className="flex-1 min-h-0">
-                  <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />
-                </div>
-              )}
-              {activeTab === 'Dues'  && <DuesPanel group={activeGroup} />}
-              {activeTab === 'Files' && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
-              {activeTab === 'Members' && (
-                <div className="flex-1 flex flex-col min-h-0">
-                  <MembersPanel group={activeGroup}
-                    onGroupUpdate={(u) => { setActiveGroup(u); setGroups(prev => prev.map(g => g.id === u.id ? u : g)); }}
-                    onLeft={handleLeft} onGroupDeleted={handleLeft}
-                    onViewProfile={setProfileUserId} />
-                </div>
-              )}
-            </>
-          )}
-
-          {showDM && sidebarTab !== 'settings' && (
-            <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
-              onNavigateToGroup={groupId => {
-                const g = groups.find(gr => gr.id === groupId);
-                if (g) { handleSelectGroup(g); setSidebarTab('groups'); }
-              }} />
-          )}
-
-          {sidebarTab === 'settings' && (
-            <SettingsPanel />
-          )}
-
-          {!showGroup && !showDM && sidebarTab !== 'settings' && (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center space-y-4 max-w-xs">
-                <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center
-                  bg-gradient-to-br from-brand-900/60 to-brand-800/30 border border-brand-700/30">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
-                    className="text-brand-400">
-                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                  </svg>
-                </div>
-                <p className="dark:text-gray-300 text-gray-700 font-medium">
-                  {sidebarTab === 'groups' ? 'Select a group' : 'Select a conversation'}
-                </p>
-                <p className="dark:text-gray-600 text-gray-400 text-sm">
-                  {sidebarTab === 'groups'
-                    ? 'Choose a group from the sidebar to start chatting'
-                    : 'Search for someone by email to message them'}
-                </p>
-                {sidebarTab === 'groups' && groups.length === 0 && !loadingGroups && (
-                  <button onClick={() => setShowModal(true)}
-                    className="text-brand-400 hover:text-brand-300 text-sm transition font-medium">
-                    Create or join your first group →
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden flex-shrink-0 border-t
-        dark:bg-surface-1 dark:border-brand-900/40 bg-white border-gray-200">
-        <div className="flex pb-safe">
-          <NavIcon icon="👥" label="Groups"
-            active={sidebarTab === 'groups' && mobileView === 'sidebar'}
-            onClick={() => { setSidebarTab('groups'); setMobileView('sidebar'); }} />
-          <NavIcon icon="💬" label="Messages"
-            active={sidebarTab === 'dms' && mobileView === 'sidebar'}
-            onClick={() => { setSidebarTab('dms'); setMobileView('sidebar'); }} />
-          {(showGroup || showDM) && (
-            <NavIcon icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} label="Open" active={mobileView === 'main'}
-              onClick={() => setMobileView('main')} />
-          )}
-        </div>
-      </nav>
-
-      {showModal && <GroupModal onClose={() => setShowModal(false)} onSuccess={handleGroupAdded} />}
-      {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
-      <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
-    </div>
+      <Inner user={user} groups={groups} setGroups={setGroups} loadingGroups={loadingGroups}
+        activeGroup={activeGroup} setActiveGroup={setActiveGroup}
+        activeConvo={activeConvo} setActiveConvo={setActiveConvo}
+        activeTab={activeTab} setActiveTab={setActiveTab}
+        highlightFileId={highlightFileId} setHighlightFileId={setHighlightFileId}
+        showModal={showModal} setShowModal={setShowModal}
+        kickNotice={kickNotice} setKickNotice={setKickNotice}
+        profileUserId={profileUserId} setProfileUserId={setProfileUserId}
+        handleSelectGroup={handleSelectGroup} handleSelectConvo={handleSelectConvo}
+        handleGroupAdded={handleGroupAdded} handleLeft={handleLeft} />
     </NotificationProvider>
   );
 }
