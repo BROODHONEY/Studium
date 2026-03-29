@@ -519,11 +519,24 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
         )}
       </div>
 
-      {/* Create / join group — text button at bottom */}
-      <div style={{ flexShrink: 0, padding: '8px 12px', borderTop: '1px solid #1c1c1c', paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))' }}
+      {/* Bottom bar — create folder + create/join group */}
+      <div style={{ flexShrink: 0, borderTop: '1px solid #1c1c1c', paddingBottom: 'calc(0px + env(safe-area-inset-bottom, 0px))' }}
         className="mobile-create-btn">
+        {/* Create folder row */}
+        <button onClick={() => setFolderModal(true)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 22px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
+            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+          </svg>
+          New folder
+        </button>
+        {/* Divider */}
+        <div style={{ height: 1, background: '#1c1c1c', margin: '0 12px' }}/>
+        {/* Create / join group */}
         <button onClick={onOpenModal}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 22px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
           onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
           onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>

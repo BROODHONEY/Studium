@@ -11,6 +11,11 @@ const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 
 const COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
+const PIN_MAX = 4;
+const pinKey = (convId) => `dm_pins_${convId}`;
+const loadPins = (convId) => { try { return JSON.parse(localStorage.getItem(pinKey(convId))) || []; } catch { return []; } };
+const savePins = (convId, pins) => localStorage.setItem(pinKey(convId), JSON.stringify(pins));
+
 export default function DMPanel({ conversation, onNewMessage, onViewProfile, onNavigateToGroup }) {
   const { user }   = useAuth();
   const { socket } = useSocket();
@@ -25,6 +30,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   const [openMenuId, setOpenMenuId] = useState(null);
   const [menuRect, setMenuRect]     = useState(null);
   const [replyTo, setReplyTo]       = useState(null);
+  const [pinnedIds, setPinnedIds]   = useState([]);
+  const [showPins, setShowPins]     = useState(false);
 
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
@@ -66,6 +73,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   useEffect(() => {
     if (!conversation) { setMessages([]); setLoading(false); return; }
     setMessages([]); setLoading(true);
+    setPinnedIds(loadPins(conversation.id));
+    setShowPins(false);
     dmAPI.getMessages(conversation.id)
       .then(res => setMessages(res.data))
       .catch(console.error)
@@ -114,6 +123,21 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
 
   const handleReact = async (msgId, emoji) => { setOpenMenuId(null); try { await dmAPI.reactMessage(msgId, emoji); } catch { console.error('react failed'); } };
 
+  const togglePin = (msgId) => {
+    setPinnedIds(prev => {
+      let next;
+      if (prev.includes(msgId)) {
+        next = prev.filter(id => id !== msgId);
+      } else {
+        if (prev.length >= PIN_MAX) return prev; // max 4
+        next = [...prev, msgId];
+      }
+      savePins(conversation.id, next);
+      return next;
+    });
+    setOpenMenuId(null);
+  };
+
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
   const handleTypingInput = (e) => {
@@ -142,11 +166,54 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
           </div>
           <OnlineDot userId={other?.id} className="absolute -bottom-0.5 -right-0.5 ring-2" style={{ '--tw-ring-color': '#000' }}/>
         </button>
-        <button onClick={() => onViewProfile?.(other?.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+        <button onClick={() => onViewProfile?.(other?.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, flex: 1 }}>
           <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0 }}>{other?.name}</p>
           <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: 0, textTransform: 'capitalize' }}>{other?.role}</p>
         </button>
+        {/* Pin toggle button */}
+        {pinnedIds.length > 0 && (
+          <button onClick={() => setShowPins(v => !v)} title="Pinned messages"
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: showPins ? 'rgba(124,58,237,0.15)' : 'none', border: `1px solid ${showPins ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.08)'}`, color: showPins ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 400 }}>{pinnedIds.length}</span>
+          </button>
+        )}
       </div>
+
+      {/* Pinned messages panel */}
+      {showPins && pinnedIds.length > 0 && (
+        <div style={{ borderBottom: '1px solid #1c1c1c', background: '#0a0a0a', flexShrink: 0, maxHeight: 180, overflowY: 'auto' }}>
+          <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned · {pinnedIds.length}/{PIN_MAX}</span>
+          </div>
+          {pinnedIds.map(pid => {
+            const msg = messages.find(m => m.id === pid);
+            if (!msg) return null;
+            return (
+              <button key={pid} onClick={() => { const el = messageRefs.current[pid]; el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setShowPins(false); }}
+                style={{ width: '100%', textAlign: 'left', padding: '6px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.6)', flexShrink: 0 }}>
+                  <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+                </svg>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.5)', display: 'block' }}>{msg.sender?.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{msg.content}</span>
+                </div>
+                <button onClick={e => { e.stopPropagation(); togglePin(pid); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', padding: 4, lineHeight: 0, flexShrink: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.6)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}>
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+                </button>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -257,6 +324,9 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                                 onReact={e => handleReact(msg.id, e)}
                                 onReply={() => setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.name })}
                                 onEdit={isOwn ? () => { setEditingId(msg.id); setEditText(msg.content); } : undefined}
+                                onPin={() => togglePin(msg.id)}
+                                pinned={pinnedIds.includes(msg.id)}
+                                pinDisabled={!pinnedIds.includes(msg.id) && pinnedIds.length >= PIN_MAX}
                                 onDelete={() => { setMessages(prev => prev.filter(m => m.id !== msg.id)); dmAPI.deleteMessage(msg.id).catch(console.error); }}/>
                             )}
                           </div>

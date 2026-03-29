@@ -10,7 +10,7 @@ const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 export default function MessageMenu({
   anchorRect, isOwn, onClose,
   onReact, onReply, onEdit, onDelete,
-  onPin, pinned, onPrivateReply,
+  onPin, pinned, pinDisabled, onPrivateReply,
 }) {
   const menuRef = useRef(null);
 
@@ -77,12 +77,13 @@ export default function MessageMenu({
         )}
 
         {onPin && (
-          <button onClick={() => { onPin(); onClose(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 transition text-left">
+          <button onClick={() => { if (!pinDisabled) { onPin(); onClose(); } }}
+            disabled={pinDisabled}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-gray-800 transition text-left ${pinDisabled ? 'opacity-40 cursor-not-allowed' : 'text-gray-300'}`}>
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className={`flex-shrink-0 ${pinned ? 'text-indigo-400' : 'text-gray-500'}`}>
               <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
             </svg>
-            {pinned ? 'Unpin' : 'Pin'}
+            {pinned ? 'Unpin' : pinDisabled ? 'Pin (max 4)' : 'Pin'}
           </button>
         )}
 
