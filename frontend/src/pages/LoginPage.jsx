@@ -28,14 +28,14 @@ export default function LoginPage() {
     }
   };
 
-  const inputCls = "w-full bg-[#111118] border border-[#1f1f2e] rounded-xl px-4 py-3 text-sm text-white font-light placeholder-[#374151] focus:outline-none focus:border-[#4c1d95] transition";
+  const inputCls = "w-full bg-[#111111] border border-[#181818] rounded-xl px-4 py-3 text-sm text-white font-light placeholder-[#374151] focus:outline-none focus:border-[#4c1d95] transition";
 
   return (
-    <div className="h-dvh flex bg-[#0a0a0f] font-['Inter',sans-serif] overflow-hidden">
+    <div className="h-dvh flex bg-[#000000] font-['Inter',sans-serif] overflow-hidden">
 
       {/* Left panel — desktop only */}
       <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-between p-10 flex-shrink-0"
-        style={{ background: 'radial-gradient(ellipse at 60% 20%, #7c3aed 0%, #4c1d95 35%, #1a0a2e 65%, #0a0a0f 100%)' }}>
+        style={{ background: 'radial-gradient(ellipse at 60% 20%, #7c3aed 0%, #4c1d95 35%, #1a0a2e 65%, #000000 100%)' }}>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
             <span className="text-white text-xs font-medium">S</span>
@@ -57,9 +57,9 @@ export default function LoginPage() {
             ].map(s => (
               <div key={s.n}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition
-                  ${s.active ? 'bg-white text-[#0a0a0f] font-medium' : 'bg-white/[0.06] text-white/40 font-light border border-white/[0.06]'}`}>
+                  ${s.active ? 'bg-white text-[#000000] font-medium' : 'bg-white/[0.06] text-white/40 font-light border border-white/[0.06]'}`}>
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] flex-shrink-0
-                  ${s.active ? 'bg-[#0a0a0f] text-white' : 'bg-white/10 text-white/40'}`}>
+                  ${s.active ? 'bg-[#000000] text-white' : 'bg-white/10 text-white/40'}`}>
                   {s.n}
                 </span>
                 {s.label}
@@ -120,7 +120,7 @@ export default function LoginPage() {
               </div>
 
               <button type="submit" disabled={loading}
-                className="w-full bg-white text-[#0a0a0f] rounded-xl py-3 text-sm font-medium
+                className="w-full bg-white text-[#000000] rounded-xl py-3 text-sm font-medium
                   hover:bg-white/90 disabled:opacity-50 transition mt-2">
                 {loading ? 'Signing in…' : 'Sign In'}
               </button>

@@ -44,7 +44,7 @@ function RailBtn({ icon, active, dot, onClick, title }) {
       {dot && (
         <span style={{
           position: 'absolute', top: 5, right: 5, width: 6, height: 6,
-          borderRadius: '50%', background: '#7c3aed', border: '1.5px solid #0a0a0f',
+          borderRadius: '50%', background: '#7c3aed', border: '1.5px solid #000000',
         }} />
       )}
     </button>
@@ -77,12 +77,12 @@ function Inner({
   const pickConvo = (c) => { handleSelectConvo(c); setMob('main'); };
 
   return (
-    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#0a0a0f', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#000000', fontFamily: 'Inter, sans-serif' }}>
 
       {/* Icon rail */}
       <div
         className={mob === 'sidebar' ? '' : 'hidden md:flex'}
-        style={{ width: 48, flexShrink: 0, background: '#0d0d14', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
+        style={{ width: 48, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, marginBottom: 12, flexShrink: 0, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: '#fff', fontSize: 11, fontWeight: 500 }}>S</span>
         </div>
@@ -107,7 +107,7 @@ function Inner({
           }}>
           <div style={{
             width: 26, height: 26, borderRadius: '50%',
-            background: '#1f1f2e', border: '1.5px solid rgba(255,255,255,0.15)',
+            background: '#181818', border: '1.5px solid rgba(255,255,255,0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 400,
           }}>
@@ -119,7 +119,7 @@ function Inner({
       {/* List panel */}
       <div
         className={mob === 'sidebar' ? '' : 'hidden md:flex'}
-        style={{ width: 240, flexShrink: 0, background: '#0d0d14', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        style={{ width: 240, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
         {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
         {rail === 'notifications' && (
@@ -148,8 +148,8 @@ function Inner({
       {/* Main */}
       <main
         className={mob === 'main' ? '' : 'hidden md:flex'}
-        style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0a0a0f' }}>
-        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+        style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#000000' }}>
+        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0 }}>
           <button onClick={() => setMob('sidebar')} style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
             <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
           </button>

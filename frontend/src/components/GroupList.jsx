@@ -106,7 +106,6 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   const [dragGroupId, setDragGroupId] = useState(null);
   const [dragFolderId, setDragFolderId] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
-  const [fabOpen, setFabOpen]         = useState(false);
   const [folderModal, setFolderModal] = useState(false);
   const [folderName, setFolderName]   = useState('');
   const [folderPickTarget, setFolderPickTarget] = useState(null);
@@ -271,23 +270,23 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   });
 
   return (
-    <div className="flex flex-col h-full relative" onClick={() => { setContextMenu(null); setFabOpen(false); }}>
+    <div className="flex flex-col h-full relative" onClick={() => { setContextMenu(null); }}>
 
       {/* Search bar */}
       <div className="px-3 pt-3 pb-1 flex-shrink-0">
-        <div className="flex items-center gap-2 dark:bg-surface-3 bg-gray-100 rounded-2xl px-3 py-2.5">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-500 text-gray-400 flex-shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, padding: '8px 12px' }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search"
-            className="flex-1 bg-transparent text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 outline-none"
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif' }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 transition">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+            <button onClick={() => setSearchQuery('')} style={{ color: 'rgba(255,255,255,0.2)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
               </svg>
             </button>
@@ -296,7 +295,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
       </div>
 
       {/* Group list */}
-      <div className="flex-1 overflow-y-auto p-2 pb-20 space-y-1">
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-14 rounded-xl animate-pulse dark:bg-surface-3 bg-gray-100"/>
@@ -526,39 +525,16 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
         )}
       </div>
 
-      {/* FAB */}
-      <div className="absolute bottom-4 right-3 flex flex-col items-end gap-2 z-20"
-        onClick={e => e.stopPropagation()}>
-        {fabOpen && (
-          <div className="flex flex-col items-end gap-2">
-            <button onClick={() => { setFabOpen(false); setFolderModal(true); }}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
-                dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
-                dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
-                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
-              </svg>
-              New folder
-            </button>
-            <button onClick={() => { setFabOpen(false); onOpenModal(); }}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
-                dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
-                dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
-                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                <path fillRule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-              </svg>
-              Join / create group
-            </button>
-          </div>
-        )}
-        <button onClick={() => setFabOpen(v => !v)}
-          className={`w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition
-            bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-neon-purple
-            ${fabOpen ? 'rotate-45' : ''}`}>
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+      {/* Create / join group — text button at bottom */}
+      <div style={{ flexShrink: 0, padding: '8px 12px', borderTop: '1px solid #1c1c1c' }}>
+        <button onClick={onOpenModal}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
             <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
           </svg>
+          Create or join a group
         </button>
       </div>
 

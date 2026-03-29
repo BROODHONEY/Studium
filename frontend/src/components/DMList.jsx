@@ -87,7 +87,7 @@ export default function DMList({ activeConvoId, onSelect }) {
       <div className="p-3 border-b dark:border-brand-900/30 border-gray-100 flex-shrink-0">
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search by email…"
-          className="form-input text-sm" />
+          style={{ width: '100%', background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, padding: '8px 12px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.7)', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} />
       </div>
 
       {/* Search results */}
