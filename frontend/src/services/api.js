@@ -92,6 +92,7 @@ export const dmAPI = {
   editMessage:      (id, content)    => api.patch(`/dm/messages/${id}/edit`, { content }),
   reactMessage:     (id, emoji)      => api.post(`/dm/messages/${id}/reactions`, { emoji }),
   deleteMessage:    (id)             => api.delete(`/dm/messages/${id}`),
+  uploadFile:       (formData)       => api.post('/dm/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 export default api;

@@ -5,6 +5,7 @@ import { dmAPI } from '../services/api';
 import OnlineDot from './OnlineDot';
 import MessageMenu from './ui/MessageMenu';
 import MessageContent from './ui/MessageContent';
+import FormatToolbar from './ui/FormatToolbar';
 import { formatTime, getDateLabel } from '../utils/time';
 
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -32,11 +33,14 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   const [replyTo, setReplyTo]       = useState(null);
   const [pinnedIds, setPinnedIds]   = useState([]);
   const [showPins, setShowPins]     = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState([]); // [{ name, url, type }]
+  const [uploading, setUploading]   = useState(false);
 
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
   const typingTimer = useRef(null);
   const messageRefs = useRef({});
+  const fileInputRef = useRef(null);
 
   const other = conversation?.other;
 
@@ -105,12 +109,15 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length, isTyping]);
 
   const sendMessage = () => {
-    if (!text.trim() || !socket) return;
-    const opt = { id: `temp-${Date.now()}`, content: text.trim(), created_at: new Date().toISOString(), read: false, sender: { id: user.id, name: user.name }, replied_message: replyTo ? { id: replyTo.id, content: replyTo.content, sender: { name: replyTo.senderName } } : null };
+    if (!text.trim() && attachedFiles.length === 0) return;
+    if (!socket) return;
+    const fileTokens = attachedFiles.map(f => `{{file:${f.id}:${f.name}:${f.url}}}`).join(' ');
+    const content = [text.trim(), fileTokens].filter(Boolean).join(' ');
+    const opt = { id: `temp-${Date.now()}`, content, created_at: new Date().toISOString(), read: false, sender: { id: user.id, name: user.name }, replied_message: replyTo ? { id: replyTo.id, content: replyTo.content, sender: { name: replyTo.senderName } } : null };
     setMessages(prev => [...prev, opt]);
     socket.emit('dm_typing_stop', { conversationId: conversation.id, otherId: other?.id });
-    socket.emit('send_dm', { conversationId: conversation.id, content: opt.content, replyTo: replyTo?.id || null });
-    setText(''); setReplyTo(null);
+    socket.emit('send_dm', { conversationId: conversation.id, content, replyTo: replyTo?.id || null });
+    setText(''); setReplyTo(null); setAttachedFiles([]);
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
@@ -139,6 +146,26 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   };
 
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setUploading(true);
+    try {
+      // Upload to a temporary/DM bucket via a FormData POST
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await dmAPI.uploadFile(formData);
+      setAttachedFiles(prev => [...prev, { id: res.data.id, name: res.data.filename, url: res.data.file_url, type: res.data.file_type }]);
+    } catch {
+      // fallback: attach as a local object URL (no server upload)
+      const url = URL.createObjectURL(file);
+      setAttachedFiles(prev => [...prev, { id: `local-${Date.now()}`, name: file.name, url, type: file.type }]);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleTypingInput = (e) => {
     setText(e.target.value);
@@ -365,29 +392,80 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       </div>
 
       {/* Input */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid #1c1c1c', flexShrink: 0, background: '#000000' }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #1c1c1c', flexShrink: 0, background: '#080808' }}>
+        {/* Reply banner */}
         {replyTo && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111111', borderRadius: 8, padding: '6px 12px', marginBottom: 8, borderLeft: '2px solid rgba(124,58,237,0.5)' }}>
-            <div style={{ minWidth: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.8)' }}>Replying to {replyTo.senderName}</span>
-              <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyTo.content}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(124,58,237,0.5)', background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.8)' }}>↩ Replying to </span>
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>{replyTo.senderName}</span>
+              <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyTo.content?.slice(0, 60)}</p>
             </div>
-            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', marginLeft: 8, lineHeight: 0 }}>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
-            </button>
+            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
           </div>
         )}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-          <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown}
-            rows={1} placeholder={`Message ${other?.name}…`}
-            style={{ flex: 1, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10, padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', outline: 'none', fontFamily: 'Inter, sans-serif', minHeight: 42, maxHeight: 130, overflowY: 'auto', transition: 'border-color 0.15s' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
-            onBlur={e => e.target.style.borderColor = '#1c1c1c'}/>
-          <button onClick={sendMessage} disabled={!text.trim()}
-            style={{ padding: '10px 18px', borderRadius: 10, background: text.trim() ? '#7c3aed' : '#111111', border: '1px solid', borderColor: text.trim() ? '#7c3aed' : '#1c1c1c', color: text.trim() ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 400, cursor: text.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s', flexShrink: 0 }}>
-            Send
+
+        {/* Attached file pills */}
+        {attachedFiles.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+            {attachedFiles.map(f => (
+              <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#111111', border: '1px solid #1c1c1c', fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.6)' }}>
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+                </svg>
+                <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                <button onMouseDown={e => { e.preventDefault(); setAttachedFiles(prev => prev.filter(r => r.id !== f.id)); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', lineHeight: 1, padding: 0, marginLeft: 2 }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}>×</button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+          {/* Unified input container — same as ChatPanel */}
+          <div style={{ flex: 1, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.15s' }}
+            onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
+            onBlurCapture={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
+            {/* Toolbar row */}
+            <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <FormatToolbar textareaRef={textareaRef} setText={setText} />
+              {/* Upload file button */}
+              <button type="button" title="Upload file"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: uploading ? 'rgba(124,58,237,0.6)' : 'rgba(255,255,255,0.3)', transition: 'color 0.15s' }}
+                onMouseEnter={e => { if (!uploading) e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                onMouseLeave={e => { if (!uploading) e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}>
+                {uploading
+                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 0.7s linear infinite' }}><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                  : <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                      <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                    </svg>
+                }
+              </button>
+            </div>
+            {/* Textarea */}
+            <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown}
+              rows={1} placeholder={`Message ${other?.name}…`}
+              style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 42, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
+              onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
+          </div>
+
+          {/* Send button */}
+          <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0}
+            style={{ width: 42, height: 42, borderRadius: 12, background: (text.trim() || attachedFiles.length > 0) ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: (text.trim() || attachedFiles.length > 0) ? '#7c3aed' : '#1c1c1c', color: (text.trim() || attachedFiles.length > 0) ? '#fff' : 'rgba(255,255,255,0.2)', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+            </svg>
           </button>
         </div>
+
+        {/* Hidden file input */}
+        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload}
+          accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"/>
       </div>
     </div>
   );
