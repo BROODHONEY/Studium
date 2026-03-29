@@ -160,7 +160,8 @@ export default function DuesPanel({ group }) {
   };
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent' }}>
+    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div className="max-w-3xl mx-auto px-6 py-8">
         <ConfirmDialog
           open={!!deleteConfirm} danger

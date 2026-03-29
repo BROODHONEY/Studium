@@ -47,7 +47,8 @@ export default function SettingsPanel() {
   };
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Profile header */}
