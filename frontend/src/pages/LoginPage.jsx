@@ -80,7 +80,7 @@ export default function LoginPage() {
           <span className="text-white/90 text-sm font-medium tracking-wide">Studi+</span>
         </div>
 
-        <div className="min-h-full flex items-center justify-center px-6 py-10">
+        <div className="min-h-full flex items-center justify-center px-5 py-10" style={{ paddingBottom: 'max(40px, env(safe-area-inset-bottom, 40px))' }}>
           <div className="w-full max-w-sm space-y-8">
 
             <div className="space-y-1.5">

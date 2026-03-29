@@ -81,7 +81,7 @@ function Inner({
 
       {/* Icon rail */}
       <div
-        className={mob === 'sidebar' ? '' : 'hidden md:flex'}
+        className={`${mob === 'sidebar' ? '' : 'hidden md:flex'} mobile-rail`}
         style={{ width: 48, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, marginBottom: 12, flexShrink: 0, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: '#fff', fontSize: 11, fontWeight: 500 }}>S</span>
@@ -118,8 +118,15 @@ function Inner({
 
       {/* List panel */}
       <div
-        className={mob === 'sidebar' ? '' : 'hidden md:flex'}
-        style={{ width: 240, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        className={`${mob === 'sidebar' ? 'mobile-list' : 'hidden md:flex'}`}
+        style={{ width: 240, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        {/* Mobile-only logo bar — hidden on desktop where the icon rail shows it */}
+        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid #1c1c1c' }}>
+          <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>S</span>
+          </div>
+          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400, fontFamily: 'Inter, sans-serif' }}>Studi+</span>
+        </div>
         {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
         {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
         {rail === 'notifications' && (
@@ -147,8 +154,8 @@ function Inner({
 
       {/* Main */}
       <main
-        className={mob === 'main' ? '' : 'hidden md:flex'}
-        style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#000000' }}>
+        className={`${mob === 'main' ? 'mobile-main' : 'hidden md:flex'}`}
+        style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#000000' }}>
         {rail === 'settings' && <SettingsPanel />}
         {rail !== 'settings' && showGroup && (
           <>
@@ -179,7 +186,40 @@ function Inner({
         )}
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* ── Mobile bottom nav — hidden on md+ via CSS, not inline style ── */}
+      <nav className="md:hidden" style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: '#080808', borderTop: '1px solid #1c1c1c',
+        alignItems: 'center', zIndex: 100,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
+      /* display is controlled by md:hidden — do NOT set display:flex inline */
+      >
+        {[
+          { key: 'groups',        label: 'Groups',   dot: hasGU, icon: <Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z" s={20}/> },
+          { key: 'dms',           label: 'Messages', dot: hasDU, icon: <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/> },
+          { key: 'notifications', label: 'Alerts',   dot: hasN,  icon: <Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']} s={20}/> },
+          { key: 'settings',      label: 'Settings', dot: false, icon: <Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']} s={20}/> },
+        ].map(item => (
+          <button key={item.key}
+            onClick={() => { setRail(item.key); setMob('sidebar'); }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', position: 'relative', color: rail === item.key && mob === 'sidebar' ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', minHeight: 56 }}>
+            {item.icon}
+            <span style={{ fontSize: 9, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>{item.label}</span>
+            {item.dot && !(rail === item.key && mob === 'sidebar') && (
+              <span style={{ position: 'absolute', top: 8, right: 'calc(50% - 14px)', width: 6, height: 6, borderRadius: '50%', background: '#7c3aed' }} />
+            )}
+          </button>
+        ))}
+        {(showGroup || showDM) && (
+          <button onClick={() => setMob('main')}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', color: mob === 'main' ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', minHeight: 56 }}>
+            <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/>
+            <span style={{ fontSize: 9, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>Open</span>
+          </button>
+        )}
+      </nav>
+
       {showModal     && <GroupModal onClose={() => setShowModal(false)} onSuccess={handleGroupAdded} />}
       {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
       <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
