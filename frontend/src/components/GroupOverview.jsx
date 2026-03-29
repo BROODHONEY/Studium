@@ -95,7 +95,9 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
 
   if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
-      className="w-full py-2.5 border border-dashed dark:border-brand-900/50 border-gray-300 rounded-xl dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:border-brand-700/50 hover:border-gray-400 text-sm transition">
+      style={{ width: '100%', padding: '10px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 10, color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: 300, background: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+      onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
       + New announcement
     </button>
   );
@@ -267,14 +269,15 @@ export default function GroupOverview({ group, onFileRef }) {
     } finally { setConfirmingDelete(false); }
   };
 
-  const roleColor = myRole === 'admin'
+  const roleColor = myRole === 'admin'  // kept for potential future use
     ? 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/20'
     : myRole === 'teacher'
       ? 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/20'
       : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:border-surface-4 border-gray-200';
+  void roleColor;
 
   return (
-    <div className="flex-1 overflow-y-auto dark:bg-surface bg-gray-50">
+    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent' }}>
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
         <ConfirmDialog
           open={!!deleteConfirm} danger={true}
@@ -286,15 +289,15 @@ export default function GroupOverview({ group, onFileRef }) {
         />
 
         {/* Group header */}
-        <div className="border-b dark:border-brand-900/40 border-gray-200 pb-6">
-          <h1 className="text-xl font-semibold dark:text-white text-gray-900">{group.name}</h1>
-          <p className="dark:text-gray-500 text-gray-500 text-sm mt-1">{group.subject}</p>
-          {group.description && <p className="dark:text-gray-600 text-gray-400 text-sm mt-2">{group.description}</p>}
-          <div className="flex items-center gap-3 mt-3">
-            <span className={`text-xs px-2.5 py-1 rounded-full border capitalize ${roleColor}`}>{myRole}</span>
+        <div style={{ borderBottom: '1px solid #1c1c1c', paddingBottom: 24 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0 }}>{group.name}</h1>
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: 300, marginTop: 4 }}>{group.subject}</p>
+          {group.description && <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: 300, marginTop: 6 }}>{group.description}</p>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 400, padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', textTransform: 'capitalize' }}>{myRole}</span>
             {isTeacher && (
-              <span className="text-xs dark:text-gray-600 text-gray-400">
-                Invite code: <span className="font-mono text-brand-500">{group.invite_code}</span>
+              <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>
+                Invite code: <span style={{ fontFamily: 'monospace', color: 'rgba(124,58,237,0.8)' }}>{group.invite_code}</span>
               </span>
             )}
           </div>
@@ -303,8 +306,8 @@ export default function GroupOverview({ group, onFileRef }) {
         {/* Announcements */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold dark:text-white text-gray-900 uppercase tracking-wider">Announcements</h2>
-            <span className="text-xs dark:text-gray-600 text-gray-400">{announcements.length} total</span>
+            <h2 style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Announcements</h2>
+            <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>{announcements.length} total</span>
           </div>
           <div className="space-y-3">
             {isTeacher && (
@@ -324,70 +327,54 @@ export default function GroupOverview({ group, onFileRef }) {
                 <div className="py-10 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
                   <p className="dark:text-gray-600 text-gray-400 text-sm">No announcements yet</p>
                 </div>
-              ) : announcements.map(a => (
-                <div key={a.id} className={`card-hover p-4 group border-l-4 ${(ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general).border}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        {(() => { const t = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general; return (
-                          <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${t.badge}`}>
-                            <TagIcon type={a.tag || 'general'} />{t.label}
-                          </span>
-                        ); })()}
+              ) : announcements.map(a => {
+                const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
+                const reactionMap = {};
+                (a.announcement_reactions || []).forEach(r => {
+                  if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+                  reactionMap[r.emoji].push(r.user_id);
+                });
+                return (
+                  <div key={a.id}
+                    style={{ padding: '16px', borderRadius: 10, borderLeft: `2px solid ${tag.accentColor || '#2a2a2a'}`, border: '1px solid #1c1c1c', background: '#080808' }}
+                    className="group">
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                          <TagIcon type={a.tag || 'general'} />{tag.label}
+                        </span>
+                        <p style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0 }}>{a.title}</p>
+                        <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
                       </div>
-                      <p className="text-sm font-medium dark:text-white text-gray-900">{a.title}</p>
-                      <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{a.users?.name} · {formatDate(a.created_at)}</p>
+                      {(isTeacher || a.users?.id === user?.id) && (
+                        <div style={{ display: 'flex', gap: 8 }} className="opacity-0 group-hover:opacity-100 transition">
+                          <button onClick={() => setEditingAnnouncement(a)}
+                            style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>Edit</button>
+                          <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })}
+                            style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.8)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>Delete</button>
+                        </div>
+                      )}
                     </div>
-                    {(isTeacher || a.users?.id === user?.id) && (
-                      <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition">
-                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition px-1 py-0.5">Edit</button>
-                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-sm dark:text-gray-300 text-gray-700 mt-3 leading-relaxed">
-                    <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
-                  </div>
-                  {(() => {
-                    const reactionMap = {};
-                    (a.announcement_reactions || []).forEach(r => {
-                      if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
-                      reactionMap[r.emoji].push(r.user_id);
-                    });
-                    const EMOJIS = ['👍', '❤️', '😮', '🙏', '🔥'];
-                    return (
-                      <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                        {/* Existing reactions */}
+                    <div style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', marginTop: 12, lineHeight: 1.6 }}>
+                      <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
+                    </div>
+                    {Object.keys(reactionMap).length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
                         {Object.entries(reactionMap).map(([emoji, userIds]) => (
                           <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
-                              ${userIds.includes(user?.id)
-                                ? 'bg-brand-500/20 border-brand-500/40 text-brand-300'
-                                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
+                            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
                             <span>{emoji}</span><span>{userIds.length}</span>
                           </button>
                         ))}
-                        {/* Add reaction picker — visible on hover */}
-                        <div className="relative group/react opacity-0 group-hover:opacity-100 transition">
-                          <button className="flex items-center justify-center w-6 h-6 rounded-full dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 transition text-xs">
-                            +
-                          </button>
-                          <div className="absolute bottom-full left-0 mb-1 hidden group-hover/react:flex
-                            dark:bg-gray-900 bg-white border dark:border-gray-700 border-gray-200
-                            rounded-xl shadow-xl px-2 py-1.5 gap-1 z-10">
-                            {EMOJIS.map(e => (
-                              <button key={e} onClick={() => handleReact(a.id, e)}
-                                className="text-base hover:scale-125 transition-transform leading-none p-0.5">
-                                {e}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
                       </div>
-                    );
-                  })()}
-                </div>
-              ))
+                    )}
+                  </div>
+                );
+              })
             }
           </div>
         </section>

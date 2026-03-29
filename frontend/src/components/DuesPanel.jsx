@@ -14,10 +14,10 @@ const daysUntil = (dateStr) => {
 };
 
 const dueBadge = (days) => {
-  if (days < 0)   return { label: 'Overdue',      cls: 'bg-red-500/10 text-red-400 border-red-500/20' };
-  if (days === 0) return { label: 'Due today',     cls: 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/20' };
-  if (days <= 3)  return { label: `${days}d left`, cls: 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/20' };
-  return               { label: `${days}d left`,   cls: 'dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:border-surface-4 border-gray-200' };
+  if (days < 0)   return { label: 'Overdue',      cls: 'text-red-400 border-red-500/20 bg-red-500/8' };
+  if (days === 0) return { label: 'Due today',     cls: 'text-amber-400 border-amber-500/20 bg-amber-500/8' };
+  if (days <= 3)  return { label: `${days}d left`, cls: 'text-amber-400 border-amber-500/20 bg-amber-500/8' };
+  return               { label: `${days}d left`,   cls: 'text-white/30 border-white/10 bg-white/5' };
 };
 
 function DueForm({ groupId, onCreated, editing, onCancel }) {
@@ -66,9 +66,9 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
 
   if (!open && !editing) return (
     <button onClick={() => setOpen(true)}
-      className="w-full py-2.5 border border-dashed dark:border-brand-900/50 border-gray-300 rounded-xl
-        dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600
-        dark:hover:border-brand-700/50 hover:border-gray-400 text-sm transition">
+      style={{ width: '100%', padding: '10px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 10, color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: 300, background: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+      onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
       + Add due date
     </button>
   );
@@ -160,7 +160,7 @@ export default function DuesPanel({ group }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto dark:bg-surface bg-gray-50">
+    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent' }}>
       <div className="max-w-3xl mx-auto px-6 py-8">
         <ConfirmDialog
           open={!!deleteConfirm} danger
@@ -204,7 +204,11 @@ export default function DuesPanel({ group }) {
                   const istTime = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
                   const hasTime = istTime !== '00:00';
                   return (
-                    <div key={d.id} className="card-hover px-4 py-3 group flex items-center gap-4">
+                    <div key={d.id}
+                      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 16px', borderRadius: 10, border: '1px solid #1c1c1c', background: '#080808', transition: 'border-color 0.15s', cursor: 'default' }}
+                      className="group"
+                      onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
                       {/* Date block */}
                       <div className="flex-shrink-0 w-12 text-center">
                         <p className="text-lg font-semibold dark:text-white text-gray-900 leading-none">
@@ -220,7 +224,7 @@ export default function DuesPanel({ group }) {
                         )}
                       </div>
 
-                      <div className="w-px h-8 dark:bg-surface-4 bg-gray-200 flex-shrink-0"/>
+                      <div style={{ width: 1, height: 32, background: '#1c1c1c', flexShrink: 0 }}/>
 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium dark:text-white text-gray-900 truncate">{d.title}</p>

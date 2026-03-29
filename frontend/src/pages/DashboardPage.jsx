@@ -87,7 +87,7 @@ function Inner({
           <span style={{ color: '#fff', fontSize: 11, fontWeight: 500 }}>S</span>
         </div>
         <RailBtn title="Groups"   active={rail==='groups'}   dot={hasGU && rail!=='groups'} onClick={() => setRail('groups')}
-          icon={<Ic d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>} />
+          icon={<Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/>} />
         <RailBtn title="Messages" active={rail==='dms'}      dot={hasDU && rail!=='dms'}   onClick={() => setRail('dms')}
           icon={<Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>} />
         <RailBtn title="Settings" active={rail==='settings'}                               onClick={() => setRail('settings')}
@@ -149,21 +149,14 @@ function Inner({
       <main
         className={mob === 'main' ? '' : 'hidden md:flex'}
         style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#000000' }}>
-        {/* Mobile back — only on small screens */}
-        {mob === 'main' && (
-          <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0 }}>
-            <button onClick={() => setMob('sidebar')} style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
-              <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
-            </button>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 300 }}>
-              {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
-            </span>
-          </div>
-        )}
         {rail === 'settings' && <SettingsPanel />}
         {rail !== 'settings' && showGroup && (
           <>
-            <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
+            <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab}
+              onBack={() => {
+                if (activeTab !== 'Overview') setActiveTab('Overview');
+                else { setActiveGroup(null); setActiveConvo(null); }
+              }} />
             {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
             {activeTab === 'Chat'    && <div style={{ flex: 1, minHeight: 0 }}><ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} /></div>}
             {activeTab === 'Dues'    && <DuesPanel group={activeGroup} />}
@@ -178,7 +171,7 @@ function Inner({
         {rail !== 'settings' && !showGroup && !showDM && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {/* Radial gradient like login page */}
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.12) 0%, rgba(76,29,149,0.06) 40%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.45) 0%, rgba(76,29,149,0.2) 35%, transparent 65%)', pointerEvents: 'none' }} />
             <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 300, position: 'relative' }}>
               {rail === 'groups' ? 'Select a group to start.' : rail === 'dms' ? 'Select a conversation.' : ''}
             </p>

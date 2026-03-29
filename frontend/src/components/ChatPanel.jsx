@@ -523,7 +523,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   };
 
   return (
-    <div className="flex flex-col h-full dark:bg-surface bg-gray-50">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent' }}>
 
       {/* Delete confirmation */}
       <ConfirmDialog

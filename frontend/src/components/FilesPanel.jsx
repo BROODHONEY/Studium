@@ -6,14 +6,31 @@ import ConfirmDialog from './ui/ConfirmDialog';
 import { formatDate as formatDateIST } from '../utils/time';
 
 const FILE_ICONS = {
-  'application/pdf': '📄',
-  'application/vnd.ms-powerpoint': '📊',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📊',
-  'application/msword': '📝',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📝',
-  'image/jpeg': '🖼️',
-  'image/png': '🖼️',
+  'application/pdf': 'pdf',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'ppt',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'doc',
+  'image/jpeg': 'img',
+  'image/png': 'img',
 };
+
+function FileTypeIcon({ type }) {
+  const kind = FILE_ICONS[type] || 'file';
+  const paths = {
+    pdf:  <><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/><path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029z"/></>,
+    ppt:  <><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/><path d="M7 7.078V9H5.5a.5.5 0 0 0 0 1H7v1.5a.5.5 0 0 0 1 0V10h1.5a.5.5 0 0 0 0-1H8V7.078a3 3 0 1 0-1 0z"/></>,
+    doc:  <><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/><path d="M4.5 12.5A.5.5 0 0 1 5 12h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 10h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 8h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5z"/></>,
+    img:  <><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/></>,
+    file: <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>,
+  };
+  const colors = { pdf: '#ef4444', ppt: '#f97316', doc: '#3b82f6', img: '#10b981', file: 'rgba(255,255,255,0.3)' };
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" fill={colors[kind]} style={{ flexShrink: 0 }}>
+      {paths[kind]}
+    </svg>
+  );
+}
 
 const formatSize = (bytes) => {
   if (!bytes) return '';
@@ -35,7 +52,7 @@ function ConfirmUploadModal({ file, onConfirm, onCancel }) {
       <div className="card w-full max-w-sm p-6">
         <h3 className="text-sm font-semibold dark:text-white text-gray-900 mb-4">Upload this file?</h3>
         <div className="dark:bg-surface-3 bg-gray-100 rounded-xl p-4 mb-5 flex items-center gap-3">
-          <span style={{ fontSize: 28 }}>{FILE_ICONS[file.type] || '📎'}</span>
+          <FileTypeIcon type={file.type} />
           <div className="min-w-0">
             <p className="text-sm dark:text-white text-gray-900 font-medium truncate">{file.name}</p>
             <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{formatSize(file.size)}</p>
@@ -50,38 +67,46 @@ function ConfirmUploadModal({ file, onConfirm, onCancel }) {
   );
 }
 
-function FileRow({ file, selecting, selected, onToggle, canAssign, onAssign, rowRef }) {
+function FileRow({ file, selecting, selected, onToggle, canDelete, onDelete, canAssign, onAssign, rowRef }) {
   return (
     <div ref={rowRef} onClick={() => selecting && onToggle(file.id)}
-      className={`card-hover flex items-center gap-4 px-4 py-3 transition group
-        ${selecting ? 'cursor-pointer' : ''}
-        ${selected ? 'dark:bg-brand-900/30 bg-brand-50 dark:border-brand-700/40 border-brand-200 border' : ''}`}>
+      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, border: '1px solid #1c1c1c', background: '#080808', transition: 'border-color 0.15s', cursor: selecting ? 'pointer' : 'default' }}
+      className="group"
+      onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
+      onMouseLeave={e => e.currentTarget.style.borderColor = selected ? 'rgba(124,58,237,0.4)' : '#1c1c1c'}
+      {...(selected ? { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.06)', cursor: 'pointer' } } : {})}>
       {selecting && (
-        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition
-          ${selected ? 'bg-brand-600 border-brand-600' : 'dark:border-gray-600 border-gray-300'}`}>
+        <div style={{ width: 18, height: 18, borderRadius: 5, border: selected ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)', background: selected ? '#7c3aed' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
           {selected && <svg width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
         </div>
       )}
-      <div style={{ fontSize: 26 }} className="flex-shrink-0">{FILE_ICONS[file.file_type] || '📎'}</div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm dark:text-white text-gray-900 font-medium truncate">{file.filename}</p>
-        <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">
+      <FileTypeIcon type={file.file_type} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{file.filename}</p>
+        <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
           {formatSize(file.size_bytes)}{file.users?.name && ` · ${file.users.name}`}{` · ${formatDate(file.created_at)}`}
         </p>
       </div>
       {!selecting && (
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }} className="opacity-0 group-hover:opacity-100 transition">
           {canAssign && (
             <button onClick={e => { e.stopPropagation(); onAssign(file.id); }}
-              className="opacity-0 group-hover:opacity-100 transition text-xs dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 px-2 py-1.5 rounded-lg dark:hover:bg-surface-3 hover:bg-gray-100"
-              title="Assign to category">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
-              </svg>
+              style={{ padding: '4px 8px', borderRadius: 6, background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+              Move
+            </button>
+          )}
+          {canDelete && (
+            <button onClick={e => { e.stopPropagation(); onDelete(file.id); }}
+              style={{ padding: '4px 8px', borderRadius: 6, background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'rgba(239,68,68,0.8)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}>
+              Delete
             </button>
           )}
           <a href={file.file_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-            className="text-xs text-brand-400 hover:text-brand-300 px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 transition">
+            style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.9)', fontSize: 11, fontWeight: 400, textDecoration: 'none' }}>
             Download
           </a>
         </div>
@@ -131,14 +156,14 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   const [selected, setSelected]     = useState(new Set());
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [deleting, setDeleting]     = useState(false);
+  const [confirmSingleDelete, setConfirmSingleDelete] = useState(null); // fileId
 
   // Categories (localStorage per group)
-  const [categories, setCategories]   = useState([]);   // [{ id, name, fileIds[], collapsed }]
+  const [categories, setCategories]   = useState([]);
   const [catModal, setCatModal]       = useState(false);
   const [catName, setCatName]         = useState('');
-  const [assignTarget, setAssignTarget] = useState(null); // fileId being assigned
+  const [assignTarget, setAssignTarget] = useState(null);
   const [catCollapsed, setCatCollapsed] = useState({});
-  const [fabOpen, setFabOpen]         = useState(false);
 
   useEffect(() => {
     if (!group) return;
@@ -211,11 +236,22 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
     let failed = 0;
     for (const id of ids) { try { await filesAPI.delete(group.id, id); } catch { failed++; } }
     setFiles(prev => prev.filter(f => !selected.has(f.id)));
-    // Remove deleted files from categories
     persistCats(categories.map(c => ({ ...c, fileIds: c.fileIds.filter(id => !selected.has(id)) })));
     setSelected(new Set()); setSelecting(false); setDeleting(false);
     if (failed > 0) addToast({ type: 'error', message: `${failed} file(s) could not be deleted` });
     else addToast({ type: 'success', message: `${ids.length} file(s) deleted` });
+  };
+
+  const handleSingleDelete = async () => {
+    if (!confirmSingleDelete) return;
+    const id = confirmSingleDelete;
+    setConfirmSingleDelete(null);
+    try {
+      await filesAPI.delete(group.id, id);
+      setFiles(prev => prev.filter(f => f.id !== id));
+      persistCats(categories.map(c => ({ ...c, fileIds: c.fileIds.filter(fid => fid !== id) })));
+      addToast({ type: 'success', message: 'File deleted' });
+    } catch { addToast({ type: 'error', message: 'Could not delete file' }); }
   };
 
   const fileMap = Object.fromEntries(files.map(f => [f.id, f]));
@@ -224,27 +260,34 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   const studentFiles = files.filter(f => f.uploaded_by_role === 'student' && !categorizedIds.has(f.id));
   const allUncategorized = [...teacherFiles, ...studentFiles];
 
-  const SectionHeader = ({ title, subtitle, fileList }) => (
+  const SectionHeader = ({ title, subtitle, fileList, uploadRef }) => (
     <div className="flex items-center justify-between mb-3">
       <div>
-        <h3 className="text-sm font-medium dark:text-white text-gray-900">{title}</h3>
-        {subtitle && <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">{subtitle}</p>}
+        <h3 style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{title}</h3>
+        {subtitle && <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', marginTop: 2 }}>{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-2">
-        {canDelete && fileList.length > 0 && (
-          <button onClick={() => { if (selecting) { setSelecting(false); setSelected(new Set()); } else setSelecting(true); }}
-            className={`text-xs font-medium px-3 py-1.5 rounded-xl transition ${selecting ? 'dark:bg-surface-3 bg-gray-200 dark:text-gray-300 text-gray-700' : 'dark:text-gray-400 text-gray-500 dark:hover:text-gray-200 hover:text-gray-700'}`}>
-            {selecting ? 'Cancel' : 'Select'}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {uploadRef && (canUploadAll || isStudent) && (
+          <button onClick={() => uploadRef.current?.click()}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+            </svg>
+            Upload
           </button>
         )}
-        {selecting && fileList.length > 0 && (
-          <button onClick={() => toggleSelectAll(fileList)} className="text-xs dark:text-gray-400 text-gray-500 dark:hover:text-gray-200 hover:text-gray-700 transition">
-            {fileList.every(f => selected.has(f.id)) ? 'Deselect all' : 'All'}
+        {canDelete && fileList.length > 0 && (
+          <button onClick={() => { if (selecting) { setSelecting(false); setSelected(new Set()); } else setSelecting(true); }}
+            style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.08)', background: selecting ? 'rgba(255,255,255,0.06)' : 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
+            {selecting ? 'Cancel' : 'Select'}
           </button>
         )}
         {selecting && selected.size > 0 && (
           <button onClick={() => setConfirmBulkDelete(true)} disabled={deleting}
-            className="text-xs font-medium px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition disabled:opacity-50">
+            style={{ padding: '5px 10px', borderRadius: 7, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: 'rgba(239,68,68,0.8)', fontSize: 11, fontWeight: 400, cursor: 'pointer' }}>
             Delete {selected.size}
           </button>
         )}
@@ -253,10 +296,10 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 dark:bg-surface bg-gray-50 overflow-y-auto relative"
-      onClick={() => setFabOpen(false)}>
-      <div className="p-5 pb-24 space-y-6">
-        {error && <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs">{error}</div>}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'transparent', overflowY: 'auto' }}
+      onClick={() => {}}>
+      <div className="p-5 space-y-6">
+        {error && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 300 }}>{error}</div>}
 
         {/* ── Categories ── */}
         {categories.map(cat => {
@@ -295,6 +338,8 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
                           selecting={selecting && canDelete}
                           selected={selected.has(file.id)}
                           onToggle={toggleSelect}
+                          canDelete={canDelete}
+                          onDelete={setConfirmSingleDelete}
                           canAssign={canDelete}
                           onAssign={setAssignTarget}
                           rowRef={el => { if (el) fileRowRefs.current[file.id] = el; else delete fileRowRefs.current[file.id]; }}
@@ -310,17 +355,18 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
 
         {/* ── Study materials (uncategorized) ── */}
         <section>
-          <SectionHeader title="Study materials" subtitle="Uploaded by teachers" fileList={teacherFiles}/>
+          <SectionHeader title="Study materials" subtitle="Uploaded by teachers" fileList={teacherFiles} uploadRef={canUploadAll ? teacherInputRef : null}/>
           {loading
-            ? <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)}</div>
+            ? <div className="space-y-2">{[1,2].map(i => <div key={i} style={{ height: 56, borderRadius: 8, background: '#0d0d0d', animation: 'pulse 1.5s infinite' }}/>)}</div>
             : teacherFiles.length === 0
-              ? <div className="py-8 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
-                  <p className="dark:text-gray-600 text-gray-400 text-sm">No study materials yet</p>
+              ? <div style={{ padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300 }}>No study materials yet</p>
                 </div>
               : <div className="space-y-2">
                   {teacherFiles.map(file => (
                     <FileRow key={file.id} file={file}
                       selecting={selecting} selected={selected.has(file.id)} onToggle={toggleSelect}
+                      canDelete={canDelete} onDelete={setConfirmSingleDelete}
                       canAssign={canDelete} onAssign={setAssignTarget}
                       rowRef={el => { if (el) fileRowRefs.current[file.id] = el; else delete fileRowRefs.current[file.id]; }}/>
                   ))}
@@ -331,17 +377,18 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         {/* ── Student media (uncategorized) ── */}
         {(isStudent || canUploadAll) && (
           <section>
-          <SectionHeader title="Student media" subtitle="Images and PDFs from students" fileList={studentFiles}/>
+            <SectionHeader title="Student media" subtitle="Images and PDFs from students" fileList={studentFiles} uploadRef={isStudent ? studentInputRef : null}/>
             {loading
-              ? <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)}</div>
+              ? <div className="space-y-2">{[1,2].map(i => <div key={i} style={{ height: 56, borderRadius: 8, background: '#0d0d0d' }}/>)}</div>
               : studentFiles.length === 0
-                ? <div className="py-8 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
-                    <p className="dark:text-gray-600 text-gray-400 text-sm">No student uploads yet</p>
+                ? <div style={{ padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8 }}>
+                    <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300 }}>No student uploads yet</p>
                   </div>
                 : <div className="space-y-2">
                     {studentFiles.map(file => (
                       <FileRow key={file.id} file={file}
                         selecting={selecting && canDelete} selected={selected.has(file.id)} onToggle={toggleSelect}
+                        canDelete={canDelete} onDelete={setConfirmSingleDelete}
                         canAssign={canDelete} onAssign={setAssignTarget}
                         rowRef={el => { if (el) fileRowRefs.current[file.id] = el; else delete fileRowRefs.current[file.id]; }}/>
                     ))}
@@ -411,12 +458,77 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         </div>
       )}
 
+      {/* FAB */}
+      {(canUploadAll || isStudent) && (
+        <div className="absolute bottom-5 right-5 flex flex-col items-end gap-2 z-20"
+          onClick={e => e.stopPropagation()}>
+          {fabOpen && (
+            <div className="flex flex-col items-end gap-2">
+              {canUploadAll && (
+                <button onClick={() => { setFabOpen(false); teacherInputRef.current?.click(); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
+                    dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
+                    dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                  </svg>
+                  Upload file
+                </button>
+              )}
+              {isStudent && (
+                <button onClick={() => { setFabOpen(false); studentInputRef.current?.click(); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
+                    dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
+                    dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                  </svg>
+                  Upload media
+                </button>
+              )}
+              {canDelete && (
+                <button onClick={() => { setFabOpen(false); setCatModal(true); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg text-xs font-medium
+                    dark:bg-surface-2 bg-white dark:border-brand-900/40 border-gray-200 border
+                    dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-50 transition whitespace-nowrap">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="dark:text-gray-400 text-gray-500">
+                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                  </svg>
+                  New category
+                </button>
+              )}
+            </div>
+          )}
+          <button onClick={() => setFabOpen(v => !v)}
+            className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition
+              bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-neon-purple
+              ${fabOpen ? 'rotate-45' : ''}`}>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Hidden file inputs */}
+      <input ref={teacherInputRef} type="file" className="hidden" onChange={handleFilePick}
+        accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"/>
+      <input ref={studentInputRef} type="file" className="hidden" onChange={handleFilePick}
+        accept=".pdf,.jpg,.jpeg,.png"/>
+
       {pendingFile && <ConfirmUploadModal file={pendingFile} onConfirm={handleConfirmUpload} onCancel={() => setPendingFile(null)}/>}
 
       <ConfirmDialog open={confirmBulkDelete} danger
         title={`Delete ${selected.size} file${selected.size !== 1 ? 's' : ''}?`}
         description="This will permanently remove the selected files for everyone."
         confirmText="Delete" onCancel={() => setConfirmBulkDelete(false)} onConfirm={handleBulkDelete} disabled={deleting}/>
+
+      <ConfirmDialog open={!!confirmSingleDelete} danger
+        title="Delete this file?"
+        description="This will permanently remove the file for everyone."
+        confirmText="Delete" onCancel={() => setConfirmSingleDelete(null)} onConfirm={handleSingleDelete}/>
 
       {/* New category modal */}
       {catModal && (
