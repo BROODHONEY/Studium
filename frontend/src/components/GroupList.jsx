@@ -524,10 +524,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
         className="mobile-create-btn">
         {/* Create folder row */}
         <button onClick={() => setFolderModal(true)}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 22px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
             <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
           </svg>
           New folder
@@ -536,10 +536,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
         <div style={{ height: 1, background: '#1c1c1c', margin: '0 12px' }}/>
         {/* Create / join group */}
         <button onClick={onOpenModal}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 22px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
             <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
           </svg>
           Create or join a group
