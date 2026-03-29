@@ -939,12 +939,18 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                             isOwn={isOwn}
                             onClose={() => setOpenMenuId(null)}
                             onReact={(e) => handleReact(item.id, e)}
-                            onReply={() => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); }}
-                            onPrivateReply={!isOwn ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); } : undefined}
-                            onPin={myRole === 'admin' ? () => { if (item.pinned) handleUnpinMessage(item.id); else setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '60', content: item.content }); } : undefined}
-                            pinned={item.pinned}
-                            onEdit={canEdit ? () => { setEditingId(item.id); setEditText(item.content); } : undefined}
-                            onDelete={canDelete ? () => handleDeleteMessage(item.id) : undefined}
+                            onReply={(!adminsOnly || myRole === 'admin')
+                              ? () => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); }
+                              : undefined}
+                            onPrivateReply={(!adminsOnly || myRole === 'admin') && !isOwn
+                              ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); }
+                              : undefined}
+                            onEdit={(!adminsOnly || myRole === 'admin') && canEdit
+                              ? () => { setEditingId(item.id); setEditText(item.content); }
+                              : undefined}
+                            onDelete={(!adminsOnly || myRole === 'admin') && canDelete
+                              ? () => handleDeleteMessage(item.id)
+                              : undefined}
                           />
                         )}
                       </div>

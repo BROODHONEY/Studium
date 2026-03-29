@@ -6,6 +6,7 @@ import OnlineDot from './OnlineDot';
 import MessageMenu from './ui/MessageMenu';
 import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
+import ConfirmDialog from './ui/ConfirmDialog';
 import { formatTime, getDateLabel } from '../utils/time';
 
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -35,6 +36,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   const [showPins, setShowPins]     = useState(false);
   const [attachedFiles, setAttachedFiles] = useState([]); // [{ name, url, type }]
   const [uploading, setUploading]   = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
@@ -129,6 +131,13 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   };
 
   const handleReact = async (msgId, emoji) => { setOpenMenuId(null); try { await dmAPI.reactMessage(msgId, emoji); } catch { console.error('react failed'); } };
+
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
+    setMessages(prev => prev.filter(m => m.id !== id));
+    try { await dmAPI.deleteMessage(id); } catch { console.error('delete failed'); }
+  };
 
   const togglePin = (msgId) => {
     setPinnedIds(prev => {
@@ -355,7 +364,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                                 onPin={() => togglePin(msg.id)}
                                 pinned={pinnedIds.includes(msg.id)}
                                 pinDisabled={!pinnedIds.includes(msg.id) && pinnedIds.length >= PIN_MAX}
-                                onDelete={() => { setMessages(prev => prev.filter(m => m.id !== msg.id)); dmAPI.deleteMessage(msg.id).catch(console.error); }}/>
+                                onDelete={() => setConfirmDeleteId(msg.id)}/>
                             )}
                           </div>
                         )}
@@ -468,6 +477,16 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload}
           accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"/>
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        danger
+        title="Delete this message?"
+        description="This will permanently remove the message."
+        confirmText="Delete"
+        onCancel={() => setConfirmDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
