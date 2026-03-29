@@ -31,7 +31,7 @@ const DEFAULT_ACCENTS = ['bg-brand-500', 'bg-teal-500', 'bg-purple-500', 'bg-amb
 
 // ── Helpers ────────────────────────────────────────────
 const initials = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const roleColor = (r) => r === 'admin' ? 'text-neon-yellow' : r === 'teacher' ? 'text-neon-cyan' : 'dark:text-gray-500 text-gray-400';
+const roleColor = () => 'text-[rgba(255,255,255,0.3)]';
 
 // ── GroupItem ──────────────────────────────────────────
 function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived, noColorBorder, hasUnread }) {
@@ -58,38 +58,36 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
       onTouchMove={cancelPress}
       onContextMenu={e => { e.preventDefault(); onLongPress(group.id, e.clientX, e.clientY); }}
       onClick={() => onSelect(group)}
-      className={`w-full text-left px-3 py-2.5 transition select-none
-        ${colorBorder}
-        ${isArchived ? 'opacity-50' : ''}
-        ${dragging ? 'opacity-40' : ''}
-        ${noColorBorder ? 'rounded-none' : 'rounded-xl'}
+      className={`w-full text-left px-3 py-2 transition select-none rounded-lg
+        ${isArchived ? 'opacity-40' : ''}
+        ${dragging ? 'opacity-30' : ''}
         ${active
-          ? 'dark:bg-brand-900/60 dark:border dark:border-brand-700/40 bg-brand-50 border border-brand-200'
-          : 'dark:hover:bg-surface-3 hover:bg-gray-50'}`}>
+          ? 'bg-white/[0.07]'
+          : 'hover:bg-white/[0.04]'}`}>
       <div className="flex items-center gap-1.5 min-w-0">
         {pinned && (
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0 dark:text-brand-400 text-brand-500">
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
             <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
           </svg>
         )}
         {isArchived && (
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0 dark:text-gray-500 text-gray-400">
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
             <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
           </svg>
         )}
-        <p className={`text-sm font-medium truncate flex-1 ${active ? 'dark:text-brand-300 text-brand-700' : 'dark:text-gray-200 text-gray-800'}`}>
+        <p className="text-sm truncate flex-1" style={{ fontWeight: active ? 400 : 300, color: active ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)' }}>
           {group.name}
         </p>
         {label && (
-          <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded-md dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 font-medium">
+          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em' }}>
             {label}
           </span>
         )}
         {hasUnread && !active && (
-          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-brand-500"/>
+          <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full" style={{ background: '#7c3aed' }}/>
         )}
       </div>
-      <p className={`text-xs mt-0.5 truncate ${roleColor(group.my_role)}`}>
+      <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 300 }}>
         {group.subject} · {group.my_role}
       </p>
     </button>
@@ -306,10 +304,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             {pinnedGroups.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 px-2 py-1.5">
-                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="dark:text-brand-400/70 text-brand-500/70 flex-shrink-0">
+                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
                     <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
                   </svg>
-                  <span className="text-xs font-semibold dark:text-brand-400/70 text-brand-500/70 uppercase tracking-wider">Pinned</span>
+                  <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Pinned</span>
                 </div>
                 <div className="space-y-0.5">
                   {pinnedGroups.map(group => (
@@ -333,10 +331,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               <div className="mb-1">
                 {/* Section header */}
                 <div className="flex items-center justify-between px-1 mb-2">
-                  <span className="text-sm font-bold dark:text-white text-gray-900">Folders</span>
+                  <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Folders</span>
                   <div className="flex items-center gap-1">
                     <button onClick={() => setFolderModal(true)}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:hover:bg-surface-4 hover:bg-gray-200 transition">
+                      style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)' }}>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
                       </svg>
@@ -346,7 +344,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         const allCollapsed = folders.every(f => p[f.id]);
                         return Object.fromEntries(folders.map(f => [f.id, !allCollapsed]));
                       })}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:hover:bg-surface-4 hover:bg-gray-200 transition">
+                      style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)' }}>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                       </svg>
@@ -355,7 +353,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                 </div>
 
                 {/* Folder cards */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {folders.map((folder, fi) => {
                     const folderGroups = folder.groupIds
                       .map(id => groupMap[id])
@@ -370,21 +368,19 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         onDragOver={e => { e.preventDefault(); setDragFolderId(folder.id); }}
                         onDragLeave={() => setDragFolderId(p => p === folder.id ? null : p)}
                         onDrop={e => { e.preventDefault(); handleDropOnFolder(folder.id); }}
-                        className={`rounded-xl overflow-hidden transition ${dragFolderId === folder.id ? 'ring-2 ring-brand-500/60' : ''}`}>
+                        style={{ borderRadius: 8, overflow: 'hidden', border: dragFolderId === folder.id ? '1px solid rgba(124,58,237,0.4)' : '1px solid #1c1c1c' }}>
 
                         {/* Folder card header */}
-                        <div className={`flex items-stretch dark:bg-surface-2 bg-white border dark:border-surface-3/60 border-gray-200 rounded-xl overflow-hidden
-                          ${!isCollapsed && folderGroups.length > 0 ? 'rounded-b-none border-b-0' : ''}`}
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#0d0d0d' }}
                           onClick={e => e.stopPropagation()}>
-                          {/* Colored left accent bar */}
-                          <div className={`w-1.5 flex-shrink-0 ${accent}`}/>
+                          
 
                           {/* Content */}
                           <button
                             onClick={() => setCollapsed(p => ({ ...p, [folder.id]: !p[folder.id] }))}
-                            className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3.5 text-left">
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, padding: '8px 10px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                             <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"
-                              className="flex-shrink-0 dark:text-gray-400 text-gray-500">
+                              style={{ flexShrink: 0, color: 'rgba(255,255,255,0.25)' }}>
                               <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
                             </svg>
                             {renamingId === folder.id ? (
@@ -396,10 +392,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                 }}
                                 onBlur={() => { if (renameVal.trim()) persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); setRenamingId(null); }}
                                 onClick={e => e.stopPropagation()}
-                                className="flex-1 min-w-0 bg-transparent text-sm font-semibold dark:text-white text-gray-900 outline-none border-b dark:border-brand-500 border-brand-400"
+                                style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', fontFamily: 'Inter, sans-serif', borderBottom: '1px solid rgba(124,58,237,0.5)' }}
                               />
                             ) : (
-                              <span className="text-sm font-semibold dark:text-white text-gray-900 truncate flex-1">
+                              <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.7)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {folder.name}
                               </span>
                             )}
@@ -414,7 +410,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                 setFolderMenuPos({ x: r.right, y: r.bottom + 4 });
                                 setFolderMenu(folder.id);
                               }}
-                              className="p-1.5 rounded-lg dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-100 transition">
+                              style={{ padding: 4, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', lineHeight: 0 }}>
                               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                               </svg>
@@ -425,11 +421,11 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
                         {/* Folder contents */}
                         {!isCollapsed && (
-                          <div className="dark:bg-surface-2 bg-white border dark:border-surface-3/60 border-gray-200 border-t-0 rounded-b-xl overflow-hidden">
+                          <div style={{ borderTop: '1px solid #1c1c1c' }}>
                             {folderGroups.length === 0
-                              ? <p className="text-xs dark:text-gray-600 text-gray-400 px-4 py-3 italic">Empty — drag or move groups here</p>
+                              ? <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', padding: '8px 12px', fontStyle: 'italic' }}>Empty — drag groups here</p>
                               : folderGroups.map(group => (
-                                <div key={group.id} className="border-t dark:border-surface-3/40 border-gray-100 first:border-t-0">
+                                <div key={group.id} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                                   <GroupItem group={group}
                                     active={activeGroupId === group.id}
                                     onSelect={onSelect}
