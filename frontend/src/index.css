@@ -207,7 +207,10 @@ html.dark .sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04
 
 /* ── Mobile responsive ──────────────────────────────── */
 @media (max-width: 767px) {
-  /* md:hidden elements show on mobile (Tailwind only hides at md+) */
+  /* Create/join button — above bottom nav */
+  .mobile-create-btn {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
   /* Bottom nav */
   nav.md\:hidden {
     display: flex !important;

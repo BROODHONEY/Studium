@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 export default function LoginPage() {
   const { login }   = useAuth();
@@ -36,11 +37,9 @@ export default function LoginPage() {
       {/* Left panel — desktop only */}
       <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-between p-10 flex-shrink-0"
         style={{ background: 'radial-gradient(ellipse at 60% 20%, #7c3aed 0%, #4c1d95 35%, #1a0a2e 65%, #000000 100%)' }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-            <span className="text-white text-xs font-medium">S</span>
-          </div>
-          <span className="text-white/90 text-sm font-medium tracking-wide">Studi+</span>
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="Studi+" className="w-12 h-12 rounded-xl object-contain" />
+          <span className="text-white/90 text-xl font-medium tracking-wide">Studi+</span>
         </div>
         <div className="space-y-5">
           <h1 className="text-4xl font-light text-white leading-tight tracking-tight">
@@ -49,23 +48,6 @@ export default function LoginPage() {
           <p className="text-white/50 text-sm font-light leading-relaxed max-w-xs">
             Sign in to continue where you left off.
           </p>
-          <div className="flex flex-col gap-2.5 pt-4">
-            {[
-              { n: '1', label: 'Sign in to your account', active: true },
-              { n: '2', label: 'Access your groups' },
-              { n: '3', label: 'Continue learning' },
-            ].map(s => (
-              <div key={s.n}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition
-                  ${s.active ? 'bg-white text-[#000000] font-medium' : 'bg-white/[0.06] text-white/40 font-light border border-white/[0.06]'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] flex-shrink-0
-                  ${s.active ? 'bg-[#000000] text-white' : 'bg-white/10 text-white/40'}`}>
-                  {s.n}
-                </span>
-                {s.label}
-              </div>
-            ))}
-          </div>
         </div>
         <p className="text-white/20 text-xs font-light">© 2026 Studi+</p>
       </div>
@@ -74,9 +56,7 @@ export default function LoginPage() {
       <div className="flex-1 h-full overflow-y-auto">
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2.5 px-6 pt-8 pb-2">
-          <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-            <span className="text-white text-xs font-medium">S</span>
-          </div>
+          <img src={logo} alt="Studi+" className="w-7 h-7 rounded-lg object-contain" />
           <span className="text-white/90 text-sm font-medium tracking-wide">Studi+</span>
         </div>
 

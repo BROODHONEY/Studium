@@ -16,6 +16,7 @@ import KickNotification from '../components/KickNotification';
 import ProfileModal  from '../components/ProfileModal';
 import SettingsPanel from '../components/SettingsPanel';
 import { NotificationProvider, useNotifications } from '../context/NotificationContext';
+import logo from '../assets/logo.png';
 
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
@@ -83,9 +84,7 @@ function Inner({
       <div
         className={`${mob === 'sidebar' ? '' : 'hidden md:flex'} mobile-rail`}
         style={{ width: 48, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, marginBottom: 12, flexShrink: 0, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: '#fff', fontSize: 11, fontWeight: 500 }}>S</span>
-        </div>
+        <img src={logo} alt="Studi+" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain', marginBottom: 12, flexShrink: 0 }} />
         <RailBtn title="Groups"   active={rail==='groups'}   dot={hasGU && rail!=='groups'} onClick={() => setRail('groups')}
           icon={<Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/>} />
         <RailBtn title="Messages" active={rail==='dms'}      dot={hasDU && rail!=='dms'}   onClick={() => setRail('dms')}
@@ -122,9 +121,7 @@ function Inner({
         style={{ width: 240, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {/* Mobile-only logo bar — hidden on desktop where the icon rail shows it */}
         <div className="md:hidden" style={{ alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid #1c1c1c' }}>
-          <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>S</span>
-          </div>
+          <img src={logo} alt="Studi+" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
           <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400, fontFamily: 'Inter, sans-serif' }}>Studi+</span>
         </div>
         {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
@@ -159,9 +156,7 @@ function Inner({
         {/* Mobile top bar — logo + back button, only on mobile when main is visible */}
         <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, background: '#000000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>S</span>
-            </div>
+            <img src={logo} alt="Studi+" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400, fontFamily: 'Inter, sans-serif' }}>Studi+</span>
           </div>
           <button onClick={() => setMob('sidebar')}
