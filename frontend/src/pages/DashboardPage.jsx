@@ -84,7 +84,11 @@ function Inner({
       <div
         className={`${mob === 'sidebar' ? '' : 'hidden md:flex'} mobile-rail`}
         style={{ width: 48, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
-        <img src={logo} alt="Studi+" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain', marginBottom: 4, flexShrink: 0 }} />
+        <button onClick={() => { handleSelectGroup(null); setActiveConvo(null); }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4, flexShrink: 0, borderRadius: 8, lineHeight: 0 }}
+          title="Home">
+          <img src={logo} alt="Studi+" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain' }} />
+        </button>
         {/* Top spacer — pushes nav group to center */}
         <div style={{ flex: 1 }} />
         {/* Nav group — centered with spacing */}
