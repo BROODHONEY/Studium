@@ -15,7 +15,7 @@ const FILE_ICONS = {
   'image/png': 'img',
 };
 
-function FileTypeIcon({ type }) {
+function FileTypeIcon({ type, size = 20 }) {
   const kind = FILE_ICONS[type] || 'file';
   const paths = {
     pdf:  <><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/><path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029z"/></>,
@@ -26,7 +26,7 @@ function FileTypeIcon({ type }) {
   };
   const colors = { pdf: '#ef4444', ppt: '#f97316', doc: '#3b82f6', img: '#10b981', file: 'rgba(255,255,255,0.3)' };
   return (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill={colors[kind]} style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 16 16" fill={colors[kind]} style={{ flexShrink: 0 }}>
       {paths[kind]}
     </svg>
   );
@@ -67,48 +67,54 @@ function ConfirmUploadModal({ file, onConfirm, onCancel }) {
   );
 }
 
-function FileRow({ file, selecting, selected, onToggle, canDelete, onDelete, canAssign, onAssign, rowRef }) {
+function FileCard({ file, selecting, selected, onToggle, canDelete, onDelete, canAssign, onAssign, rowRef }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div ref={rowRef} onClick={() => selecting && onToggle(file.id)}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, border: '1px solid #1c1c1c', background: '#080808', transition: 'border-color 0.15s', cursor: selecting ? 'pointer' : 'default' }}
-      className="group"
-      onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = selected ? 'rgba(124,58,237,0.4)' : '#1c1c1c'}
-      {...(selected ? { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.06)', cursor: 'pointer' } } : {})}>
+    <div ref={rowRef}
+      onClick={() => selecting && onToggle(file.id)}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        position: 'relative', borderRadius: 12,
+        border: `1px solid ${selected ? 'rgba(124,58,237,0.4)' : hov ? '#2a2a2a' : '#1c1c1c'}`,
+        background: selected ? 'rgba(124,58,237,0.06)' : '#0d0d0d',
+        padding: '18px 14px 14px', cursor: selecting ? 'pointer' : 'default',
+        transition: 'border-color 0.15s, background 0.15s',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, minWidth: 0,
+      }}>
+      {/* Checkbox */}
       {selecting && (
-        <div style={{ width: 18, height: 18, borderRadius: 5, border: selected ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)', background: selected ? '#7c3aed' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-          {selected && <svg width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
+        <div style={{ position: 'absolute', top: 9, right: 9, width: 17, height: 17, borderRadius: 5, border: selected ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)', background: selected ? '#7c3aed' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+          {selected && <svg width="9" height="9" viewBox="0 0 16 16" fill="white"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
         </div>
       )}
-      <FileTypeIcon type={file.file_type} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{file.filename}</p>
-        <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
-          {formatSize(file.size_bytes)}{file.users?.name && ` · ${file.users.name}`}{` · ${formatDate(file.created_at)}`}
-        </p>
+      {/* Icon */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 44, marginTop: 4 }}>
+        <FileTypeIcon type={file.file_type} size={32} />
       </div>
-      {!selecting && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }} className="opacity-0 group-hover:opacity-100 transition">
+      {/* Name */}
+      <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, width: '100%', textAlign: 'center' }}>{file.filename}</p>
+      {/* Size */}
+      <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: 0 }}>{formatSize(file.size_bytes)}</p>
+      {/* Hover overlay with actions */}
+      {!selecting && hov && (
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: 'rgba(0,0,0,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 10px' }}>
+          <a href={file.file_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+            style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.35)', color: 'rgba(167,139,250,0.9)', fontSize: 11, fontWeight: 400, textDecoration: 'none', textAlign: 'center' }}>
+            Download
+          </a>
           {canAssign && (
             <button onClick={e => { e.stopPropagation(); onAssign(file.id); }}
-              style={{ padding: '4px 8px', borderRadius: 6, background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+              style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
               Move
             </button>
           )}
           {canDelete && (
             <button onClick={e => { e.stopPropagation(); onDelete(file.id); }}
-              style={{ padding: '4px 8px', borderRadius: 6, background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'rgba(239,68,68,0.8)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}>
+              style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'none', border: '1px solid rgba(239,68,68,0.25)', color: 'rgba(239,68,68,0.7)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
               Delete
             </button>
           )}
-          <a href={file.file_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-            style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.9)', fontSize: 11, fontWeight: 400, textDecoration: 'none' }}>
-            Download
-          </a>
         </div>
       )}
     </div>
@@ -332,9 +338,9 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
                   ? <div className="py-6 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
                       <p className="dark:text-gray-600 text-gray-400 text-xs">No files — assign files using the grid icon on each file</p>
                     </div>
-                  : <div className="space-y-2">
+                  : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
                       {catFiles.map(file => (
-                        <FileRow key={file.id} file={file}
+                        <FileCard key={file.id} file={file}
                           selecting={selecting && canDelete}
                           selected={selected.has(file.id)}
                           onToggle={toggleSelect}
@@ -362,9 +368,9 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
               ? <div style={{ padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8 }}>
                   <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300 }}>No study materials yet</p>
                 </div>
-              : <div className="space-y-2">
+              : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
                   {teacherFiles.map(file => (
-                    <FileRow key={file.id} file={file}
+                    <FileCard key={file.id} file={file}
                       selecting={selecting} selected={selected.has(file.id)} onToggle={toggleSelect}
                       canDelete={canDelete} onDelete={setConfirmSingleDelete}
                       canAssign={canDelete} onAssign={setAssignTarget}
@@ -384,9 +390,9 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
                 ? <div style={{ padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8 }}>
                     <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300 }}>No student uploads yet</p>
                   </div>
-                : <div className="space-y-2">
+                : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
                     {studentFiles.map(file => (
-                      <FileRow key={file.id} file={file}
+                      <FileCard key={file.id} file={file}
                         selecting={selecting && canDelete} selected={selected.has(file.id)} onToggle={toggleSelect}
                         canDelete={canDelete} onDelete={setConfirmSingleDelete}
                         canAssign={canDelete} onAssign={setAssignTarget}
