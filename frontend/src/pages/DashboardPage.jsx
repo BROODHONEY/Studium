@@ -156,14 +156,25 @@ function Inner({
       <main
         className={`${mob === 'main' ? 'mobile-main' : 'hidden md:flex'}`}
         style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#000000' }}>
+        {/* Mobile top bar — logo + back button, only on mobile when main is visible */}
+        <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, background: '#000000' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>S</span>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400, fontFamily: 'Inter, sans-serif' }}>Studi+</span>
+          </div>
+          <button onClick={() => setMob('sidebar')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+            <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
+          </button>
+        </div>
         {rail === 'settings' && <SettingsPanel />}
         {rail !== 'settings' && showGroup && (
           <>
-            <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab}
-              onBack={() => {
-                if (activeTab !== 'Overview') setActiveTab('Overview');
-                else { setActiveGroup(null); setActiveConvo(null); }
-              }} />
+            <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
             {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
             {activeTab === 'Chat'    && <div style={{ flex: 1, minHeight: 0 }}><ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} /></div>}
             {activeTab === 'Dues'    && <DuesPanel group={activeGroup} />}
@@ -202,8 +213,8 @@ function Inner({
           { key: 'settings',      label: 'Settings', dot: false, icon: <Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']} s={20}/> },
         ].map(item => (
           <button key={item.key}
-            onClick={() => { setRail(item.key); setMob('sidebar'); }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', position: 'relative', color: rail === item.key && mob === 'sidebar' ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', minHeight: 56 }}>
+            onClick={() => { setRail(item.key); setMob(item.key === 'settings' ? 'main' : 'sidebar'); }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', position: 'relative', color: rail === item.key && (item.key === 'settings' ? mob === 'main' : mob === 'sidebar') ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', minHeight: 56 }}>
             {item.icon}
             <span style={{ fontSize: 9, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>{item.label}</span>
             {item.dot && !(rail === item.key && mob === 'sidebar') && (

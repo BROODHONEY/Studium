@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
-export default function ChatHeader({ group, activeTab, onTabChange, onBack }) {
+export default function ChatHeader({ group, activeTab, onTabChange }) {
   const { user } = useAuth();
   const { groupTabUnreads } = useNotifications();
   const tabs = ['Overview', 'Chat', 'Dues', 'Files', 'Members'];
@@ -26,18 +26,16 @@ export default function ChatHeader({ group, activeTab, onTabChange, onBack }) {
       flexShrink: 0, background: '#000000', gap: 12,
       fontFamily: 'Inter, sans-serif',
     }}>
-      {/* Back arrow */}
-      {onBack && (
-        <button onClick={onBack}
-          style={{ color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0, flexShrink: 0, padding: 4 }}
-          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', overflow: 'visible' }}>
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-      )}
-      {/* Group info */}
+      {/* Back arrow — desktop only, navigates tabs */}
+      <button onClick={() => onTabChange('Overview')}
+        className="hidden sm:block"
+        style={{ color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0, flexShrink: 0, padding: 4 }}
+        onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', overflow: 'visible' }}>
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
       <div style={{ minWidth: 0, flex: 1 }}>
         <h2 style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {group.name}

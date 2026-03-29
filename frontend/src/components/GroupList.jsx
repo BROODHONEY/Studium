@@ -454,12 +454,12 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               onDragOver={e => { e.preventDefault(); setDragFolderId('__none__'); }}
               onDragLeave={() => setDragFolderId(p => p === '__none__' ? null : p)}
               onDrop={e => { e.preventDefault(); if (dragGroupId) { moveToFolder(dragGroupId, null); setDragGroupId(null); setDragFolderId(null); } }}
-              className={`rounded-xl transition min-h-[4px] ${dragFolderId === '__none__' ? 'ring-1 ring-brand-500/50 dark:bg-brand-900/20 bg-brand-50' : ''}`}>
+              className={`rounded-xl transition min-h-[4px] ${dragFolderId === '__none__' ? 'ring-1 ring-brand-500/30' : ''}`}>
               {folders.length > 0 && ungrouped.length > 0 && (
-                <p className="text-xs dark:text-gray-600 text-gray-400 px-3 py-1 uppercase tracking-wider">Other</p>
+                <p style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '4px 8px 2px' }}>Other</p>
               )}
               {dragFolderId === '__none__' && ungrouped.length === 0 && (
-                <p className="text-xs dark:text-gray-500 text-gray-400 px-3 py-2 italic text-center">Drop to remove from folder</p>
+                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', padding: '8px 12px', fontStyle: 'italic', textAlign: 'center' }}>Drop to remove from folder</p>
               )}
               <div className="space-y-0.5">
                 {ungrouped.map(group => (
