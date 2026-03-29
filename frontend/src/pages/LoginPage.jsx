@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 
 export default function LoginPage() {
   const { login }   = useAuth();
-  const { dark, toggle } = useTheme();
   const navigate    = useNavigate();
   const [form, setForm]       = useState({ email: '', password: '' });
+  const [showPw, setShowPw]   = useState(false);
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,58 +28,112 @@ export default function LoginPage() {
     }
   };
 
+  const inputCls = "w-full bg-[#111118] border border-[#1f1f2e] rounded-xl px-4 py-3 text-sm text-white font-light placeholder-[#374151] focus:outline-none focus:border-[#4c1d95] transition";
+
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4
-      dark:bg-surface bg-gray-50 transition-colors duration-300">
+    <div className="h-dvh flex bg-[#0a0a0f] font-['Inter',sans-serif] overflow-hidden">
 
-      {/* Theme toggle */}
-      <button onClick={toggle}
-        className="fixed top-4 right-4 p-2 rounded-xl border transition
-          dark:bg-surface-2 dark:border-brand-900/50 dark:text-gray-400 dark:hover:text-brand-300
-          bg-white border-gray-200 text-gray-500 hover:text-brand-600 shadow-sm">
-        {dark
-          ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        }
-      </button>
-
-      <div className="auth-card w-full">
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4
-            bg-gradient-to-br from-brand-600 to-brand-800 shadow-neon-purple">
-            <span className="text-white text-xl font-bold">S</span>
+      {/* Left panel — desktop only */}
+      <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-between p-10 flex-shrink-0"
+        style={{ background: 'radial-gradient(ellipse at 60% 20%, #7c3aed 0%, #4c1d95 35%, #1a0a2e 65%, #0a0a0f 100%)' }}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
+            <span className="text-white text-xs font-medium">S</span>
           </div>
-          <h1 className="text-2xl font-bold dark:text-white text-gray-900">Studi+</h1>
-          <p className="dark:text-gray-400 text-gray-500 text-sm mt-1">Welcome back — sign in to continue</p>
+          <span className="text-white/90 text-sm font-medium tracking-wide">Studi+</span>
+        </div>
+        <div className="space-y-5">
+          <h1 className="text-4xl font-light text-white leading-tight tracking-tight">
+            Welcome<br />back.
+          </h1>
+          <p className="text-white/50 text-sm font-light leading-relaxed max-w-xs">
+            Sign in to continue where you left off.
+          </p>
+          <div className="flex flex-col gap-2.5 pt-4">
+            {[
+              { n: '1', label: 'Sign in to your account', active: true },
+              { n: '2', label: 'Access your groups' },
+              { n: '3', label: 'Continue learning' },
+            ].map(s => (
+              <div key={s.n}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition
+                  ${s.active ? 'bg-white text-[#0a0a0f] font-medium' : 'bg-white/[0.06] text-white/40 font-light border border-white/[0.06]'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] flex-shrink-0
+                  ${s.active ? 'bg-[#0a0a0f] text-white' : 'bg-white/10 text-white/40'}`}>
+                  {s.n}
+                </span>
+                {s.label}
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-white/20 text-xs font-light">© 2026 Studi+</p>
+      </div>
+
+      {/* Right panel — scrollable */}
+      <div className="flex-1 h-full overflow-y-auto">
+        {/* Mobile logo */}
+        <div className="lg:hidden flex items-center gap-2.5 px-6 pt-8 pb-2">
+          <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
+            <span className="text-white text-xs font-medium">S</span>
+          </div>
+          <span className="text-white/90 text-sm font-medium tracking-wide">Studi+</span>
         </div>
 
-        {error && <div className="error-box mb-5">{error}</div>}
+        <div className="min-h-full flex items-center justify-center px-6 py-10">
+          <div className="w-full max-w-sm space-y-8">
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="form-label">Email</label>
-            <input className="form-input" type="email" name="email"
-              value={form.email} onChange={handleChange}
-              placeholder="you@example.com" required />
-          </div>
-          <div>
-            <label className="form-label">Password</label>
-            <input className="form-input" type="password" name="password"
-              value={form.password} onChange={handleChange}
-              placeholder="••••••••" required />
-          </div>
-          <button type="submit" disabled={loading} className="btn-primary mt-2">
-            {loading ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
+            <div className="space-y-1.5">
+              <h2 className="text-2xl font-light text-white tracking-tight">Sign In</h2>
+              <p className="text-[#6b7280] text-sm font-light">Enter your credentials to access your account.</p>
+            </div>
 
-        <p className="text-center dark:text-gray-500 text-gray-500 text-sm mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-brand-400 hover:text-brand-300 transition font-medium">
-            Sign up
-          </Link>
-        </p>
+            {error && (
+              <div className="px-4 py-3 rounded-xl bg-red-500/[0.08] border border-red-500/20 text-red-400 text-sm font-light">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-normal text-[#9ca3af] tracking-wide uppercase">Email</label>
+                <input className={inputCls} type="email" name="email"
+                  value={form.email} onChange={handleChange} placeholder="eg. you@example.com" required />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-normal text-[#9ca3af] tracking-wide uppercase">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPw ? 'text' : 'password'} name="password" value={form.password}
+                    onChange={handleChange} placeholder="Enter your password" required
+                    className={inputCls + ' pr-11'}
+                  />
+                  <button type="button" onClick={() => setShowPw(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4b5563] hover:text-[#9ca3af] transition">
+                    {showPw
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading}
+                className="w-full bg-white text-[#0a0a0f] rounded-xl py-3 text-sm font-medium
+                  hover:bg-white/90 disabled:opacity-50 transition mt-2">
+                {loading ? 'Signing in…' : 'Sign In'}
+              </button>
+            </form>
+
+            <p className="text-center text-[#6b7280] text-sm font-light">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-white font-medium hover:text-white/80 transition">
+                Sign up
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
