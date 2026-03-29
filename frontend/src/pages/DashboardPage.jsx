@@ -149,14 +149,17 @@ function Inner({
       <main
         className={mob === 'main' ? '' : 'hidden md:flex'}
         style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#000000' }}>
-        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0 }}>
-          <button onClick={() => setMob('sidebar')} style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
-            <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
-          </button>
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 300 }}>
-            {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
-          </span>
-        </div>
+        {/* Mobile back — only on small screens */}
+        {mob === 'main' && (
+          <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0 }}>
+            <button onClick={() => setMob('sidebar')} style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
+              <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
+            </button>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 300 }}>
+              {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
+            </span>
+          </div>
+        )}
         {rail === 'settings' && <SettingsPanel />}
         {rail !== 'settings' && showGroup && (
           <>
@@ -173,8 +176,10 @@ function Inner({
             onNavigateToGroup={gid => { const g = groups.find(gr => gr.id === gid); if (g) { pickGroup(g); setRail('groups'); } }} />
         )}
         {rail !== 'settings' && !showGroup && !showDM && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ color: 'rgba(255,255,255,0.12)', fontSize: 13, fontWeight: 300 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+            {/* Radial gradient like login page */}
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.12) 0%, rgba(76,29,149,0.06) 40%, transparent 70%)', pointerEvents: 'none' }} />
+            <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 300, position: 'relative' }}>
               {rail === 'groups' ? 'Select a group to start.' : rail === 'dms' ? 'Select a conversation.' : ''}
             </p>
           </div>

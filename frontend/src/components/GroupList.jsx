@@ -482,16 +482,14 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               <div>
                 <button
                   onClick={() => setShowArchived(v => !v)}
-                  className="flex items-center gap-2 px-2 py-1.5 w-full group/arch">
-                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0 dark:text-gray-600 text-gray-400">
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.2)' }}>
                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
                   </svg>
-                  <span className="text-xs font-semibold dark:text-gray-600 text-gray-400 uppercase tracking-wider group-hover/arch:dark:text-gray-400 group-hover/arch:text-gray-500 transition">
-                    Archived
-                  </span>
-                  <span className="text-xs dark:text-gray-700 text-gray-400 tabular-nums">{archivedGroups.length}</span>
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
-                    className={`flex-shrink-0 dark:text-gray-600 text-gray-400 transition-transform ml-auto ${showArchived ? '' : '-rotate-90'}`}>
+                  <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Archived</span>
+                  <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.15)', marginLeft: 2 }}>{archivedGroups.length}</span>
+                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"
+                    style={{ flexShrink: 0, color: 'rgba(255,255,255,0.15)', marginLeft: 'auto', transform: showArchived ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}>
                     <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                   </svg>
                 </button>

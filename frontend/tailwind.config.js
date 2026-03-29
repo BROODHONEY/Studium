@@ -8,10 +8,15 @@ export default {
         void:    '#000000',
         page:    '#080808',
         surface: {
-          DEFAULT: '#0d0d0d',
+          DEFAULT: '#000000',
           raised:  '#111111',
           border:  '#1c1c1c',
           subtle:  '#2a2a2a',
+          // legacy aliases used by older components
+          1: '#080808',
+          2: '#0d0d0d',
+          3: '#111111',
+          4: '#1a1a1a',
         },
         // ── Purple accent ────────────────────────────
         accent: {
