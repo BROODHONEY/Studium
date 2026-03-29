@@ -121,7 +121,7 @@ function Inner({
         className={`${mob === 'sidebar' ? 'mobile-list' : 'hidden md:flex'}`}
         style={{ width: 240, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {/* Mobile-only logo bar — hidden on desktop where the icon rail shows it */}
-        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid #1c1c1c' }}>
+        <div className="md:hidden" style={{ alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid #1c1c1c' }}>
           <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>S</span>
           </div>
