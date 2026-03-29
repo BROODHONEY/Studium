@@ -523,7 +523,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative' }}>
+      {/* Subtle purple accent — top-right corner */}
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
       {/* Delete confirmation */}
       <ConfirmDialog
@@ -741,7 +743,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
       )}
 
       {/* Timeline */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ background: 'transparent' }}>
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
@@ -991,77 +993,71 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
       )}
 
       {/* Input area */}
-      <div className="px-4 py-3 border-t dark:border-brand-900/40 border-gray-200 flex-shrink-0">
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #1c1c1c', flexShrink: 0, background: '#000000' }}>
 
         {/* Reply / private reply banner */}
         {(replyTo || privateReply) && (() => {
           const r = replyTo || privateReply;
           const isPrivate = !!privateReply;
-          // Strip mention encoding and file tokens for display
           const displayContent = (r.content || '')
             .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
             .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1')
             .slice(0, 60);
           return (
-            <div className={`flex items-center gap-2 mb-2 px-3 py-2 rounded-xl border text-xs
-              ${isPrivate
-                ? 'bg-brand-500/10 border-brand-500/20 text-brand-300'
-                : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-300 text-gray-700'}`}>
-              <div className="flex-1 min-w-0">
-                <span className="font-medium">{isPrivate ? 'Private reply to ' : '↩ Replying to '}</span>
-                <span className="font-semibold">{r.senderName}</span>
-                <span className="opacity-60 ml-1 truncate block">{displayContent}{(r.content?.length || 0) > 60 ? '…' : ''}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(124,58,237,0.5)', background: isPrivate ? 'rgba(124,58,237,0.08)' : 'rgba(255,255,255,0.04)' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.8)' }}>{isPrivate ? 'Private reply to ' : '↩ Replying to '}</span>
+                <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>{r.senderName}</span>
+                <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? '…' : ''}</span>
               </div>
               <button onClick={() => { setReplyTo(null); setPrivateReply(null); }}
-                className="text-gray-500 hover:text-gray-300 transition flex-shrink-0 text-base leading-none">×</button>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
             </div>
           );
         })()}
 
+        {/* Attached file pills */}
+        {fileRefs.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+            {fileRefs.map(f => (
+              <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#111111', border: '1px solid #1c1c1c', fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.6)' }}>
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+                </svg>
+                <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.filename}</span>
+                <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', lineHeight: 1, padding: 0, marginLeft: 2 }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}>×</button>
+              </span>
+            ))}
+          </div>
+        )}
+
         {canSend ? (
-          <div className="flex gap-2 items-end">
-            <button onClick={() => { setShowSearch(v => !v); setSearchQuery(''); }}
-              className={`p-2.5 rounded-xl transition flex-shrink-0 ${showSearch ? 'bg-brand-600 text-white' : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-500 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600'}`}
-              title="Search messages">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
-              </svg>
-            </button>
-            <div className="flex-1 flex flex-col">
-              <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id}
-                onFilePick={file => setFileRefs(prev => prev.find(f => f.id === file.id) ? prev : [...prev, file])} />
-              {/* Attached file pills */}
-              {fileRefs.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-1.5">
-                  {fileRefs.map(f => (
-                    <span key={f.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium
-                      dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border dark:text-gray-200 text-gray-700">
-                      <span>📎</span>
-                      <span className="truncate max-w-[140px]">{f.filename}</span>
-                      <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
-                        className="dark:text-gray-500 text-gray-400 hover:text-red-400 transition leading-none ml-0.5">×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="relative">
-                {/* @mention popover */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+            {/* Unified input container */}
+            <div style={{ flex: 1, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.15s' }}
+              onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
+              onBlurCapture={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
+              {/* Format toolbar inside container */}
+              <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id}
+                  onFilePick={file => setFileRefs(prev => prev.find(f => f.id === file.id) ? prev : [...prev, file])} />
+              </div>
+              {/* Mention popover */}
+              <div style={{ position: 'relative' }}>
                 {mentionQuery !== null && filteredMembers.length > 0 && (
                   <div ref={mentionListRef}
-                    className="absolute bottom-full mb-1 left-0 w-56 z-50 rounded-xl overflow-hidden shadow-2xl
-                      dark:bg-surface-2 bg-white border dark:border-surface-3 border-gray-200">
+                    style={{ position: 'absolute', bottom: '100%', left: 0, width: 220, zIndex: 50, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', marginBottom: 4 }}>
                     {filteredMembers.map((m, i) => (
-                      <button key={m.id}
-                        onMouseDown={e => { e.preventDefault(); insertMention(m); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition
-                          ${i === mentionIndex
-                            ? 'dark:bg-brand-900/60 bg-brand-50 dark:text-brand-300 text-brand-700'
-                            : 'dark:text-gray-200 text-gray-800 dark:hover:bg-surface-3 hover:bg-gray-50'}`}>
-                        <span className="w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
+                      <button key={m.id} onMouseDown={e => { e.preventDefault(); insertMention(m); }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: i === mentionIndex ? 'rgba(124,58,237,0.15)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                        <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
                           {m.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
                         </span>
-                        <span className="truncate">{m.name}</span>
-                        <span className="text-xs dark:text-gray-600 text-gray-400 ml-auto capitalize flex-shrink-0">{m.role}</span>
+                        <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.75)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+                        <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.25)', textTransform: 'capitalize', flexShrink: 0 }}>{m.role}</span>
                       </button>
                     ))}
                   </div>
@@ -1072,30 +1068,25 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
                   onChange={handleTextChange}
                   onKeyDown={handleKeyDown}
                   rows={1}
-                  placeholder={connected ? 'Type a message… use @ to mention' : 'Disconnected... reconnecting'}
-                  className="w-full dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 border rounded-xl px-4 py-2.5
-                    text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400
-                    focus:outline-none focus:ring-2 focus:ring-brand-500
-                    resize-none transition overflow-y-auto"
-                  style={{ minHeight: '42px', maxHeight: '130px' }}
-                  onInput={e => {
-                    e.target.style.height = 'auto';
-                    e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px';
-                  }}
+                  placeholder={connected ? 'Type a message… use @ to mention' : 'Reconnecting…'}
+                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 42, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
+                  onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
                   disabled={!connected}
                 />
               </div>
             </div>
+            {/* Send button */}
             <button
               onClick={privateReply ? handlePrivateReply : sendMessage}
-              disabled={!text.trim() || (!connected && !privateReply)}
-              className={`disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-sm font-medium transition
-                ${privateReply ? 'bg-brand-600 hover:bg-brand-500' : 'bg-brand-600 hover:bg-brand-500'}`}>
-              {privateReply ? 'Send privately' : 'Send'}
+              disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
+              style={{ width: 42, height: 42, borderRadius: 12, background: (text.trim() || fileRefs.length > 0) ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: (text.trim() || fileRefs.length > 0) ? '#7c3aed' : '#1c1c1c', color: (text.trim() || fileRefs.length > 0) ? '#fff' : 'rgba(255,255,255,0.2)', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', overflow: 'visible' }}>
+                <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+              </svg>
             </button>
           </div>
         ) : (
-          <div className="text-center py-2.5 dark:text-gray-600 text-gray-400 text-sm">
+          <div style={{ textAlign: 'center', padding: '10px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.25)' }}>
             Only admins can send messages in this group right now
           </div>
         )}

@@ -21,17 +21,29 @@ function FileChip({ filename, fileUrl, fileId, isOwn, onFileRef }) {
   const handleClick = (e) => {
     if (onFileRef) { e.preventDefault(); onFileRef(fileId); }
   };
+  const ext = filename?.split('.').pop()?.toLowerCase() || '';
+  const iconColors = { pdf: '#ef4444', ppt: '#f97316', pptx: '#f97316', doc: '#3b82f6', docx: '#3b82f6', jpg: '#10b981', jpeg: '#10b981', png: '#10b981' };
+  const iconColor = iconColors[ext] || 'rgba(255,255,255,0.4)';
   return (
-    <a href={fileUrl} target="_blank" rel="noreferrer noopener"
-      onClick={handleClick}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition no-underline cursor-pointer
-        ${isOwn
-          ? 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-          : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-200 text-gray-700 dark:hover:bg-surface-4 hover:bg-gray-200'}`}>
-      <span className="text-sm leading-none">{fileIcon(filename)}</span>
-      <span className="truncate max-w-[160px]">{filename}</span>
-      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0 opacity-50">
-        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+    <a href={fileUrl} target="_blank" rel="noreferrer noopener" onClick={handleClick}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none', transition: 'background 0.15s', cursor: 'pointer' }}
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}>
+      {/* File type icon */}
+      <div style={{ width: 36, height: 36, borderRadius: 8, background: `${iconColor}18`, border: `1px solid ${iconColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill={iconColor}>
+          <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
+        </svg>
+      </div>
+      {/* File info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{filename}</p>
+        <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0', textTransform: 'uppercase' }}>{ext} Document</p>
+      </div>
+      {/* Download icon */}
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
       </svg>
     </a>
   );
