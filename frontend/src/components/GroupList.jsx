@@ -273,20 +273,6 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   return (
     <div className="flex flex-col h-full relative" onClick={() => { setContextMenu(null); setFabOpen(false); }}>
 
-      {/* User info */}
-      <div className="px-4 py-3 border-b dark:border-brand-900/30 border-gray-100 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800
-            flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-neon-purple">
-            {initials(user?.name)}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold dark:text-white text-gray-900 truncate">{user?.name}</p>
-            <p className="text-xs dark:text-gray-500 text-gray-400 capitalize">{user?.role}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Search bar */}
       <div className="px-3 pt-3 pb-1 flex-shrink-0">
         <div className="flex items-center gap-2 dark:bg-surface-3 bg-gray-100 rounded-2xl px-3 py-2.5">

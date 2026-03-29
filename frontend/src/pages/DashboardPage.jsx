@@ -142,7 +142,7 @@ function Inner({
             </div>
           </div>
         )}
-        {rail === 'settings' && <SettingsPanel />}
+        {rail === 'settings' && <div style={{ flex: 1 }} />}
       </div>
 
       {/* Main */}
