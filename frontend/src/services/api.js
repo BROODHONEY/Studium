@@ -79,8 +79,9 @@ export const duesAPI = {
 };
 
 export const profileAPI = {
-  get:    (userId) => api.get(`/users/${userId}`),
-  update: (data)   => api.patch('/users/me', data),
+  get:            (userId) => api.get(`/users/${userId}`),
+  update:         (data)   => api.patch('/users/me', data),
+  changePassword: (data)   => api.patch('/users/me/password', data),
 };
 
 export const dmAPI = {

@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt  = require('bcryptjs');
 const supabase = require('../config/db');
 const auth = require('../middleware/auth');
 
@@ -48,6 +49,23 @@ router.patch('/me', auth, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong' });
   }
+});
+
+// PATCH /api/users/me/password — change own password
+router.patch('/me/password', auth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both current and new password are required' });
+  if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  try {
+    const { data: user, error } = await supabase.from('users').select('password_hash').eq('id', req.user.id).single();
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    const { error: updateErr } = await supabase.from('users').update({ password_hash }).eq('id', req.user.id);
+    if (updateErr) throw updateErr;
+    res.json({ message: 'Password updated' });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Something went wrong' }); }
 });
 
 module.exports = router;
