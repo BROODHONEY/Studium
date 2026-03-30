@@ -14,7 +14,7 @@ import GroupOverview from '../components/GroupOverview';
 import DuesPanel     from '../components/DuesPanel';
 import KickNotification from '../components/KickNotification';
 import ProfileModal  from '../components/ProfileModal';
-import SettingsPanel from '../components/SettingsPanel';
+import SettingsPanel, { SettingsSidebar } from '../components/SettingsPanel';
 import SearchResults, { SearchSidebar, useSearch } from '../components/SearchPanel';
 import { NotificationProvider, useNotifications } from '../context/NotificationContext';
 import logo from '../assets/logo.png';
@@ -78,6 +78,7 @@ function Inner({
 
   const [rail, setRail] = useState('groups');
   const [mob, setMob]   = useState('list'); // 'list' | 'content'
+  const [settingsSection, setSettingsSection] = useState(null);
   const searchState = useSearch(groups);
 
   const showGroup = activeGroup && !activeConvo;
@@ -157,17 +158,25 @@ function Inner({
         }}>
         {/* Faint gradient top */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(180deg, rgba(124,58,237,0.05) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 0 }}/>
-        {/* Mobile top bar — hamburger + section title */}
-        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'relative', zIndex: 1 }}>
+        {/* Mobile top bar — hamburger OR back arrow + section title */}
+        <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button onClick={() => setDrawerOpen(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', lineHeight: 0, padding: 4, display: 'flex', flexDirection: 'column', gap: 4.5 }}>
-              <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
-              <span style={{ display: 'block', width: 13, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
-              <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
-            </button>
+            {/* Back arrow for secondary sections, hamburger for primary */}
+            {(rail === 'search' || rail === 'notifications' || rail === 'settings') ? (
+              <button onClick={() => setRail('groups')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', lineHeight: 0, padding: 4 }}>
+                <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
+              </button>
+            ) : (
+              <button onClick={() => setDrawerOpen(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', lineHeight: 0, padding: 4, display: 'flex', flexDirection: 'column', gap: 4.5 }}>
+                <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
+                <span style={{ display: 'block', width: 13, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
+                <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
+              </button>
+            )}
             <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>
-              {rail === 'groups' ? 'Groups' : rail === 'dms' ? 'Messages' : rail === 'search' ? 'Search' : rail === 'notifications' ? 'Notifications' : 'Groups'}
+              {rail === 'groups' ? 'Groups' : rail === 'dms' ? 'Messages' : rail === 'search' ? 'Search' : rail === 'notifications' ? 'Notifications' : rail === 'settings' ? 'Settings' : 'Groups'}
             </span>
           </div>
           {hasN && rail !== 'notifications' && (
@@ -177,8 +186,37 @@ function Inner({
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
           {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
           {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
-          {rail === 'search' && <SearchSidebar groups={groups} searchState={searchState} />}
-          {rail === 'notifications' && (
+          {rail === 'search' && (
+            <>
+              {/* Desktop: input only, results go in main panel */}
+              <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
+                <SearchSidebar groups={groups} searchState={searchState} />
+              </div>
+              {/* Mobile: input + results combined */}
+              <div className="md:hidden" style={{ flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                <SearchSidebar groups={groups} searchState={searchState} />
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  <SearchResults searchState={searchState}
+                    onNavigate={({ type, groupId, group, messageId, fileId }) => {
+                      const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
+                      if (!g) return; pickGroup(g); setRail('groups');
+                      if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
+                      else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
+                      else if (type === 'announcement') { setActiveTab('Overview'); }
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          {/* Settings sidebar — both desktop and mobile */}
+          {rail === 'settings' && (
+            <SettingsSidebar
+              activeSection={settingsSection}
+              onSection={s => { setSettingsSection(s); setMob('content'); }}
+              onViewProfile={() => setProfileUserId(user?.id)}
+            />
+          )}          {rail === 'notifications' && (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                 <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Notifications</span>
@@ -200,7 +238,6 @@ function Inner({
               </div>
             </div>
           )}
-          {rail === 'settings' && <div style={{ flex: 1 }} />}
         </div>
       </div>
 
@@ -208,8 +245,8 @@ function Inner({
       <main
         className={`${mob === 'content' ? 'mobile-main' : 'hidden md:flex'}`}
         style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#080808', position: 'relative' }}>
-        {/* Mobile content top bar — back arrow + name */}
-        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+        {/* Mobile content top bar — back arrow + name (mobile only) */}
+        <div className="md:hidden" style={{ alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <button onClick={() => setMob('list')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
             <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
@@ -218,16 +255,14 @@ function Inner({
             {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
           </span>
         </div>
-        {rail === 'settings' && <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column' }}><SettingsPanel /></div>}
+        {rail === 'settings' && <SettingsPanel activeSection={settingsSection} />}
         {rail === 'search' && (
-          <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column' }}>
+          <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column', minHeight: 0 }}>
             <SearchResults
               searchState={searchState}
               onNavigate={({ type, groupId, group, messageId, fileId }) => {
                 const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
-                if (!g) return;
-                pickGroup(g);
-                setRail('groups');
+                if (!g) return; pickGroup(g); setRail('groups');
                 if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
                 else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
                 else if (type === 'announcement') { setActiveTab('Overview'); }
@@ -251,7 +286,6 @@ function Inner({
         )}
         {rail !== 'settings' && rail !== 'search' && !showGroup && !showDM && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-            {/* Radial gradient like login page */}
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.45) 0%, rgba(76,29,149,0.2) 35%, transparent 65%)', pointerEvents: 'none' }} />
             <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 300, position: 'relative' }}>
               {rail === 'groups' ? 'Select a group to start.' : rail === 'dms' ? 'Select a conversation.' : ''}
@@ -262,7 +296,7 @@ function Inner({
 
       {/* ── Mobile: settings/search full-screen overlay ── */}
       {(rail === 'settings' || rail === 'search') && mob === 'list' && (
-        <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#080808', display: 'flex', flexDirection: 'column' }}>
+        <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#080808', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0 }}>
             <button onClick={() => setRail('groups')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
               <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
@@ -271,7 +305,7 @@ function Inner({
               {rail === 'settings' ? 'Settings' : 'Search'}
             </span>
           </div>
-          {rail === 'settings' && <SettingsPanel />}
+          {rail === 'settings' && <SettingsPanel activeSection={settingsSection} />}
           {rail === 'search' && (
             <SearchResults searchState={searchState}
               onNavigate={({ type, groupId, group, messageId, fileId }) => {
