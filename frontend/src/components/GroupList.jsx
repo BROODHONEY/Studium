@@ -548,26 +548,30 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
       {/* New folder modal */}
       {folderModal && (
-        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-0"
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', padding: '0 16px' }}
           onClick={() => { setFolderModal(false); setFolderName(''); }}>
-          <div className="w-full max-w-sm dark:bg-surface-1 bg-white rounded-2xl shadow-2xl p-5 space-y-4"
+          <div style={{ width: '100%', maxWidth: 400, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px 20px 0 0', padding: '24px 20px', paddingBottom: 'calc(24px + 56px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.6)' }}
             onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold dark:text-white text-gray-900">New folder</h3>
+            {/* Handle bar */}
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)', margin: '0 auto 20px' }}/>
+            <h3 style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: '0 0 16px' }}>New folder</h3>
             <input
               ref={folderInput}
               value={folderName}
               onChange={e => setFolderName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setFolderModal(false); setFolderName(''); } }}
               placeholder="e.g. Semester 3, Electives…"
-              className="w-full form-input"
+              style={{ width: '100%', background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10, padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', marginBottom: 14, transition: 'border-color 0.15s' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+              onBlur={e => e.target.style.borderColor = '#1c1c1c'}
             />
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={createFolder} disabled={!folderName.trim()}
-                className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition">
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: folderName.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: folderName.trim() ? '#7c3aed' : '#1c1c1c', color: folderName.trim() ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 500, cursor: folderName.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
                 Create
               </button>
               <button onClick={() => { setFolderModal(false); setFolderName(''); }}
-                className="flex-1 py-2.5 dark:bg-surface-3 bg-gray-100 dark:text-gray-300 text-gray-700 text-sm rounded-xl transition">
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
                 Cancel
               </button>
             </div>

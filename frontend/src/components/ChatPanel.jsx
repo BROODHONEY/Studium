@@ -622,8 +622,11 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
 
       {/* Admins only banner */}
       {adminsOnly && (
-        <div className="mx-4 mt-3 px-4 py-2 bg-neon-yellow/10 border border-neon-yellow/20 rounded-lg text-neon-yellow text-xs text-center flex-shrink-0">
-          Admins only mode is on — only admins can send messages
+        <div style={{ margin: '10px 16px 0', padding: '8px 14px', borderRadius: 8, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(167,139,250,0.7)', flexShrink: 0 }}>
+            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+          </svg>
+          <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(167,139,250,0.8)' }}>Admins only — only admins can send messages</span>
         </div>
       )}
 
