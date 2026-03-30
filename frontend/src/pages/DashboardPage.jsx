@@ -36,16 +36,22 @@ function RailBtn({ icon, active, dot, onClick, title }) {
     <button onClick={onClick} title={title}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: active ? 'rgba(255,255,255,0.85)' : hov ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
-        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
-        border: 'none', cursor: 'pointer', position: 'relative', transition: 'color 0.15s, background 0.15s',
+        width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: active ? 'rgba(167,139,250,0.95)' : hov ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
+        background: active
+          ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(76,29,149,0.15))'
+          : hov ? 'rgba(255,255,255,0.06)' : 'transparent',
+        border: active ? '1px solid rgba(124,58,237,0.25)' : '1px solid transparent',
+        boxShadow: active ? '0 0 12px rgba(124,58,237,0.15)' : 'none',
+        cursor: 'pointer', position: 'relative', transition: 'all 0.15s',
       }}>
       {icon}
       {dot && (
         <span style={{
           position: 'absolute', top: 5, right: 5, width: 6, height: 6,
-          borderRadius: '50%', background: '#7c3aed', border: '1.5px solid #000000',
+          borderRadius: '50%', background: '#7c3aed',
+          boxShadow: '0 0 6px rgba(124,58,237,0.8)',
+          border: '1.5px solid rgba(8,8,8,0.9)',
         }} />
       )}
     </button>
@@ -78,21 +84,33 @@ function Inner({
   const pickConvo = (c) => { handleSelectConvo(c); setMob('main'); };
 
   return (
-    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#080808', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#050505', fontFamily: 'Inter, sans-serif' }}>
 
-      {/* Icon rail */}
+      {/* Icon rail — frosted glass with subtle purple top gradient */}
       <div
         className={`${mob === 'sidebar' ? '' : 'hidden md:flex'} mobile-rail`}
-        style={{ width: 48, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4 }}>
+        style={{
+          width: 52, flexShrink: 0,
+          background: 'rgba(8,8,8,0.85)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          paddingTop: 12, paddingBottom: 12, gap: 4,
+          position: 'relative',
+        }}>
+        {/* Subtle top accent line */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent)' }}/>
+        {/* Faint purple glow at top */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
         <button onClick={() => { handleSelectGroup(null); setActiveConvo(null); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4, flexShrink: 0, borderRadius: 8, lineHeight: 0 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4, flexShrink: 0, borderRadius: 10, lineHeight: 0, position: 'relative', zIndex: 1 }}
           title="Home">
-          <img src={logo} alt="Studi+" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain' }} />
+          <img src={logo} alt="Studi+" style={{ width: 28, height: 28, borderRadius: 10, objectFit: 'contain' }} />
         </button>
-        {/* Top spacer — pushes nav group to center */}
         <div style={{ flex: 1 }} />
-        {/* Nav group — centered with spacing */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'relative', zIndex: 1 }}>
           <RailBtn title="Groups"   active={rail==='groups'}   dot={hasGU && rail!=='groups'} onClick={() => setRail('groups')}
             icon={<Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/>} />
           <RailBtn title="Messages" active={rail==='dms'}      dot={hasDU && rail!=='dms'}   onClick={() => setRail('dms')}
@@ -100,74 +118,77 @@ function Inner({
           <RailBtn title="Settings" active={rail==='settings'}                               onClick={() => setRail('settings')}
             icon={<Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']}/>} />
         </div>
-        {/* Bottom spacer — equal to top, keeps nav centered */}
         <div style={{ flex: 1 }} />
-        <RailBtn title="Notifications" active={rail==='notifications'} dot={hasN && rail!=='notifications'} onClick={() => setRail('notifications')}
-          icon={<Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']}/>} />
-        {/* Profile — below bell, initials only, clickable */}
-        <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          style={{
-            width: 36, height: 36, borderRadius: 8, marginTop: 2, flexShrink: 0,
-            background: 'transparent', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'background 0.15s',
-          }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: '50%',
-            background: '#181818', border: '1.5px solid rgba(255,255,255,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 400,
-          }}>
-            {ini(user?.name)}
-          </div>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'relative', zIndex: 1 }}>
+          <RailBtn title="Notifications" active={rail==='notifications'} dot={hasN && rail!=='notifications'} onClick={() => setRail('notifications')}
+            icon={<Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']}/>} />
+          <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            style={{ width: 36, height: 36, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
+            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, #3d1f6b, #1a0e2e)', border: '1.5px solid rgba(124,58,237,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(167,139,250,0.8)', fontSize: 10, fontWeight: 500 }}>
+              {ini(user?.name)}
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* List panel */}
+      {/* List panel — frosted glass */}
       <div
         className={`${mob === 'sidebar' ? 'mobile-list' : 'hidden md:flex'}`}
-        style={{ width: 240, flexShrink: 0, background: '#080808', borderRight: '1px solid #1c1c1c', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-        {/* Mobile-only logo bar — hidden on desktop where the icon rail shows it */}
-        <div className="md:hidden" style={{ alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid #1c1c1c' }}>
+        style={{
+          width: 244, flexShrink: 0,
+          background: 'rgba(6,6,6,0.8)',
+          backdropFilter: 'blur(20px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+          flexDirection: 'column', height: '100%', overflow: 'hidden',
+          position: 'relative',
+        }}>
+        {/* Faint gradient top */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(180deg, rgba(124,58,237,0.05) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 0 }}/>
+        <div className="md:hidden" style={{ alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'relative', zIndex: 1 }}>
           <img src={logo} alt="Studi+" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400, fontFamily: 'Inter, sans-serif' }}>Studi+</span>
+          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400 }}>Studi+</span>
         </div>
-        {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
-        {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
-        {rail === 'notifications' && (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Notifications</span>
-              {notifications.length > 0 && <button onClick={() => notifications.forEach(n => dismiss(n.id))} style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+          {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
+          {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
+          {rail === 'notifications' && (
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Notifications</span>
+                {notifications.length > 0 && <button onClick={() => notifications.forEach(n => dismiss(n.id))} style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>}
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px' }}>
+                {notifications.length === 0
+                  ? <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: 300, textAlign: 'center', paddingTop: 32 }}>No notifications.</p>
+                  : notifications.map(n => (
+                    <button key={n.id} onClick={() => { if (n.groupId) { const g = groups.find(gr => gr.id === n.groupId); if (g) { pickGroup(g); setActiveTab(n.type === 'message' ? 'Chat' : n.type === 'due' ? 'Dues' : 'Overview'); setRail('groups'); } } dismiss(n.id); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', marginBottom: 4, display: 'block', transition: 'background 0.1s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
+                      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{n.title}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, marginTop: 2, margin: '2px 0 0' }}>{n.body}</p>
+                    </button>
+                  ))
+                }
+              </div>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px' }}>
-              {notifications.length === 0
-                ? <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: 300, textAlign: 'center', paddingTop: 32 }}>No notifications.</p>
-                : notifications.map(n => (
-                  <button key={n.id} onClick={() => { if (n.groupId) { const g = groups.find(gr => gr.id === n.groupId); if (g) { pickGroup(g); setActiveTab(n.type === 'message' ? 'Chat' : n.type === 'due' ? 'Dues' : 'Overview'); setRail('groups'); } } dismiss(n.id); }}
-                    style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'none', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', marginBottom: 4, display: 'block' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</p>
-                    <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, marginTop: 2 }}>{n.body}</p>
-                  </button>
-                ))
-              }
-            </div>
-          </div>
-        )}
-        {rail === 'settings' && <div style={{ flex: 1 }} />}
+          )}
+          {rail === 'settings' && <div style={{ flex: 1 }} />}
+        </div>
       </div>
 
       {/* Main */}
       <main
         className={`${mob === 'main' ? 'mobile-main' : 'hidden md:flex'}`}
-        style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#080808' }}>
-        {/* Mobile top bar — logo + back button, only on mobile when main is visible */}
-        <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, background: '#080808' }}>
+        style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#080808', position: 'relative' }}>
+        {/* Mobile top bar */}
+        <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src={logo} alt="Studi+" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400, fontFamily: 'Inter, sans-serif' }}>Studi+</span>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400 }}>Studi+</span>
           </div>
           <button onClick={() => setMob('sidebar')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
@@ -202,15 +223,16 @@ function Inner({
         )}
       </main>
 
-      {/* ── Mobile bottom nav — hidden on md+ via CSS, not inline style ── */}
+      {/* ── Mobile bottom nav ── */}
       <nav className="md:hidden" style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: '#080808', borderTop: '1px solid #1c1c1c',
+        background: 'rgba(6,6,6,0.88)',
+        backdropFilter: 'blur(24px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
         alignItems: 'center', zIndex: 100,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-      }}
-      /* display is controlled by md:hidden — do NOT set display:flex inline */
-      >
+      }}>
         {[
           { key: 'groups',        label: 'Groups',   dot: hasGU, icon: <Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z" s={20}/> },
           { key: 'dms',           label: 'Messages', dot: hasDU, icon: <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/> },
