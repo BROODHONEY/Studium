@@ -10,7 +10,7 @@ import { formatTime, getDateLabel } from '../utils/time';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
-export default function ChatPanel({ group, onViewProfile, onFileRef }) {
+export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMessageId, onHighlightClear }) {
   const { user }   = useAuth();
   const { socket, connected } = useSocket();
 
@@ -227,8 +227,27 @@ export default function ChatPanel({ group, onViewProfile, onFileRef }) {
     return () => document.removeEventListener('click', handler);
   }, [openMenuId]);
 
+  // Auto-scroll to a specific message when navigated from search
+  useEffect(() => {
+    if (!highlightMessageId || loading) return;
+    const attempt = (tries) => {
+      if (tries <= 0) return;
+      const el = messageRefs.current.get(highlightMessageId);
+      if (!el) { setTimeout(() => attempt(tries - 1), 200); return; }
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedMessageId(highlightMessageId);
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+      highlightTimeoutRef.current = setTimeout(() => {
+        setHighlightedMessageId(null);
+        onHighlightClear?.();
+      }, 2000);
+    };
+    attempt(8);
+  }, [highlightMessageId, loading]);
+
   // Auto scroll to bottom on new messages
   useEffect(() => {
+    if (highlightMessageId) return; // don't override search navigation
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [timeline.length]);
 

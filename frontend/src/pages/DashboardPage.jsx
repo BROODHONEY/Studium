@@ -15,6 +15,7 @@ import DuesPanel     from '../components/DuesPanel';
 import KickNotification from '../components/KickNotification';
 import ProfileModal  from '../components/ProfileModal';
 import SettingsPanel from '../components/SettingsPanel';
+import SearchResults, { SearchSidebar, useSearch } from '../components/SearchPanel';
 import { NotificationProvider, useNotifications } from '../context/NotificationContext';
 import logo from '../assets/logo.png';
 
@@ -64,6 +65,7 @@ function Inner({
   activeConvo, setActiveConvo,
   activeTab, setActiveTab,
   highlightFileId, setHighlightFileId,
+  highlightMessageId, setHighlightMessageId,
   showModal, setShowModal,
   kickNotice, setKickNotice,
   profileUserId, setProfileUserId,
@@ -76,6 +78,7 @@ function Inner({
 
   const [rail, setRail] = useState('groups');
   const [mob, setMob]   = useState('sidebar');
+  const searchState = useSearch(groups);
 
   const showGroup = activeGroup && !activeConvo;
   const showDM    = activeConvo && !activeGroup;
@@ -115,6 +118,8 @@ function Inner({
             icon={<Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/>} />
           <RailBtn title="Messages" active={rail==='dms'}      dot={hasDU && rail!=='dms'}   onClick={() => setRail('dms')}
             icon={<Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>} />
+          <RailBtn title="Search"   active={rail==='search'}                                 onClick={() => setRail('search')}
+            icon={<Ic d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>} />
           <RailBtn title="Settings" active={rail==='settings'}                               onClick={() => setRail('settings')}
             icon={<Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']}/>} />
         </div>
@@ -154,6 +159,7 @@ function Inner({
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
           {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
           {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
+          {rail === 'search' && <SearchSidebar groups={groups} searchState={searchState} />}
           {rail === 'notifications' && (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -169,7 +175,7 @@ function Inner({
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
                       <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{n.title}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, marginTop: 2, margin: '2px 0 0' }}>{n.body}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, margin: '2px 0 0' }}>{n.body}</p>
                     </button>
                   ))
                 }
@@ -198,21 +204,35 @@ function Inner({
           </button>
         </div>
         {rail === 'settings' && <SettingsPanel />}
-        {rail !== 'settings' && showGroup && (
+        {rail === 'search' && (
+          <SearchResults
+            searchState={searchState}
+            onNavigate={({ type, groupId, group, messageId, fileId }) => {
+              const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
+              if (!g) return;
+              pickGroup(g);
+              setRail('groups');
+              if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
+              else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
+              else if (type === 'announcement') { setActiveTab('Overview'); }
+            }}
+          />
+        )}
+        {rail !== 'settings' && rail !== 'search' && showGroup && (
           <>
             <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
             {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
-            {activeTab === 'Chat'    && <div style={{ flex: 1, minHeight: 0 }}><ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} /></div>}
+            {activeTab === 'Chat'    && <div style={{ flex: 1, minHeight: 0 }}><ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} /></div>}
             {activeTab === 'Dues'    && <DuesPanel group={activeGroup} />}
             {activeTab === 'Files'   && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
             {activeTab === 'Members' && <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}><MembersPanel group={activeGroup} onGroupUpdate={u => { setActiveGroup(u); setGroups(prev => prev.map(g => g.id === u.id ? u : g)); }} onLeft={handleLeft} onGroupDeleted={handleLeft} onViewProfile={setProfileUserId} /></div>}
           </>
         )}
-        {rail !== 'settings' && showDM && (
+        {rail !== 'settings' && rail !== 'search' && showDM && (
           <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
             onNavigateToGroup={gid => { const g = groups.find(gr => gr.id === gid); if (g) { pickGroup(g); setRail('groups'); } }} />
         )}
-        {rail !== 'settings' && !showGroup && !showDM && (
+        {rail !== 'settings' && rail !== 'search' && !showGroup && !showDM && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {/* Radial gradient like login page */}
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.45) 0%, rgba(76,29,149,0.2) 35%, transparent 65%)', pointerEvents: 'none' }} />
@@ -236,6 +256,7 @@ function Inner({
         {[
           { key: 'groups',        label: 'Groups',   dot: hasGU, icon: <Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z" s={20}/> },
           { key: 'dms',           label: 'Messages', dot: hasDU, icon: <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/> },
+          { key: 'search',        label: 'Search',   dot: false, icon: <Ic d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" s={20}/> },
           { key: 'notifications', label: 'Alerts',   dot: hasN,  icon: <Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']} s={20}/> },
           { key: 'settings',      label: 'Settings', dot: false, icon: <Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']} s={20}/> },
         ].map(item => (
@@ -272,6 +293,7 @@ export default function DashboardPage() {
   const [activeGroup, setActiveGroup] = useState(null);
   const [activeTab, setActiveTab]     = useState('Overview');
   const [highlightFileId, setHighlightFileId] = useState(null);
+  const [highlightMessageId, setHighlightMessageId] = useState(null);
   const [showModal, setShowModal]     = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [kickNotice, setKickNotice]   = useState(null);
@@ -313,6 +335,7 @@ export default function DashboardPage() {
         activeConvo={activeConvo} setActiveConvo={setActiveConvo}
         activeTab={activeTab} setActiveTab={setActiveTab}
         highlightFileId={highlightFileId} setHighlightFileId={setHighlightFileId}
+        highlightMessageId={highlightMessageId} setHighlightMessageId={setHighlightMessageId}
         showModal={showModal} setShowModal={setShowModal}
         kickNotice={kickNotice} setKickNotice={setKickNotice}
         profileUserId={profileUserId} setProfileUserId={setProfileUserId}

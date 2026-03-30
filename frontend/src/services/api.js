@@ -96,4 +96,8 @@ export const dmAPI = {
   uploadFile:       (formData)       => api.post('/dm/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
+export const searchAPI = {
+  query: (q, groupId) => api.get('/search', { params: groupId ? { q, groupId } : { q } }),
+};
+
 export default api;
