@@ -20,7 +20,7 @@ const userRoutes = require('./routes/users');
 const app = express();
 const server = http.createServer(app);
 const FRONTEND_ORIGINS = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL]
+  ? [process.env.FRONTEND_URL.replace(/\/$/, '')]
   : ['http://localhost:5173', 'http://localhost:5174'];
 
 const allowedOrigins = [
