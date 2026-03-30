@@ -30,16 +30,33 @@ export default function MessageMenu({
   onPin, pinned, pinDisabled, onPrivateReply,
 }) {
   const menuRef = useRef(null);
+  const MENU_W = 176;
+  const MARGIN = 8;
   const menuH = 260;
   const spaceBelow = window.innerHeight - anchorRect.bottom;
   const openDown = spaceBelow >= menuH || spaceBelow > anchorRect.top;
 
+  // Horizontal: prefer aligning to the anchor side, but clamp to viewport
+  let left, right;
+  if (isOwn) {
+    // Own messages — align right edge of menu to right edge of anchor
+    const rawRight = window.innerWidth - anchorRect.right;
+    right = Math.max(MARGIN, rawRight);
+    // If that would push left edge off screen, switch to left-anchored
+    const computedLeft = window.innerWidth - right - MENU_W;
+    if (computedLeft < MARGIN) right = window.innerWidth - MENU_W - MARGIN;
+  } else {
+    // Others' messages — align left edge of menu to left edge of anchor
+    left = Math.max(MARGIN, anchorRect.left);
+    if (left + MENU_W > window.innerWidth - MARGIN) left = window.innerWidth - MENU_W - MARGIN;
+  }
+
   const posStyle = {
     position: 'fixed',
     zIndex: 9999,
-    width: 176,
+    width: MENU_W,
     ...(openDown ? { top: anchorRect.bottom + 6 } : { bottom: window.innerHeight - anchorRect.top + 6 }),
-    ...(isOwn ? { right: window.innerWidth - anchorRect.right } : { left: anchorRect.left }),
+    ...(isOwn ? { right } : { left }),
   };
 
   useEffect(() => {

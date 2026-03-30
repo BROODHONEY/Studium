@@ -301,7 +301,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                       ) : null}
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 360, alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 'min(65%, 360px)', flex: '1 1 0', alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, flexDirection: isOwn ? 'row-reverse' : 'row' }}>
                         {editingId === msg.id ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 200 }}>
