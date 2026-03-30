@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -7,13 +8,28 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
   const { groupTabUnreads } = useNotifications();
   const tabs = ['Overview', 'Chat', 'Dues', 'Files', 'Members'];
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [dropdownPos, setDropdownPos]   = useState({ top: 0, right: 0 });
+  const triggerRef = useRef(null);
+  const menuRef    = useRef(null);
+
+  const openDropdown = () => {
+    if (!triggerRef.current) return;
+    const r = triggerRef.current.getBoundingClientRect();
+    setDropdownPos({ top: r.bottom + 6, right: window.innerWidth - r.right });
+    setDropdownOpen(true);
+  };
 
   useEffect(() => {
     if (!dropdownOpen) return;
-    const h = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false); };
+    const h = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target) &&
+          triggerRef.current && !triggerRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
     document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
+    document.addEventListener('touchstart', h);
+    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
   }, [dropdownOpen]);
 
   const tabUnreads = groupTabUnreads?.[group?.id] || new Set();
@@ -29,7 +45,6 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
       WebkitBackdropFilter: 'blur(20px) saturate(150%)',
       gap: 16, fontFamily: 'Inter, sans-serif', position: 'relative',
     }}>
-      {/* Subtle accent gradient line at bottom */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.2), transparent)', pointerEvents: 'none' }}/>
 
       {/* Title */}
@@ -56,9 +71,7 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
               style={{
                 padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 400 : 300,
                 border: 'none', cursor: 'pointer', transition: 'all 0.15s', position: 'relative',
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(76,29,149,0.2))'
-                  : 'transparent',
+                background: isActive ? 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(76,29,149,0.2))' : 'transparent',
                 color: isActive ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.35)',
                 boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.12)' : 'none',
               }}
@@ -73,29 +86,34 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
         })}
       </div>
 
-      {/* Mobile dropdown */}
-      <div className="sm:hidden" style={{ position: 'relative', flexShrink: 0 }} ref={dropdownRef}>
-        <button onClick={() => setDropdownOpen(v => !v)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer' }}>
-          {activeTab}
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
-            <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-          </svg>
-        </button>
-        {dropdownOpen && (
-          <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 140, zIndex: 50, background: 'rgba(14,14,14,0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
-            {tabs.map(tab => (
-              <button key={tab} onClick={() => { onTabChange(tab); setDropdownOpen(false); }}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: 13, fontWeight: activeTab === tab ? 400 : 300, color: activeTab === tab ? 'rgba(196,181,253,0.9)' : 'rgba(255,255,255,0.4)', background: activeTab === tab ? 'rgba(124,58,237,0.1)' : 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s' }}
-                onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.background = 'none'; }}>
-                {tab}
-                {tabUnreads.has(tab) && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7c3aed', flexShrink: 0 }} />}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Mobile trigger */}
+      <button ref={triggerRef}
+        className="sm:hidden"
+        onClick={() => dropdownOpen ? setDropdownOpen(false) : openDropdown()}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', flexShrink: 0 }}>
+        {activeTab}
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+        </svg>
+      </button>
+
+      {/* Mobile dropdown — portal so it's never clipped */}
+      {dropdownOpen && createPortal(
+        <div ref={menuRef}
+          style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, width: 160, zIndex: 9999, background: 'rgba(14,14,14,0.97)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
+          {tabs.map(tab => (
+            <button key={tab}
+              onClick={() => { onTabChange(tab); setDropdownOpen(false); }}
+              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', fontSize: 13, fontWeight: activeTab === tab ? 400 : 300, color: activeTab === tab ? 'rgba(196,181,253,0.9)' : 'rgba(255,255,255,0.5)', background: activeTab === tab ? 'rgba(124,58,237,0.1)' : 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', fontFamily: 'Inter, sans-serif' }}
+              onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+              onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.background = 'none'; }}>
+              {tab}
+              {tabUnreads.has(tab) && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7c3aed', flexShrink: 0 }} />}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
