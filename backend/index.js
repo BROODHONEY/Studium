@@ -23,9 +23,15 @@ const FRONTEND_ORIGINS = process.env.FRONTEND_URL
   ? [process.env.FRONTEND_URL]
   : ['http://localhost:5173', 'http://localhost:5174'];
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_ORIGINS,
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -35,7 +41,12 @@ app.set('io', io);
 
 app.use(
   cors({
-    origin: FRONTEND_ORIGINS,
+    origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }},
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
   })
