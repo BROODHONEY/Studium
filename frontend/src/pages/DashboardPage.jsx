@@ -77,14 +77,19 @@ function Inner({
   const hasN  = notifications?.length > 0;
 
   const [rail, setRail] = useState('groups');
-  const [mob, setMob]   = useState('sidebar');
+  const [mob, setMob]   = useState('list'); // 'list' | 'content'
   const searchState = useSearch(groups);
 
   const showGroup = activeGroup && !activeConvo;
   const showDM    = activeConvo && !activeGroup;
 
-  const pickGroup = (g) => { handleSelectGroup(g); setMob('main'); };
-  const pickConvo = (c) => { handleSelectConvo(c); setMob('main'); };
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const pickGroup = (g) => { handleSelectGroup(g); setMob('content'); };
+  const pickConvo = (c) => { handleSelectConvo(c); setMob('content'); };
+
+  const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+  const userAvatarBg = AVATAR_COLORS[(user?.name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
   return (
     <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#050505', fontFamily: 'Inter, sans-serif' }}>
@@ -140,7 +145,7 @@ function Inner({
 
       {/* List panel — frosted glass */}
       <div
-        className={`${mob === 'sidebar' ? 'mobile-list' : 'hidden md:flex'}`}
+        className={`${mob === 'list' ? 'mobile-list' : 'hidden md:flex'}`}
         style={{
           width: 244, flexShrink: 0,
           background: 'rgba(6,6,6,0.8)',
@@ -152,9 +157,22 @@ function Inner({
         }}>
         {/* Faint gradient top */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(180deg, rgba(124,58,237,0.05) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 0 }}/>
-        <div className="md:hidden" style={{ alignItems: 'center', gap: 8, padding: '14px 16px 10px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'relative', zIndex: 1 }}>
-          <img src={logo} alt="Studi+" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400 }}>Studi+</span>
+        {/* Mobile top bar — hamburger + section title */}
+        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={() => setDrawerOpen(true)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', lineHeight: 0, padding: 4, display: 'flex', flexDirection: 'column', gap: 4.5 }}>
+              <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
+              <span style={{ display: 'block', width: 13, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
+              <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
+            </button>
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>
+              {rail === 'groups' ? 'Groups' : rail === 'dms' ? 'Messages' : rail === 'search' ? 'Search' : rail === 'notifications' ? 'Notifications' : 'Groups'}
+            </span>
+          </div>
+          {hasN && rail !== 'notifications' && (
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', boxShadow: '0 0 6px rgba(124,58,237,0.8)' }}/>
+          )}
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
           {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
@@ -188,35 +206,34 @@ function Inner({
 
       {/* Main */}
       <main
-        className={`${mob === 'main' ? 'mobile-main' : 'hidden md:flex'}`}
+        className={`${mob === 'content' ? 'mobile-main' : 'hidden md:flex'}`}
         style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#080808', position: 'relative' }}>
-        {/* Mobile top bar */}
-        <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src={logo} alt="Studi+" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 400 }}>Studi+</span>
-          </div>
-          <button onClick={() => setMob('sidebar')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+        {/* Mobile content top bar — back arrow + name */}
+        <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+          <button onClick={() => setMob('list')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
             <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
           </button>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.75)', fontFamily: 'Inter, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
+          </span>
         </div>
-        {rail === 'settings' && <SettingsPanel />}
+        {rail === 'settings' && <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column' }}><SettingsPanel /></div>}
         {rail === 'search' && (
-          <SearchResults
-            searchState={searchState}
-            onNavigate={({ type, groupId, group, messageId, fileId }) => {
-              const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
-              if (!g) return;
-              pickGroup(g);
-              setRail('groups');
-              if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
-              else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
-              else if (type === 'announcement') { setActiveTab('Overview'); }
-            }}
-          />
+          <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column' }}>
+            <SearchResults
+              searchState={searchState}
+              onNavigate={({ type, groupId, group, messageId, fileId }) => {
+                const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
+                if (!g) return;
+                pickGroup(g);
+                setRail('groups');
+                if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
+                else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
+                else if (type === 'announcement') { setActiveTab('Overview'); }
+              }}
+            />
+          </div>
         )}
         {rail !== 'settings' && rail !== 'search' && showGroup && (
           <>
@@ -243,41 +260,100 @@ function Inner({
         )}
       </main>
 
-      {/* ── Mobile bottom nav ── */}
-      <nav className="md:hidden" style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(6,6,6,0.88)',
-        backdropFilter: 'blur(24px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
-        alignItems: 'center', zIndex: 100,
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-      }}>
-        {[
-          { key: 'groups',        label: 'Groups',   dot: hasGU, icon: <Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z" s={20}/> },
-          { key: 'dms',           label: 'Messages', dot: hasDU, icon: <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/> },
-          { key: 'search',        label: 'Search',   dot: false, icon: <Ic d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" s={20}/> },
-          { key: 'notifications', label: 'Alerts',   dot: hasN,  icon: <Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']} s={20}/> },
-          { key: 'settings',      label: 'Settings', dot: false, icon: <Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']} s={20}/> },
-        ].map(item => (
-          <button key={item.key}
-            onClick={() => { setRail(item.key); setMob(item.key === 'settings' ? 'main' : 'sidebar'); }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', position: 'relative', color: rail === item.key && (item.key === 'settings' ? mob === 'main' : mob === 'sidebar') ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', minHeight: 56 }}>
-            {item.icon}
-            <span style={{ fontSize: 9, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>{item.label}</span>
-            {item.dot && !(rail === item.key && mob === 'sidebar') && (
-              <span style={{ position: 'absolute', top: 8, right: 'calc(50% - 14px)', width: 6, height: 6, borderRadius: '50%', background: '#7c3aed' }} />
-            )}
-          </button>
-        ))}
-        {(showGroup || showDM) && (
-          <button onClick={() => setMob('main')}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', color: mob === 'main' ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', minHeight: 56 }}>
-            <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/>
-            <span style={{ fontSize: 9, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>Open</span>
-          </button>
-        )}
-      </nav>
+      {/* ── Mobile: settings/search full-screen overlay ── */}
+      {(rail === 'settings' || rail === 'search') && mob === 'list' && (
+        <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#080808', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0 }}>
+            <button onClick={() => setRail('groups')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
+              <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
+            </button>
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>
+              {rail === 'settings' ? 'Settings' : 'Search'}
+            </span>
+          </div>
+          {rail === 'settings' && <SettingsPanel />}
+          {rail === 'search' && (
+            <SearchResults searchState={searchState}
+              onNavigate={({ type, groupId, group, messageId, fileId }) => {
+                const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
+                if (!g) return; pickGroup(g); setRail('groups');
+                if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
+                else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
+                else if (type === 'announcement') { setActiveTab('Overview'); }
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* ── Mobile: slide-from-left drawer ── */}
+      {drawerOpen && (
+        <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex' }}
+          onClick={() => setDrawerOpen(false)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}/>
+          <div style={{ position: 'relative', width: 280, height: '100%', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRight: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', boxShadow: '8px 0 40px rgba(0,0,0,0.7)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'radial-gradient(ellipse at 30% 0%, rgba(124,58,237,0.15) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, rgba(124,58,237,0.5), transparent)' }}/>
+            {/* Drawer header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 16px', position: 'relative', zIndex: 1 }}>
+              <button onClick={() => { handleSelectGroup(null); setActiveConvo(null); setRail('groups'); setDrawerOpen(false); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                <img src={logo} alt="Studi+" style={{ width: 30, height: 30, borderRadius: 10, objectFit: 'contain' }} />
+                <span style={{ fontSize: 17, fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontFamily: 'Inter, sans-serif' }}>Studi+</span>
+              </button>
+              <button onClick={() => setDrawerOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+              </button>
+            </div>
+            {/* Nav items */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', position: 'relative', zIndex: 1 }}>
+              {[
+                { key: 'groups',        label: 'Groups',        dot: hasGU, icon: <Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z" s={20}/> },
+                { key: 'dms',           label: 'Messages',      dot: hasDU, icon: <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/> },
+                { key: 'search',        label: 'Search',        dot: false,  icon: <Ic d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" s={20}/> },
+                { key: 'notifications', label: 'Notifications', dot: hasN,   icon: <Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']} s={20}/> },
+                { key: 'settings',      label: 'Settings',      dot: false,  icon: <Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']} s={20}/> },
+              ].map(item => {
+                const isActive = rail === item.key;
+                return (
+                  <button key={item.key} onClick={() => { setRail(item.key); setDrawerOpen(false); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '13px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', textAlign: 'left', marginBottom: 2, transition: 'all 0.15s', position: 'relative',
+                      background: isActive ? 'linear-gradient(135deg,rgba(124,58,237,0.2),rgba(76,29,149,0.12))' : 'none',
+                      color: isActive ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.55)',
+                    }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'none'; }}>
+                    {item.icon}
+                    <span style={{ fontSize: 15, fontWeight: isActive ? 500 : 300, fontFamily: 'Inter, sans-serif' }}>{item.label}</span>
+                    {item.dot && <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', boxShadow: '0 0 6px rgba(124,58,237,0.8)', flexShrink: 0 }}/>}
+                    {isActive && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }}/>}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Profile row */}
+            <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', position: 'relative', zIndex: 1 }}>
+              <button onClick={() => { setProfileUserId(user?.id); setDrawerOpen(false); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px', borderRadius: 10 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: userAvatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
+                  {ini(user?.name)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                  <p style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: '1px 0 0', textTransform: 'capitalize' }}>{user?.role}</p>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
+                  <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal     && <GroupModal onClose={() => setShowModal(false)} onSuccess={handleGroupAdded} />}
       {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}

@@ -550,7 +550,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
       {folderModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', padding: '0 16px' }}
           onClick={() => { setFolderModal(false); setFolderName(''); }}>
-          <div style={{ width: '100%', maxWidth: 400, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px 20px 0 0', padding: '24px 20px', paddingBottom: 'calc(24px + 56px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.6)' }}
+          <div style={{ width: '100%', maxWidth: 400, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px 20px 0 0', padding: '24px 20px', paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.6)' }}
             onClick={e => e.stopPropagation()}>
             {/* Handle bar */}
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)', margin: '0 auto 20px' }}/>

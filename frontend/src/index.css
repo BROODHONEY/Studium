@@ -222,9 +222,8 @@ html.dark .card {
 /* ── Mobile responsive ──────────────────────────────── */
 @media (max-width: 767px) {
   .mobile-create-btn {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(0px + env(safe-area-inset-bottom, 0px)) !important;
   }
-  nav.md\:hidden { display: flex !important; }
   div.md\:hidden { display: flex !important; }
   .mobile-list {
     display: flex !important;
@@ -235,7 +234,6 @@ html.dark .card {
   .mobile-main {
     display: flex !important;
     flex-direction: column;
-    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .mobile-rail { display: none !important; }
 }
