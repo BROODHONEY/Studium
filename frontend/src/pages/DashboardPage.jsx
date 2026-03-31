@@ -83,6 +83,8 @@ export default function DashboardPage() {
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [activeConvo, setActiveConvo] = useState(null);
   const [settingsSection, setSettingsSection] = useState(null);
+  const [fabOpen, setFabOpen] = useState(false);
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
   const [kickNotice, setKickNotice] = useState(null);
   const searchState = useSearch();
@@ -185,12 +187,46 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
-          <button onClick={() => setShowGroupModal(true)} style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
-          </button>
+          {/* FAB with popover */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setFabOpen(v => !v)}
+              style={{ width: 26, height: 26, borderRadius: 7, background: fabOpen ? 'rgba(124,58,237,0.3)' : 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.15s' }}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+            </button>
+            {fabOpen && (
+              <>
+                {/* backdrop */}
+                <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setFabOpen(false)} />
+                <div style={{ position: 'absolute', top: 30, right: 0, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                  <button
+                    onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'background 0.1s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.35)' }}>
+                      <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+                    </svg>
+                    New folder
+                  </button>
+                  <div style={{ height: 1, background: '#1c1c1c' }} />
+                  <button
+                    onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'background 0.1s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.35)' }}>
+                      <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+                    </svg>
+                    Create or join group
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={handleSelectGroup} onOpenModal={() => setShowGroupModal(true)} loading={groupsLoading} />
+          <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={handleSelectGroup} onOpenModal={() => setShowGroupModal(true)} loading={groupsLoading} openNewFolder={newFolderOpen} onNewFolderHandled={() => setNewFolderOpen(false)} />
         </div>
       </div>
     );
@@ -277,9 +313,35 @@ export default function DashboardPage() {
             <div style={{ padding: '12px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#000000' }}>
               <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.8)', textTransform: 'capitalize' }}>{activeNav}</span>
               {activeNav === 'groups' && (
-                <button onClick={() => setShowGroupModal(true)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
-                </button>
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setFabOpen(v => !v)}
+                    style={{ width: 30, height: 30, borderRadius: 8, background: fabOpen ? 'rgba(124,58,237,0.3)' : 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+                  </button>
+                  {fabOpen && (
+                    <>
+                      <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setFabOpen(false)} />
+                      <div style={{ position: 'absolute', top: 34, right: 0, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, overflow: 'hidden', minWidth: 190, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                        <button onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>
+                          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.35)' }}>
+                            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+                          </svg>
+                          New folder
+                        </button>
+                        <div style={{ height: 1, background: '#1c1c1c' }} />
+                        <button onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}>
+                          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.35)' }}>
+                            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+                          </svg>
+                          Create or join group
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
