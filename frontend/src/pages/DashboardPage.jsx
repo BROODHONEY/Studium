@@ -163,7 +163,7 @@ function Inner({
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* Back arrow for secondary sections, hamburger for primary */}
             {(rail === 'search' || rail === 'notifications' || rail === 'settings') ? (
-              <button onClick={() => setRail('groups')}
+              <button onClick={() => { setRail('groups'); setSettingsSection(null); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', lineHeight: 0, padding: 4 }}>
                 <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
               </button>
@@ -294,29 +294,18 @@ function Inner({
         )}
       </main>
 
-      {/* ── Mobile: settings/search full-screen overlay ── */}
-      {(rail === 'settings' || rail === 'search') && mob === 'list' && (
+      {/* ── Mobile: settings section content overlay (when option selected) ── */}
+      {rail === 'settings' && mob === 'content' && (
         <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#080808', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0 }}>
-            <button onClick={() => setRail('groups')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
+            <button onClick={() => setMob('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
               <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
             </button>
-            <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>
-              {rail === 'settings' ? 'Settings' : 'Search'}
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif', textTransform: 'capitalize' }}>
+              {settingsSection || 'Settings'}
             </span>
           </div>
-          {rail === 'settings' && <SettingsPanel activeSection={settingsSection} />}
-          {rail === 'search' && (
-            <SearchResults searchState={searchState}
-              onNavigate={({ type, groupId, group, messageId, fileId }) => {
-                const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
-                if (!g) return; pickGroup(g); setRail('groups');
-                if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
-                else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
-                else if (type === 'announcement') { setActiveTab('Overview'); }
-              }}
-            />
-          )}
+          <SettingsPanel activeSection={settingsSection} />
         </div>
       )}
 
