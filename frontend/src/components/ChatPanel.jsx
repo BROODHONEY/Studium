@@ -47,6 +47,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   });
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const handleScroll = () => {
@@ -1099,33 +1100,52 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         )}
 
         {canSend ? (
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-            {/* Unified input container */}
-            <div style={{ flex: 1, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.15s' }}
-              onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
-              onBlurCapture={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
-              {/* Format toolbar inside container */}
+          <div style={{ background: '#111111', border: '1px solid #1c1c1c', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.15s' }}
+            onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
+            onBlurCapture={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
+
+            {/* Format toolbar — toggled */}
+            {showToolbar && (
               <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id}
                   onFilePick={file => setFileRefs(prev => prev.find(f => f.id === file.id) ? prev : [...prev, file])} />
               </div>
-              {/* Mention popover */}
-              <div style={{ position: 'relative' }}>
-                {mentionQuery !== null && filteredMembers.length > 0 && (
-                  <div ref={mentionListRef}
-                    style={{ position: 'absolute', bottom: '100%', left: 0, width: 220, zIndex: 50, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', marginBottom: 4 }}>
-                    {filteredMembers.map((m, i) => (
-                      <button key={m.id} onMouseDown={e => { e.preventDefault(); insertMention(m); }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: i === mentionIndex ? 'rgba(124,58,237,0.15)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                        <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
-                          {m.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
-                        </span>
-                        <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.75)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
-                        <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.25)', textTransform: 'capitalize', flexShrink: 0 }}>{m.role}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+            )}
+
+            {/* Mention popover */}
+            <div style={{ position: 'relative' }}>
+              {mentionQuery !== null && filteredMembers.length > 0 && (
+                <div ref={mentionListRef}
+                  style={{ position: 'absolute', bottom: '100%', left: 0, width: 220, zIndex: 50, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', marginBottom: 4 }}>
+                  {filteredMembers.map((m, i) => (
+                    <button key={m.id} onMouseDown={e => { e.preventDefault(); insertMention(m); }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: i === mentionIndex ? 'rgba(124,58,237,0.15)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                      <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
+                        {m.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.75)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+                      <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.25)', textTransform: 'capitalize', flexShrink: 0 }}>{m.role}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Single row: toggle | textarea | send */}
+              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                {/* Toolbar toggle */}
+                <button
+                  onClick={() => setShowToolbar(v => !v)}
+                  title="Formatting"
+                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: showToolbar ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.25)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+                  onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                  onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = 'rgba(255,255,255,0.25)'; }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M10.121 2.879A3 3 0 0 0 5 5v.585l-2.122 2.122A1 1 0 0 0 3 8.5V10a1 1 0 0 0 1 1h1v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h1a1 1 0 0 0 1-1V8.5a1 1 0 0 0-.293-.707L9 5.585V5a3 3 0 0 0-.879-2.121zM6.5 5a1.5 1.5 0 1 1 3 0v.5H6.5V5z"/>
+                  </svg>
+                </button>
+
+                {/* Textarea */}
                 <textarea
                   ref={textareaRef}
                   value={text}
@@ -1133,21 +1153,25 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   onKeyDown={handleKeyDown}
                   rows={1}
                   placeholder={connected ? 'Type a message… use @ to mention' : 'Reconnecting…'}
-                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 42, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
+                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '11px 12px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 44, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
                   onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
                   disabled={!connected}
                 />
+
+                {/* Send button */}
+                <button
+                  onClick={privateReply ? handlePrivateReply : sendMessage}
+                  disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
+                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: (text.trim() || fileRefs.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)' }}
+                  onMouseEnter={e => { if (text.trim() || fileRefs.length > 0) e.currentTarget.style.color = '#fff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || fileRefs.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)'; }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+                  </svg>
+                </button>
               </div>
             </div>
-            {/* Send button */}
-            <button
-              onClick={privateReply ? handlePrivateReply : sendMessage}
-              disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
-              style={{ width: 42, height: 42, borderRadius: 12, background: (text.trim() || fileRefs.length > 0) ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: (text.trim() || fileRefs.length > 0) ? '#7c3aed' : '#1c1c1c', color: (text.trim() || fileRefs.length > 0) ? '#fff' : 'rgba(255,255,255,0.2)', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', overflow: 'visible' }}>
-                <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
-              </svg>
-            </button>
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '10px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.25)' }}>

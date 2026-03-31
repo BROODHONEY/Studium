@@ -43,6 +43,16 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   const typingTimer = useRef(null);
   const messageRefs = useRef({});
   const fileInputRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 200);
+  };
+  const scrollToBottom = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const other = conversation?.other;
 
@@ -253,7 +263,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       )}
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <div ref={scrollContainerRef} onScroll={handleScroll} style={{ height: '100%', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {loading ? (
           [1,2,3].map(i => (
             <div key={i} style={{ display: 'flex', gap: 10 }}>
@@ -399,6 +410,19 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
           </>
         )}
         <div ref={bottomRef}/>
+        </div>
+
+        {showScrollBtn && (
+          <button onClick={scrollToBottom}
+            style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 10, width: 34, height: 34, borderRadius: '50%', background: '#18181b', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#27272a'}
+            onMouseLeave={e => e.currentTarget.style.background = '#18181b'}
+            title="Scroll to bottom">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Input */}
@@ -433,44 +457,46 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-          {/* Unified input container — same as ChatPanel */}
-          <div style={{ flex: 1, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.15s' }}
-            onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
-            onBlurCapture={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
-            {/* Toolbar row */}
+        {/* Unified pill input */}
+        <div style={{ background: '#111111', border: '1px solid #1c1c1c', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.15s' }}
+          onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
+          onBlurCapture={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
+          {showToolbar && (
             <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 4 }}>
               <FormatToolbar textareaRef={textareaRef} setText={setText} />
-              {/* Upload file button */}
-              <button type="button" title="Upload file"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+              <button type="button" title="Upload file" onClick={() => fileInputRef.current?.click()} disabled={uploading}
                 style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: uploading ? 'rgba(124,58,237,0.6)' : 'rgba(255,255,255,0.3)', transition: 'color 0.15s' }}
                 onMouseEnter={e => { if (!uploading) e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
                 onMouseLeave={e => { if (!uploading) e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}>
                 {uploading
                   ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 0.7s linear infinite' }}><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-                  : <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                      <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                    </svg>
+                  : <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
                 }
               </button>
             </div>
-            {/* Textarea */}
+          )}
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button onClick={() => setShowToolbar(v => !v)} title="Formatting"
+              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderRight: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.25)', transition: 'color 0.15s' }}
+              onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+              onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = 'rgba(255,255,255,0.25)'; }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M10.121 2.879A3 3 0 0 0 5 5v.585l-2.122 2.122A1 1 0 0 0 3 8.5V10a1 1 0 0 0 1 1h1v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h1a1 1 0 0 0 1-1V8.5a1 1 0 0 0-.293-.707L9 5.585V5a3 3 0 0 0-.879-2.121zM6.5 5a1.5 1.5 0 1 1 3 0v.5H6.5V5z"/>
+              </svg>
+            </button>
             <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown}
               rows={1} placeholder={`Message ${other?.name}…`}
-              style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 42, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
+              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '11px 12px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 44, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
               onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
+            <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0}
+              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: (text.trim() || attachedFiles.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)', transition: 'color 0.15s' }}
+              onMouseEnter={e => { if (text.trim() || attachedFiles.length > 0) e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || attachedFiles.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)'; }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+              </svg>
+            </button>
           </div>
-
-          {/* Send button */}
-          <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0}
-            style={{ width: 42, height: 42, borderRadius: 12, background: (text.trim() || attachedFiles.length > 0) ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: (text.trim() || attachedFiles.length > 0) ? '#7c3aed' : '#1c1c1c', color: (text.trim() || attachedFiles.length > 0) ? '#fff' : 'rgba(255,255,255,0.2)', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
-            </svg>
-          </button>
         </div>
 
         {/* Hidden file input */}
