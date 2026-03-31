@@ -94,12 +94,17 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const minDate = toISTDateInput(Date.now() + 60_000);
 
   if (!open && !editing) return (
-    <button onClick={() => setOpen(true)}
-      style={{ width: '100%', padding: '10px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 10, color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: 300, background: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
-      onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
-      + New announcement
-    </button>
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <button onClick={() => setOpen(true)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
+          <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+        </svg>
+        New announcement
+      </button>
+    </div>
   );
 
   return (

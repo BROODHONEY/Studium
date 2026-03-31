@@ -336,6 +336,11 @@ export default function DashboardPage() {
 
       {/* ── Mobile layout ── */}
       <div className="flex sm:hidden" style={{ height: '100dvh', flexDirection: 'column', background: '#000000', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+        {/* Top bar — logo + app name */}
+        <div style={{ flexShrink: 0, borderBottom: '1px solid #1c1c1c', background: '#000000', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
+          <img src={logo} alt="logo" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.88)', letterSpacing: '-0.01em' }}>Studi+</span>
+        </div>
         {/* Content area */}
         <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
 
