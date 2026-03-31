@@ -76,7 +76,7 @@ export function SearchSidebar({ groups, searchState, onNavigate }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
       {/* Input + filter */}
-      <div style={{ padding: '12px 12px 10px', flexShrink: 0 }}>
+      <div style={{ padding: '8px 12px 10px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d0d', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 10, padding: '8px 12px', boxShadow: '0 0 0 1px rgba(124,58,237,0.08)' }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.6)', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>

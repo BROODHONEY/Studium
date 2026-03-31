@@ -186,7 +186,7 @@ export default function DashboardPage() {
   const renderSidebar = () => {
     if (activeNav === 'groups') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
           {/* FAB with popover */}
           <div style={{ position: 'relative' }}>
@@ -231,9 +231,36 @@ export default function DashboardPage() {
         </div>
       </div>
     );
-    if (activeNav === 'dms') return <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />;
-    if (activeNav === 'search') return <SearchSidebar groups={groups} searchState={searchState} onNavigate={handleSearchNavigate} />;
-    if (activeNav === 'notifications') return <NotificationBell inline onNavigate={handleNotificationNavigate} />;
+    if (activeNav === 'dms') return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Messages</span>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
+        </div>
+      </div>
+    );
+    if (activeNav === 'search') return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</span>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <SearchSidebar groups={groups} searchState={searchState} onNavigate={handleSearchNavigate} />
+        </div>
+      </div>
+    );
+    if (activeNav === 'notifications') return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Notifications</span>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <NotificationBell inline onNavigate={handleNotificationNavigate} />
+        </div>
+      </div>
+    );
     if (activeNav === 'settings') return <SettingsSidebar activeSection={settingsSection} onSection={(s) => { setSettingsSection(s); setMobileView('detail'); }} onViewProfile={setProfileUserId} />;
     return null;
   };
