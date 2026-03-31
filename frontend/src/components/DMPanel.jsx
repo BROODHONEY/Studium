@@ -46,6 +46,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
   const scrollContainerRef = useRef(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
+  const editTextareaRef = useRef(null);
 
   const handleScroll = () => {
     const el = scrollContainerRef.current;
@@ -314,17 +315,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
 
                     <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 'min(65%, 360px)', flex: '1 1 0', alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, flexDirection: isOwn ? 'row-reverse' : 'row' }}>
-                        {editingId === msg.id ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 200 }}>
-                            <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)}
-                              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditSave(msg.id); } if (e.key === 'Escape') { setEditingId(null); setEditText(''); } }}
-                              rows={2} style={{ background: '#111111', border: '1px solid #7c3aed', borderRadius: 10, padding: '8px 12px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', resize: 'none', outline: 'none', fontFamily: 'Inter, sans-serif' }}/>
-                            <div style={{ display: 'flex', gap: 6 }}>
-                              <button onClick={() => handleEditSave(msg.id)} style={{ flex: 1, padding: '6px', borderRadius: 8, background: '#7c3aed', border: 'none', color: '#fff', fontSize: 11, fontWeight: 400, cursor: 'pointer' }}>Save</button>
-                              <button onClick={() => { setEditingId(null); setEditText(''); }} style={{ flex: 1, padding: '6px', borderRadius: 8, background: '#111111', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>Cancel</button>
-                            </div>
-                          </div>
-                        ) : (
+                        {(
                           <div style={{ padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 300, lineHeight: 1.5, wordBreak: 'break-words', background: isOwn ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', color: isOwn ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.75)' }}>
                             {(() => {
                               const pr = parsePrivateReply(msg.content);
@@ -359,9 +350,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                             </div>
                           </div>
                         )}
-
                         {/* Three-dot menu */}
-                        {!isTemp && editingId !== msg.id && (
+                        {!isTemp && (
                           <div style={{ position: 'relative', flexShrink: 0 }} className="opacity-0 group-hover/msg:opacity-100 transition">
                             <button onClick={e => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
                               style={{ padding: 6, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', lineHeight: 0 }}>
@@ -513,6 +503,54 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
         onCancel={() => setConfirmDeleteId(null)}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* Edit message modal */}
+      {editingId && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '16px' }}
+          onClick={() => { setEditingId(null); setEditText(''); }}>
+          <div style={{ width: '100%', maxWidth: 520, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>Edit message</span>
+              <button onClick={() => { setEditingId(null); setEditText(''); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+              </button>
+            </div>
+            <div style={{ margin: '14px 20px', background: '#111111', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 14, overflow: 'hidden' }}>
+              <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <FormatToolbar textareaRef={editTextareaRef} setText={setEditText} />
+              </div>
+              <textarea
+                ref={editTextareaRef}
+                autoFocus
+                value={editText}
+                onChange={e => setEditText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditSave(editingId); }
+                  if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
+                }}
+                rows={3}
+                style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.85)', resize: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', lineHeight: 1.6, maxHeight: 200, overflowY: 'auto' }}
+                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'; }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 10, padding: '0 20px 20px' }}>
+              <button onClick={() => handleEditSave(editingId)} disabled={!editText.trim()}
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: editText.trim() ? '#7c3aed' : '#1c1c1c', color: editText.trim() ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                Save changes
+              </button>
+              <button onClick={() => { setEditingId(null); setEditText(''); }}
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

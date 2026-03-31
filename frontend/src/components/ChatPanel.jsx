@@ -48,6 +48,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
+  const editTextareaRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
   const handleScroll = () => {
@@ -595,6 +596,62 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         onCancel={() => setDeleteConfirm(null)}
       />
 
+      {/* Edit message modal */}
+      {editingId && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '16px' }}
+          onClick={() => { setEditingId(null); setEditText(''); }}>
+          <div style={{ width: '100%', maxWidth: 520, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative' }}
+            onClick={e => e.stopPropagation()}>
+            {/* Subtle top glow */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>Edit message</span>
+              <button onClick={() => { setEditingId(null); setEditText(''); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+              </button>
+            </div>
+
+            {/* Unified input pill — same as chat input */}
+            <div style={{ margin: '14px 20px', background: '#111111', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 14, overflow: 'hidden' }}>
+              {/* Format toolbar */}
+              <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <FormatToolbar textareaRef={editTextareaRef} setText={setEditText} />
+              </div>
+              <textarea
+                ref={editTextareaRef}
+                autoFocus
+                value={editText}
+                onChange={e => setEditText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditMessage(editingId); }
+                  if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
+                }}
+                rows={3}
+                style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.85)', resize: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', lineHeight: 1.6, maxHeight: 200, overflowY: 'auto' }}
+                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'; }}
+              />
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 10, padding: '0 20px 20px' }}>
+              <button onClick={() => handleEditMessage(editingId)} disabled={!editText.trim()}
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: editText.trim() ? '#7c3aed' : '#1c1c1c', color: editText.trim() ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                Save changes
+              </button>
+              <button onClick={() => { setEditingId(null); setEditText(''); }}
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pin time modal (teacher only) */}
       {pinTimeModal.open && (() => {
         const PRESETS = [
@@ -923,32 +980,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
                   {/* Bubble + actions */}
                   <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                    {editingId === item.id ? (
-                      <div className="flex flex-col gap-1.5 min-w-[200px]">
-                        <textarea
-                          autoFocus
-                          value={editText}
-                          onChange={e => setEditText(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditMessage(item.id); }
-                            if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
-                          }}
-                          rows={2}
-                          className="dark:bg-surface-3 bg-gray-100 border border-brand-500 rounded-xl px-3 py-2
-                            text-sm dark:text-white text-gray-900 resize-none focus:outline-none"
-                        />
-                        <div className="flex gap-1.5">
-                          <button onClick={() => handleEditMessage(item.id)}
-                            className="text-xs px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition">
-                            Save
-                          </button>
-                          <button onClick={() => { setEditingId(null); setEditText(''); }}
-                            className="text-xs px-3 py-1 rounded-lg dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 transition">
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
+                    {(
                       <div className={`chat-bubble px-3 py-2 rounded-xl text-sm leading-relaxed break-words
                         ${isOwn
                           ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white'
