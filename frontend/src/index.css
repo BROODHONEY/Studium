@@ -225,6 +225,7 @@ html.dark .card {
     padding-bottom: calc(0px + env(safe-area-inset-bottom, 0px)) !important;
   }
   div.md\:hidden { display: flex !important; }
+  button.sm\:hidden { display: flex !important; }
   .mobile-list {
     display: flex !important;
     width: 100% !important;
@@ -427,45 +428,6 @@ html.dark .sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04
   30% { box-shadow: 0 0 0 2px rgba(124,58,237,0.3); background-color: rgba(124,58,237,0.06); }
 }
 .file-highlight { animation: file-highlight-pulse 2s ease-out forwards; border-radius: 0.75rem; }
-
-/* ── Mobile responsive ──────────────────────────────── */
-@media (max-width: 767px) {
-  /* Create/join button — above bottom nav */
-  .mobile-create-btn {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-  /* Bottom nav */
-  nav.md\:hidden {
-    display: flex !important;
-  }
-  /* Logo bar in list panel */
-  div.md\:hidden {
-    display: flex !important;
-  }
-  /* List panel — full width, flex column */
-  .mobile-list {
-    display: flex !important;
-    width: 100% !important;
-    border-right: none !important;
-    flex-direction: column;
-  }
-  /* Main content — flex column + bottom padding for bottom nav */
-  .mobile-main {
-    display: flex !important;
-    flex-direction: column;
-    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-  /* Icon rail hidden on mobile — bottom nav replaces it */
-  .mobile-rail {
-    display: none !important;
-  }
-}
-/* Desktop: list panel and main always flex */
-@media (min-width: 768px) {
-  .mobile-list, .mobile-main {
-    display: flex !important;
-  }
-}
 
 /* ── Compact chat bubbles on mobile ─────────────────── */
 @media (max-width: 767px) {

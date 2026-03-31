@@ -90,7 +90,7 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
       <button ref={triggerRef}
         className="sm:hidden"
         onClick={() => dropdownOpen ? setDropdownOpen(false) : openDropdown()}
-        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', flexShrink: 0 }}>
+        style={{ alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', flexShrink: 0 }}>
         {activeTab}
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
           <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
