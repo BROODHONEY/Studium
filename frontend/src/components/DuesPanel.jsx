@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
@@ -24,6 +24,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(false);
+  const formRef = useRef(null);
 
   useEffect(() => {
     if (editing) {
@@ -34,6 +35,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
         due_time: (() => { const t = toISTTimeInput(editing.due_date); return t === '00:00' ? '' : t; })(),
       });
       setOpen(true);
+      setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } else {
       setForm({ title: '', description: '', due_date: '', due_time: '' });
       setOpen(false);
@@ -79,7 +81,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="card p-4 space-y-3">
+    <form ref={formRef} onSubmit={handleSubmit} className="card p-4 space-y-3">
       <input className="form-input" placeholder="e.g. Assignment 3 submission" required
         value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
       <input className="form-input" placeholder="Description (optional)"

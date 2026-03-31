@@ -148,6 +148,13 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
+        // Replace optimistic temp message if content matches, otherwise deduplicate by id
+        const tempIdx = prev.findIndex(m => m.id?.startsWith('temp-') && m.content === msg.content && m.group_id === msg.group_id);
+        if (tempIdx >= 0) {
+          const next = [...prev];
+          next[tempIdx] = msg;
+          return next;
+        }
         if (prev.find(m => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
@@ -288,6 +295,21 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     const fileTokens = fileRefs.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
     const encoded = encodeForSend(text.trim());
     const content = [encoded, fileTokens].filter(Boolean).join(' ');
+
+    // Optimistic update — add message immediately
+    const tempId = `temp-${Date.now()}`;
+    const optimistic = {
+      id: tempId,
+      content,
+      type: 'text',
+      created_at: new Date().toISOString(),
+      group_id: group.id,
+      users: user,
+      sender: user,
+      ...(replyTo ? { replied_message: { id: replyTo.id, content: replyTo.content, users: { name: replyTo.senderName } } } : {}),
+    };
+    setMessages(prev => [...prev, optimistic]);
+
     socket.emit('send_message', {
       groupId: group.id,
       content,
@@ -340,14 +362,16 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   const handleEditMessage = async (messageId) => {
     if (!editText.trim()) return;
+    // Optimistic update
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: editText.trim(), edited: true } : m));
+    setEditingId(null);
+    setEditText('');
     try {
       await messagesAPI.edit(messageId, editText.trim());
-      // socket event will update state
     } catch (err) {
       console.error(err);
-    } finally {
-      setEditingId(null);
-      setEditText('');
+      // Revert on failure by re-fetching
+      messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
     }
   };
 
@@ -983,7 +1007,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                               ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); }
                               : undefined}
                             onEdit={(!adminsOnly || myRole === 'admin') && canEdit
-                              ? () => { setEditingId(item.id); setEditText(item.content); }
+                              ? () => { setEditingId(item.id); setEditText(item.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1') ?? ''); }
                               : undefined}
                             onDelete={(!adminsOnly || myRole === 'admin') && canDelete
                               ? () => handleDeleteMessage(item.id)
