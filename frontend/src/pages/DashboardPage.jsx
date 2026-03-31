@@ -79,7 +79,7 @@ function Inner({
   const [rail, setRail] = useState('groups');
   const [mob, setMob]   = useState('list'); // 'list' | 'content'
   const [settingsSection, setSettingsSection] = useState(null);
-  const searchState = useSearch(groups);
+  const searchState = useSearch();
 
   const showGroup = activeGroup && !activeConvo;
   const showDM    = activeConvo && !activeGroup;
@@ -187,27 +187,15 @@ function Inner({
           {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
           {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
           {rail === 'search' && (
-            <>
-              {/* Desktop: input only, results go in main panel */}
-              <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
-                <SearchSidebar groups={groups} searchState={searchState} />
-              </div>
-              {/* Mobile: input + results combined */}
-              <div className="md:hidden" style={{ flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                <SearchSidebar groups={groups} searchState={searchState} />
-                <div style={{ flex: 1, overflowY: 'auto' }}>
-                  <SearchResults searchState={searchState}
-                    onNavigate={({ type, groupId, group, messageId, fileId }) => {
-                      const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
-                      if (!g) return; pickGroup(g); setRail('groups');
-                      if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
-                      else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
-                      else if (type === 'announcement') { setActiveTab('Overview'); }
-                    }}
-                  />
-                </div>
-              </div>
-            </>
+            <SearchSidebar groups={groups} searchState={searchState}
+              onNavigate={({ type, groupId, group, messageId, fileId }) => {
+                const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
+                if (!g) return; pickGroup(g); setRail('groups');
+                if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
+                else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
+                else if (type === 'announcement') { setActiveTab('Overview'); }
+              }}
+            />
           )}
           {/* Settings sidebar — both desktop and mobile */}
           {rail === 'settings' && (
@@ -258,16 +246,7 @@ function Inner({
         {rail === 'settings' && <SettingsPanel activeSection={settingsSection} />}
         {rail === 'search' && (
           <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column', minHeight: 0 }}>
-            <SearchResults
-              searchState={searchState}
-              onNavigate={({ type, groupId, group, messageId, fileId }) => {
-                const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
-                if (!g) return; pickGroup(g); setRail('groups');
-                if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
-                else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
-                else if (type === 'announcement') { setActiveTab('Overview'); }
-              }}
-            />
+            <SearchResults searchState={searchState} />
           </div>
         )}
         {rail !== 'settings' && rail !== 'search' && showGroup && (

@@ -15,19 +15,9 @@ const TAG_COLORS = {
   general: 'rgba(255,255,255,0.3)',
 };
 
-function hl(text = '', query = '') {
-  if (!query.trim()) return text;
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
-  return parts.map((p, i) =>
-    p.toLowerCase() === query.toLowerCase()
-      ? <mark key={i} style={{ background: 'rgba(124,58,237,0.35)', color: 'rgba(196,181,253,0.95)', borderRadius: 3, padding: '0 2px' }}>{p}</mark>
-      : p
-  );
-}
 
 // ── Shared search state via a simple hook ──────────────
-export function useSearch(groups) {
+export function useSearch() {
   const [query, setQuery]     = useState('');
   const [groupId, setGroupId] = useState('');
   const [results, setResults] = useState(null);
@@ -62,22 +52,36 @@ export function useSearch(groups) {
   return { query, groupId, results, loading, error, handleQuery, handleGroup, clear };
 }
 
-// ── Sidebar: input + group filter ─────────────────────
-export function SearchSidebar({ groups, searchState }) {
-  const { query, groupId, loading, handleQuery, handleGroup, clear } = searchState;
+// ── Sidebar section helper (outside component) ────────
+function SideSection({ title, items, renderItem }) {
+  if (!items?.length) return null;
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <p style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px', padding: '0 2px' }}>{title} · {items.length}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {items.map(renderItem)}
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar: input + group filter + inline results ────
+export function SearchSidebar({ groups, searchState, onNavigate }) {
+  const { query, groupId, loading, results, error, handleQuery, handleGroup, clear } = searchState;
   const inputRef = useRef(null);
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
 
+  const total = results ? results.messages.length + results.files.length + results.announcements.length : 0;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+      {/* Input + filter */}
       <div style={{ padding: '12px 12px 10px', flexShrink: 0 }}>
-        {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d0d', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 10, padding: '8px 12px', boxShadow: '0 0 0 1px rgba(124,58,237,0.08)' }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.6)', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
-          <input ref={inputRef} value={query} onChange={e => handleQuery(e.target.value)}
-            placeholder="Search…"
+          <input ref={inputRef} value={query} onChange={e => handleQuery(e.target.value)} placeholder="Search…"
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', fontFamily: 'Inter, sans-serif', minWidth: 0 }}/>
           {loading && (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(124,58,237,0.6)', animation: 'spin 0.7s linear infinite', flexShrink: 0 }}>
@@ -90,8 +94,6 @@ export function SearchSidebar({ groups, searchState }) {
             </button>
           )}
         </div>
-
-        {/* Group filter */}
         <select value={groupId} onChange={e => handleGroup(e.target.value)}
           style={{ width: '100%', marginTop: 8, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 8, padding: '7px 10px', fontSize: 12, fontWeight: 300, color: groupId ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)', outline: 'none', fontFamily: 'Inter, sans-serif', appearance: 'none', cursor: 'pointer' }}
           onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.4)'}
@@ -101,130 +103,80 @@ export function SearchSidebar({ groups, searchState }) {
         </select>
       </div>
 
-      {/* Hint */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }}>
-        <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.12)', textAlign: 'center', lineHeight: 1.6 }}>
-          {query.length === 0 ? 'Type to search messages, files and announcements' :
-           query.length < 2 ? 'Type at least 2 characters…' :
-           'Results appear in the main panel →'}
+      {/* Results */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px 16px' }}>
+        {!results && !error && (
+          <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.15)', textAlign: 'center', padding: '20px 8px', lineHeight: 1.6 }}>
+            {query.length === 0 ? 'Search messages, files and announcements' : query.length < 2 ? 'Type at least 2 characters…' : ''}
+          </p>
+        )}
+        {error && <p style={{ fontSize: 12, color: 'rgba(239,68,68,0.7)', padding: '8px 4px' }}>{error}</p>}
+        {results && total === 0 && (
+          <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: '20px 8px' }}>No results for "{query}"</p>
+        )}
+        {results && total > 0 && (
+          <>
+            <p style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', padding: '4px 4px 10px', margin: 0 }}>{total} result{total !== 1 ? 's' : ''}</p>
+            <SideSection title="Messages" items={results.messages}
+              renderItem={msg => (
+                <button key={msg.id} onClick={() => onNavigate?.({ type: 'message', groupId: msg.group_id, group: msg.group, messageId: msg.id })}
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'none', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.1s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                  <p style={{ fontSize: 10, color: 'rgba(124,58,237,0.7)', margin: '0 0 2px' }}>{msg.group?.name}</p>
+                  <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.6)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{msg.content?.slice(0, 60)}</p>
+                </button>
+              )}
+            />
+            <SideSection title="Files" items={results.files}
+              renderItem={file => (
+                <button key={file.id} onClick={() => onNavigate?.({ type: 'file', groupId: file.group_id, group: file.group, fileId: file.id })}
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'none', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill={fileColor(file.file_type)} style={{ flexShrink: 0 }}><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/></svg>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.7)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.filename}</p>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', margin: '1px 0 0' }}>{file.group?.name}</p>
+                  </div>
+                </button>
+              )}
+            />
+            <SideSection title="Announcements" items={results.announcements}
+              renderItem={ann => (
+                <button key={ann.id} onClick={() => onNavigate?.({ type: 'announcement', groupId: ann.group_id, group: ann.group })}
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'none', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.1s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                  <p style={{ fontSize: 10, color: 'rgba(124,58,237,0.7)', margin: '0 0 2px' }}>{ann.group?.name}</p>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.7)', margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.title}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.content?.slice(0, 50)}</p>
+                </button>
+              )}
+            />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ── Main panel: description ───────────────────────────
+function SearchResults() {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.35) 0%, rgba(76,29,149,0.15) 35%, transparent 65%)', pointerEvents: 'none' }}/>
+      <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px' }}>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(124,58,237,0.4)', margin: '0 auto 14px', display: 'block' }}>
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.5)', margin: '0 0 8px' }}>Search</p>
+        <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.2)', margin: 0, lineHeight: 1.6 }}>
+          Type in the sidebar to search across messages, files and announcements in your groups.
         </p>
       </div>
     </div>
   );
 }
 
-// ── Main panel: results ────────────────────────────────
-export default function SearchResults({ searchState, onNavigate }) {
-  const { query, results, error } = searchState;
-  const total = results ? results.messages.length + results.files.length + results.announcements.length : 0;
-
-  const Section = ({ title, icon, items, renderItem }) => {
-    if (!items?.length) return null;
-    return (
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          {icon}
-          <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</span>
-          <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>{items.length}</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {items.map(renderItem)}
-        </div>
-      </div>
-    );
-  };
-
-  if (!results && !error) return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.45) 0%, rgba(76,29,149,0.2) 35%, transparent 65%)', pointerEvents: 'none' }} />
-      <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 300, position: 'relative' }}>
-        {query.length >= 2 ? 'Searching…' : 'Enter a search term in the sidebar'}
-      </p>
-    </div>
-  );
-
-  return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-      {error && <p style={{ fontSize: 13, color: 'rgba(239,68,68,0.7)', marginBottom: 16 }}>{error}</p>}
-
-      {results && total === 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%' }}>
-          <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>No results for "{query}"</p>
-        </div>
-      )}
-
-      {results && total > 0 && (
-        <>
-          <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', marginBottom: 20 }}>{total} result{total !== 1 ? 's' : ''} for "{query}"</p>
-
-          <Section title="Messages"
-            icon={<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.25)' }}><path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12z"/></svg>}
-            items={results.messages}
-            renderItem={msg => (
-              <button key={msg.id} onClick={() => onNavigate({ type: 'message', groupId: msg.group_id, group: msg.group, messageId: msg.id })}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 10, background: '#0d0d0d', border: '1px solid #1c1c1c', cursor: 'pointer', transition: 'border-color 0.1s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.7)' }}>{msg.group?.name}</span>
-                  <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>{msg.users?.name}</span>
-                </div>
-                <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.65)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {hl(msg.content?.slice(0, 100), query)}
-                </p>
-              </button>
-            )}
-          />
-
-          <Section title="Files"
-            icon={<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.25)' }}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>}
-            items={results.files}
-            renderItem={file => (
-              <button key={file.id} onClick={() => onNavigate({ type: 'file', groupId: file.group_id, group: file.group, fileId: file.id })}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 10, background: '#0d0d0d', border: '1px solid #1c1c1c', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color 0.1s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${fileColor(file.file_type)}18`, border: `1px solid ${fileColor(file.file_type)}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill={fileColor(file.file_type)}>
-                    <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
-                  </svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {hl(file.filename, query)}
-                  </p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', margin: '2px 0 0' }}>{file.group?.name}</p>
-                </div>
-              </button>
-            )}
-          />
-
-          <Section title="Announcements"
-            icon={<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.25)' }}><path d="M13.5 3a.5.5 0 0 1 .5.5V11H2V3.5a.5.5 0 0 1 .5-.5h11zm-11-1A1.5 1.5 0 0 0 1 3.5V12h14V3.5A1.5 1.5 0 0 0 13.5 2h-11zm-2 13a.5.5 0 0 1 .5-.5h15a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5z"/></svg>}
-            items={results.announcements}
-            renderItem={ann => (
-              <button key={ann.id} onClick={() => onNavigate({ type: 'announcement', groupId: ann.group_id, group: ann.group })}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 10, background: '#0d0d0d', border: '1px solid #1c1c1c', cursor: 'pointer', transition: 'border-color 0.1s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <span style={{ fontSize: 10, fontWeight: 400, color: TAG_COLORS[ann.tag] || TAG_COLORS.general, textTransform: 'capitalize' }}>{ann.tag}</span>
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)' }}>·</span>
-                  <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(124,58,237,0.7)' }}>{ann.group?.name}</span>
-                </div>
-                <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {hl(ann.title, query)}
-                </p>
-                <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.35)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {hl(ann.content?.slice(0, 80), query)}
-                </p>
-              </button>
-            )}
-          />
-        </>
-      )}
-    </div>
-  );
-}
