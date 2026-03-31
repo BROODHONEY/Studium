@@ -1,424 +1,328 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
-import GroupList     from '../components/GroupList';
-import DMList        from '../components/DMList';
-import ChatPanel     from '../components/ChatPanel';
-import DMPanel       from '../components/DMPanel';
-import ChatHeader    from '../components/ChatHeader';
-import GroupModal    from '../components/GroupModal';
-import FilesPanel    from '../components/FilesPanel';
-import MembersPanel  from '../components/MembersPanel';
+import { NotificationProvider } from '../context/NotificationContext';
+
+import GroupList from '../components/GroupList';
+import GroupModal from '../components/GroupModal';
+import ChatHeader from '../components/ChatHeader';
+import ChatPanel from '../components/ChatPanel';
 import GroupOverview from '../components/GroupOverview';
-import DuesPanel     from '../components/DuesPanel';
-import KickNotification from '../components/KickNotification';
-import ProfileModal  from '../components/ProfileModal';
+import DuesPanel from '../components/DuesPanel';
+import FilesPanel from '../components/FilesPanel';
+import MembersPanel from '../components/MembersPanel';
+import DMList from '../components/DMList';
+import DMPanel from '../components/DMPanel';
 import SettingsPanel, { SettingsSidebar } from '../components/SettingsPanel';
-import SearchResults, { SearchSidebar, useSearch } from '../components/SearchPanel';
-import { NotificationProvider, useNotifications } from '../context/NotificationContext';
-import logo from '../assets/logo.png';
+import NotificationBell from '../components/NotificationBell';
+import ProfileModal from '../components/ProfileModal';
+import KickNotification from '../components/KickNotification';
+import { SearchSidebar, useSearch } from '../components/SearchPanel';
 
-const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+const NAV = ['groups', 'dms', 'search', 'notifications', 'settings'];
 
-function Ic({ d, s = 18 }) {
+const NAV_ICONS = {
+  groups:        'M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z',
+  dms:           'M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2z',
+  search:        'M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z',
+  notifications: 'M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z',
+  settings:      'M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z',
+};
+
+// ── Desktop side-rail icon button ──────────────────────
+function RailIcon({ id, active, onClick, badge }) {
   return (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-      style={{ display: 'block', flexShrink: 0, overflow: 'visible' }}>
-      {(Array.isArray(d) ? d : [d]).map((p, i) => <path key={i} d={p} />)}
-    </svg>
-  );
-}
-
-function RailBtn({ icon, active, dot, onClick, title }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <button onClick={onClick} title={title}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: active ? 'rgba(167,139,250,0.95)' : hov ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
-        background: active
-          ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(76,29,149,0.15))'
-          : hov ? 'rgba(255,255,255,0.06)' : 'transparent',
-        border: active ? '1px solid rgba(124,58,237,0.25)' : '1px solid transparent',
-        boxShadow: active ? '0 0 12px rgba(124,58,237,0.15)' : 'none',
-        cursor: 'pointer', position: 'relative', transition: 'all 0.15s',
-      }}>
-      {icon}
-      {dot && (
-        <span style={{
-          position: 'absolute', top: 5, right: 5, width: 6, height: 6,
-          borderRadius: '50%', background: '#7c3aed',
-          boxShadow: '0 0 6px rgba(124,58,237,0.8)',
-          border: '1.5px solid rgba(8,8,8,0.9)',
-        }} />
+    <button onClick={onClick} title={id} style={{
+      position: 'relative', width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+      background: active ? 'linear-gradient(135deg,rgba(124,58,237,0.25),rgba(76,29,149,0.15))' : 'none',
+      color: active ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.35)',
+    }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+    >
+      {active && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }} />}
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_ICONS[id]} /></svg>
+      {badge > 0 && (
+        <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+          {badge > 99 ? '99+' : badge}
+        </span>
       )}
     </button>
   );
 }
 
-function Inner({
-  user, groups, setGroups, loadingGroups,
-  activeGroup, setActiveGroup,
-  activeConvo, setActiveConvo,
-  activeTab, setActiveTab,
-  highlightFileId, setHighlightFileId,
-  highlightMessageId, setHighlightMessageId,
-  showModal, setShowModal,
-  kickNotice, setKickNotice,
-  profileUserId, setProfileUserId,
-  handleSelectGroup, handleSelectConvo, handleGroupAdded, handleLeft,
-}) {
-  const { groupUnreads, dmUnreads, notifications, dismiss } = useNotifications();
-  const hasGU = groupUnreads?.size > 0;
-  const hasDU = dmUnreads?.size > 0;
-  const hasN  = notifications?.length > 0;
-
-  const [rail, setRail] = useState('groups');
-  const [mob, setMob]   = useState('list'); // 'list' | 'content'
-  const [settingsSection, setSettingsSection] = useState(null);
-  const searchState = useSearch();
-
-  const showGroup = activeGroup && !activeConvo;
-  const showDM    = activeConvo && !activeGroup;
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const pickGroup = (g) => { handleSelectGroup(g); setMob('content'); };
-  const pickConvo = (c) => { handleSelectConvo(c); setMob('content'); };
-
-  const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
-  const userAvatarBg = AVATAR_COLORS[(user?.name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
-
+// ── Mobile bottom-tab button ───────────────────────────
+function TabBtn({ id, active, onClick, badge }) {
   return (
-    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#050505', fontFamily: 'Inter, sans-serif' }}>
-
-      {/* Icon rail — frosted glass with subtle purple top gradient */}
-      <div
-        className={`${mob === 'sidebar' ? '' : 'hidden md:flex'} mobile-rail`}
-        style={{
-          width: 52, flexShrink: 0,
-          background: 'rgba(8,8,8,0.85)',
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          paddingTop: 12, paddingBottom: 12, gap: 4,
-          position: 'relative',
-        }}>
-        {/* Subtle top accent line */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent)' }}/>
-        {/* Faint purple glow at top */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-
-        <button onClick={() => { handleSelectGroup(null); setActiveConvo(null); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4, flexShrink: 0, borderRadius: 10, lineHeight: 0, position: 'relative', zIndex: 1 }}
-          title="Home">
-          <img src={logo} alt="Studi+" style={{ width: 28, height: 28, borderRadius: 10, objectFit: 'contain' }} />
-        </button>
-        <div style={{ flex: 1 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'relative', zIndex: 1 }}>
-          <RailBtn title="Groups"   active={rail==='groups'}   dot={hasGU && rail!=='groups'} onClick={() => setRail('groups')}
-            icon={<Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/>} />
-          <RailBtn title="Messages" active={rail==='dms'}      dot={hasDU && rail!=='dms'}   onClick={() => setRail('dms')}
-            icon={<Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>} />
-          <RailBtn title="Search"   active={rail==='search'}                                 onClick={() => setRail('search')}
-            icon={<Ic d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>} />
-          <RailBtn title="Settings" active={rail==='settings'}                               onClick={() => setRail('settings')}
-            icon={<Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']}/>} />
-        </div>
-        <div style={{ flex: 1 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'relative', zIndex: 1 }}>
-          <RailBtn title="Notifications" active={rail==='notifications'} dot={hasN && rail!=='notifications'} onClick={() => setRail('notifications')}
-            icon={<Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']}/>} />
-          <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            style={{ width: 36, height: 36, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
-            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, #3d1f6b, #1a0e2e)', border: '1.5px solid rgba(124,58,237,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(167,139,250,0.8)', fontSize: 10, fontWeight: 500 }}>
-              {ini(user?.name)}
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* List panel — frosted glass */}
-      <div
-        className={`${mob === 'list' ? 'mobile-list' : 'hidden md:flex'}`}
-        style={{
-          width: 244, flexShrink: 0,
-          background: 'rgba(6,6,6,0.8)',
-          backdropFilter: 'blur(20px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
-          flexDirection: 'column', height: '100%', overflow: 'hidden',
-          position: 'relative',
-        }}>
-        {/* Faint gradient top */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(180deg, rgba(124,58,237,0.05) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 0 }}/>
-        {/* Mobile top bar — hamburger OR back arrow + section title */}
-        <div className="md:hidden" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {/* Back arrow for secondary sections, hamburger for primary */}
-            {(rail === 'search' || rail === 'notifications' || rail === 'settings') ? (
-              <button onClick={() => { setRail('groups'); setSettingsSection(null); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', lineHeight: 0, padding: 4 }}>
-                <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
-              </button>
-            ) : (
-              <button onClick={() => setDrawerOpen(true)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', lineHeight: 0, padding: 4, display: 'flex', flexDirection: 'column', gap: 4.5 }}>
-                <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
-                <span style={{ display: 'block', width: 13, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
-                <span style={{ display: 'block', width: 18, height: 1.5, background: 'currentColor', borderRadius: 2 }}/>
-              </button>
-            )}
-            <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>
-              {rail === 'groups' ? 'Groups' : rail === 'dms' ? 'Messages' : rail === 'search' ? 'Search' : rail === 'notifications' ? 'Notifications' : rail === 'settings' ? 'Settings' : 'Groups'}
-            </span>
-          </div>
-          {hasN && rail !== 'notifications' && (
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', boxShadow: '0 0 6px rgba(124,58,237,0.8)' }}/>
-          )}
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-          {rail === 'groups' && <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={pickGroup} onOpenModal={() => setShowModal(true)} loading={loadingGroups} />}
-          {rail === 'dms'    && <DMList activeConvoId={activeConvo?.id} onSelect={pickConvo} />}
-          {rail === 'search' && (
-            <SearchSidebar groups={groups} searchState={searchState}
-              onNavigate={({ type, groupId, group, messageId, fileId }) => {
-                const g = groups.find(gr => gr.id === groupId) || { ...group, id: groupId };
-                if (!g) return; pickGroup(g); setRail('groups');
-                if (type === 'message') { setActiveTab('Chat'); setHighlightMessageId(messageId || null); }
-                else if (type === 'file') { setActiveTab('Files'); if (fileId) setHighlightFileId(fileId); }
-                else if (type === 'announcement') { setActiveTab('Overview'); }
-              }}
-            />
-          )}
-          {/* Settings sidebar — both desktop and mobile */}
-          {rail === 'settings' && (
-            <SettingsSidebar
-              activeSection={settingsSection}
-              onSection={s => { setSettingsSection(s); setMob('content'); }}
-              onViewProfile={() => setProfileUserId(user?.id)}
-            />
-          )}          {rail === 'notifications' && (
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Notifications</span>
-                {notifications.length > 0 && <button onClick={() => notifications.forEach(n => dismiss(n.id))} style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>}
-              </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px' }}>
-                {notifications.length === 0
-                  ? <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: 300, textAlign: 'center', paddingTop: 32 }}>No notifications.</p>
-                  : notifications.map(n => (
-                    <button key={n.id} onClick={() => { if (n.groupId) { const g = groups.find(gr => gr.id === n.groupId); if (g) { pickGroup(g); setActiveTab(n.type === 'message' ? 'Chat' : n.type === 'due' ? 'Dues' : 'Overview'); setRail('groups'); } } dismiss(n.id); }}
-                      style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', marginBottom: 4, display: 'block', transition: 'background 0.1s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
-                      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{n.title}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 300, margin: '2px 0 0' }}>{n.body}</p>
-                    </button>
-                  ))
-                }
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Main */}
-      <main
-        className={`${mob === 'content' ? 'mobile-main' : 'hidden md:flex'}`}
-        style={{ flex: 1, minWidth: 0, flexDirection: 'column', background: '#080808', position: 'relative' }}>
-        {/* Mobile content top bar — back arrow + name (mobile only) */}
-        <div className="md:hidden" style={{ alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-          <button onClick={() => setMob('list')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
-            <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
-          </button>
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.75)', fontFamily: 'Inter, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {showGroup ? activeGroup?.name : showDM ? activeConvo?.other?.name : ''}
-          </span>
-        </div>
-        {rail === 'settings' && <SettingsPanel activeSection={settingsSection} />}
-        {rail === 'search' && (
-          <div className="hidden md:flex" style={{ flex: 1, flexDirection: 'column', minHeight: 0 }}>
-            <SearchResults searchState={searchState} />
-          </div>
-        )}
-        {rail !== 'settings' && rail !== 'search' && showGroup && (
-          <>
-            <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
-            {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} />}
-            {activeTab === 'Chat'    && <div style={{ flex: 1, minHeight: 0 }}><ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={id => { setHighlightFileId(id); setActiveTab('Files'); }} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} /></div>}
-            {activeTab === 'Dues'    && <DuesPanel group={activeGroup} />}
-            {activeTab === 'Files'   && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
-            {activeTab === 'Members' && <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}><MembersPanel group={activeGroup} onGroupUpdate={u => { setActiveGroup(u); setGroups(prev => prev.map(g => g.id === u.id ? u : g)); }} onLeft={handleLeft} onGroupDeleted={handleLeft} onViewProfile={setProfileUserId} /></div>}
-          </>
-        )}
-        {rail !== 'settings' && rail !== 'search' && showDM && (
-          <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
-            onNavigateToGroup={gid => { const g = groups.find(gr => gr.id === gid); if (g) { pickGroup(g); setRail('groups'); } }} />
-        )}
-        {rail !== 'settings' && rail !== 'search' && !showGroup && !showDM && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.45) 0%, rgba(76,29,149,0.2) 35%, transparent 65%)', pointerEvents: 'none' }} />
-            <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 300, position: 'relative' }}>
-              {rail === 'groups' ? 'Select a group to start.' : rail === 'dms' ? 'Select a conversation.' : ''}
-            </p>
-          </div>
-        )}
-      </main>
-
-      {/* ── Mobile: settings section content overlay (when option selected) ── */}
-      {rail === 'settings' && mob === 'content' && (
-        <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#080808', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0 }}>
-            <button onClick={() => setMob('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 0, padding: 4 }}>
-              <Ic d="M19 12H5M12 5l-7 7 7 7" s={18}/>
-            </button>
-            <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif', textTransform: 'capitalize' }}>
-              {settingsSection || 'Settings'}
-            </span>
-          </div>
-          <SettingsPanel activeSection={settingsSection} />
-        </div>
+    <button onClick={onClick} style={{
+      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 3, padding: '8px 0', border: 'none', background: 'none', cursor: 'pointer',
+      color: active ? 'rgba(167,139,250,0.95)' : 'rgba(255,255,255,0.3)', position: 'relative',
+    }}>
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_ICONS[id]} /></svg>
+      <span style={{ fontSize: 9, fontWeight: active ? 500 : 300, letterSpacing: '0.03em', textTransform: 'capitalize' }}>{id}</span>
+      {badge > 0 && (
+        <span style={{ position: 'absolute', top: 6, right: '50%', transform: 'translateX(10px)', minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+          {badge > 99 ? '99+' : badge}
+        </span>
       )}
-
-      {/* ── Mobile: slide-from-left drawer ── */}
-      {drawerOpen && (
-        <div className="md:hidden" style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex' }}
-          onClick={() => setDrawerOpen(false)}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}/>
-          <div style={{ position: 'relative', width: 280, height: '100%', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRight: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', boxShadow: '8px 0 40px rgba(0,0,0,0.7)' }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'radial-gradient(ellipse at 30% 0%, rgba(124,58,237,0.15) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, rgba(124,58,237,0.5), transparent)' }}/>
-            {/* Drawer header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 16px', position: 'relative', zIndex: 1 }}>
-              <button onClick={() => { handleSelectGroup(null); setActiveConvo(null); setRail('groups'); setDrawerOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <img src={logo} alt="Studi+" style={{ width: 30, height: 30, borderRadius: 10, objectFit: 'contain' }} />
-                <span style={{ fontSize: 17, fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontFamily: 'Inter, sans-serif' }}>Studi+</span>
-              </button>
-              <button onClick={() => setDrawerOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
-              </button>
-            </div>
-            {/* Nav items */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', position: 'relative', zIndex: 1 }}>
-              {[
-                { key: 'groups',        label: 'Groups',        dot: hasGU, icon: <Ic d="M16 11c1.5 0 3-1 3-2.5S17.5 6 16 6c-1.5 0-3 1-3 2.5S14.5 11 16 11zM8 11c1.5 0 3-1 3-2.5S9.5 6 8 6C6.5 6 5 7 5 8.5S6.5 11 8 11zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z" s={20}/> },
-                { key: 'dms',           label: 'Messages',      dot: hasDU, icon: <Ic d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" s={20}/> },
-                { key: 'search',        label: 'Search',        dot: false,  icon: <Ic d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" s={20}/> },
-                { key: 'notifications', label: 'Notifications', dot: hasN,   icon: <Ic d={['M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 0 1-3.46 0']} s={20}/> },
-                { key: 'settings',      label: 'Settings',      dot: false,  icon: <Ic d={['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']} s={20}/> },
-              ].map(item => {
-                const isActive = rail === item.key;
-                return (
-                  <button key={item.key} onClick={() => { setRail(item.key); setDrawerOpen(false); }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '13px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', textAlign: 'left', marginBottom: 2, transition: 'all 0.15s', position: 'relative',
-                      background: isActive ? 'linear-gradient(135deg,rgba(124,58,237,0.2),rgba(76,29,149,0.12))' : 'none',
-                      color: isActive ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.55)',
-                    }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'none'; }}>
-                    {item.icon}
-                    <span style={{ fontSize: 15, fontWeight: isActive ? 500 : 300, fontFamily: 'Inter, sans-serif' }}>{item.label}</span>
-                    {item.dot && <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', boxShadow: '0 0 6px rgba(124,58,237,0.8)', flexShrink: 0 }}/>}
-                    {isActive && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }}/>}
-                  </button>
-                );
-              })}
-            </div>
-            {/* Profile row */}
-            <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', position: 'relative', zIndex: 1 }}>
-              <button onClick={() => { setProfileUserId(user?.id); setDrawerOpen(false); }}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px', borderRadius: 10 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: userAvatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
-                  {ini(user?.name)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                  <p style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: '1px 0 0', textTransform: 'capitalize' }}>{user?.role}</p>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
-                  <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showModal     && <GroupModal onClose={() => setShowModal(false)} onSuccess={handleGroupAdded} />}
-      {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
-      <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
-    </div>
+    </button>
   );
 }
 
 export default function DashboardPage() {
-  const { user }   = useAuth();
   const { socket } = useSocket();
-  const [groups, setGroups]           = useState([]);
+
+  const [activeNav, setActiveNav]   = useState('groups');
+  const [groups, setGroups]         = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
   const [activeGroup, setActiveGroup] = useState(null);
-  const [activeTab, setActiveTab]     = useState('Overview');
-  const [highlightFileId, setHighlightFileId] = useState(null);
-  const [highlightMessageId, setHighlightMessageId] = useState(null);
-  const [showModal, setShowModal]     = useState(false);
-  const [loadingGroups, setLoadingGroups] = useState(true);
-  const [kickNotice, setKickNotice]   = useState(null);
+  const [activeTab, setActiveTab]   = useState('Overview');
+  const [showGroupModal, setShowGroupModal] = useState(false);
   const [activeConvo, setActiveConvo] = useState(null);
+  const [settingsSection, setSettingsSection] = useState(null);
   const [profileUserId, setProfileUserId] = useState(null);
+  const [kickNotice, setKickNotice] = useState(null);
+  const searchState = useSearch();
+  const [highlightMessageId, setHighlightMessageId] = useState(null);
+  const [highlightFileId, setHighlightFileId]       = useState(null);
+
+  // Mobile: track whether we're showing the list or the detail panel
+  // 'list' = sidebar content visible, 'detail' = main content visible
+  const [mobileView, setMobileView] = useState('list');
 
   useEffect(() => {
-    groupsAPI.list().then(r => setGroups(r.data)).catch(console.error).finally(() => setLoadingGroups(false));
+    groupsAPI.list()
+      .then(res => setGroups(res.data))
+      .catch(console.error)
+      .finally(() => setGroupsLoading(false));
   }, []);
 
-  const handleSelectGroup = (g) => { setActiveGroup(g); setActiveConvo(null); setActiveTab('Overview'); };
-  const handleSelectConvo = (c) => { setActiveConvo(c); setActiveGroup(null); };
-  const handleGroupAdded  = async (group) => {
-    let full = group;
-    try { const r = await groupsAPI.get(group.id); full = { ...r.data, my_role: r.data.my_role ?? group.my_role }; } catch {}
-    setGroups(prev => prev.find(g => g.id === full.id) ? prev : [full, ...prev]);
-    setActiveGroup(full); setActiveConvo(null); setActiveTab('Overview');
-  };
-  const handleLeft = (gid) => { setGroups(prev => prev.filter(g => g.id !== gid)); setActiveGroup(prev => prev?.id === gid ? null : prev); };
-  const handleKicked = (gid, gname) => { setGroups(prev => prev.filter(g => g.id !== gid)); setActiveGroup(prev => prev?.id === gid ? null : prev); setKickNotice({ groupName: gname }); };
-  const kickRef = useRef(handleKicked);
-  useEffect(() => { kickRef.current = handleKicked; });
-  useEffect(() => {
-    if (!socket || !user?.id) return;
-    const h = ({ kickedUserId, groupId, groupName }) => { if (kickedUserId === user.id) kickRef.current(groupId, groupName); };
-    socket.on('member_kicked', h); return () => socket.off('member_kicked', h);
-  }, [socket, user?.id]);
   useEffect(() => {
     if (!socket) return;
-    const bump = ({ group_id }) => { if (!group_id) return; setGroups(prev => { const i = prev.findIndex(g => g.id === group_id); return i <= 0 ? prev : [prev[i], ...prev.filter(g => g.id !== group_id)]; }); };
-    ['new_message','new_announcement','new_due','new_file'].forEach(e => socket.on(e, bump));
-    return () => ['new_message','new_announcement','new_due','new_file'].forEach(e => socket.off(e, bump));
-  }, [socket]);
+    const onKicked = ({ groupId, groupName }) => {
+      setGroups(prev => prev.filter(g => g.id !== groupId));
+      if (activeGroup?.id === groupId) { setActiveGroup(null); setMobileView('list'); }
+      setKickNotice({ groupName });
+    };
+    socket.on('kicked_from_group', onKicked);
+    return () => socket.off('kicked_from_group', onKicked);
+  }, [socket, activeGroup?.id]);
+
+  const handleSelectGroup = useCallback((group) => {
+    setActiveGroup(group);
+    setActiveTab('Overview');
+    setActiveNav('groups');
+    setMobileView('detail');
+  }, []);
+
+  const handleSelectConvo = useCallback((convo) => {
+    setActiveConvo(convo);
+    setMobileView('detail');
+  }, []);
+
+  const handleGroupCreated = useCallback((group) => {
+    setGroups(prev => [...prev, group]);
+    setActiveGroup(group);
+    setActiveTab('Overview');
+    setActiveNav('groups');
+    setMobileView('detail');
+  }, []);
+
+  const handleGroupUpdate = useCallback((updated) => {
+    setGroups(prev => prev.map(g => g.id === updated.id ? { ...g, ...updated } : g));
+    setActiveGroup(prev => prev?.id === updated.id ? { ...prev, ...updated } : prev);
+  }, []);
+
+  const handleGroupLeft = useCallback((groupId) => {
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setActiveGroup(null);
+    setMobileView('list');
+  }, []);
+
+  const handleGroupDeleted = useCallback((groupId) => {
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setActiveGroup(null);
+    setMobileView('list');
+  }, []);
+
+  const handleSearchNavigate = useCallback((result) => {
+    const group = result.group || groups.find(g => g.id === result.groupId);
+    if (!group) return;
+    setActiveGroup(group);
+    setActiveNav('groups');
+    setMobileView('detail');
+    if (result.type === 'message') { setActiveTab('Chat'); setHighlightMessageId(result.messageId); }
+    else if (result.type === 'file') { setActiveTab('Files'); setHighlightFileId(result.fileId); }
+    else setActiveTab('Overview');
+  }, [groups]);
+
+  const handleNotificationNavigate = useCallback((n) => {
+    const group = groups.find(g => g.id === n.groupId);
+    if (!group) return;
+    setActiveGroup(group);
+    setActiveNav('groups');
+    setMobileView('detail');
+    setActiveTab(n.type === 'message' ? 'Chat' : n.type === 'due' ? 'Dues' : 'Overview');
+  }, [groups]);
+
+  const handleFileRef = useCallback((fileId) => {
+    setActiveTab('Files');
+    setHighlightFileId(fileId);
+  }, []);
+
+  // When switching nav tabs on mobile, go back to list view
+  const handleNavChange = (id) => {
+    setActiveNav(id);
+    setMobileView('list');
+  };
+
+  // ── Sidebar content ────────────────────────────────
+  const renderSidebar = () => {
+    if (activeNav === 'groups') return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
+          <button onClick={() => setShowGroupModal(true)} style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+          </button>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={handleSelectGroup} onOpenModal={() => setShowGroupModal(true)} loading={groupsLoading} />
+        </div>
+      </div>
+    );
+    if (activeNav === 'dms') return <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />;
+    if (activeNav === 'search') return <SearchSidebar groups={groups} searchState={searchState} onNavigate={handleSearchNavigate} />;
+    if (activeNav === 'notifications') return <NotificationBell inline onNavigate={handleNotificationNavigate} />;
+    if (activeNav === 'settings') return <SettingsSidebar activeSection={settingsSection} onSection={(s) => { setSettingsSection(s); setMobileView('detail'); }} onViewProfile={setProfileUserId} />;
+    return null;
+  };
+
+  // ── Main content ───────────────────────────────────
+  const renderMain = () => {
+    if (activeNav === 'dms') {
+      return (
+        <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
+          onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileView('detail'); } }} />
+      );
+    }
+    if (activeNav === 'settings') return <SettingsPanel activeSection={settingsSection} />;
+
+    if (!activeGroup) return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.25) 0%, rgba(76,29,149,0.1) 35%, transparent 65%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px' }}>
+          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.35)', margin: '0 auto 16px', display: 'block' }}>
+            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+          </svg>
+          <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.4)', margin: '0 0 8px' }}>Select a group</p>
+          <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.2)', margin: 0, lineHeight: 1.6 }}>Choose a group from the sidebar or create a new one.</p>
+        </div>
+      </div>
+    );
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={handleFileRef} />}
+          {activeTab === 'Chat' && <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={handleFileRef} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} />}
+          {activeTab === 'Dues' && <DuesPanel group={activeGroup} />}
+          {activeTab === 'Files' && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
+          {activeTab === 'Members' && <MembersPanel group={activeGroup} onGroupUpdate={handleGroupUpdate} onLeft={handleGroupLeft} onGroupDeleted={handleGroupDeleted} onViewProfile={setProfileUserId} />}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <NotificationProvider activeGroupId={activeGroup?.id} activeConvoId={activeConvo?.id} activeTab={activeTab} groups={groups}>
-      <Inner user={user} groups={groups} setGroups={setGroups} loadingGroups={loadingGroups}
-        activeGroup={activeGroup} setActiveGroup={setActiveGroup}
-        activeConvo={activeConvo} setActiveConvo={setActiveConvo}
-        activeTab={activeTab} setActiveTab={setActiveTab}
-        highlightFileId={highlightFileId} setHighlightFileId={setHighlightFileId}
-        highlightMessageId={highlightMessageId} setHighlightMessageId={setHighlightMessageId}
-        showModal={showModal} setShowModal={setShowModal}
-        kickNotice={kickNotice} setKickNotice={setKickNotice}
-        profileUserId={profileUserId} setProfileUserId={setProfileUserId}
-        handleSelectGroup={handleSelectGroup} handleSelectConvo={handleSelectConvo}
-        handleGroupAdded={handleGroupAdded} handleLeft={handleLeft} />
+    <NotificationProvider
+      activeGroupId={activeNav === 'groups' ? activeGroup?.id : null}
+      activeConvoId={activeNav === 'dms' ? activeConvo?.id : null}
+      activeTab={activeTab}
+      groups={groups}
+    >
+      {/* ── Desktop layout ── */}
+      <div className="hidden sm:flex" style={{ height: '100dvh', background: '#000000', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+        {/* Icon rail */}
+        <div style={{ width: 56, flexShrink: 0, borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 4, background: '#000000' }}>
+          {NAV.map(id => <RailIcon key={id} id={id} active={activeNav === id} onClick={() => setActiveNav(id)} />)}
+        </div>
+        {/* Sidebar */}
+        <div style={{ width: 240, flexShrink: 0, borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', background: '#000000', overflow: 'hidden' }}>
+          {renderSidebar()}
+        </div>
+        {/* Main */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#080808', overflow: 'hidden' }}>
+          {renderMain()}
+        </div>
+      </div>
+
+      {/* ── Mobile layout ── */}
+      <div className="flex sm:hidden" style={{ height: '100dvh', flexDirection: 'column', background: '#000000', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+        {/* Content area */}
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+
+          {/* List panel — shown when mobileView === 'list' */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            transform: mobileView === 'list' ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.25s ease',
+            display: 'flex', flexDirection: 'column', background: '#000000', overflow: 'hidden',
+          }}>
+            {/* Mobile header */}
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#000000' }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.8)', textTransform: 'capitalize' }}>{activeNav}</span>
+              {activeNav === 'groups' && (
+                <button onClick={() => setShowGroupModal(true)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: 'rgba(167,139,250,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+                </button>
+              )}
+            </div>
+            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              {renderSidebar()}
+            </div>
+          </div>
+
+          {/* Detail panel — shown when mobileView === 'detail' */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            transform: mobileView === 'detail' ? 'translateX(0)' : 'translateX(100%)',
+            transition: 'transform 0.25s ease',
+            display: 'flex', flexDirection: 'column', background: '#080808', overflow: 'hidden',
+          }}>
+            {/* Back button row */}
+            <div style={{ padding: '10px 12px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, background: '#000000' }}>
+              <button onClick={() => setMobileView('list')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(167,139,250,0.8)', padding: '4px 0', fontSize: 13, fontWeight: 400 }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                </svg>
+                Back
+              </button>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              {renderMain()}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom tab bar */}
+        <div style={{
+          flexShrink: 0, borderTop: '1px solid #1c1c1c', background: '#000000',
+          display: 'flex', alignItems: 'stretch',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}>
+          {NAV.map(id => <TabBtn key={id} id={id} active={activeNav === id} onClick={() => handleNavChange(id)} />)}
+        </div>
+      </div>
+
+      {/* ── Modals (shared) ── */}
+      {showGroupModal && <GroupModal onClose={() => setShowGroupModal(false)} onSuccess={handleGroupCreated} />}
+      {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
+      <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
     </NotificationProvider>
   );
 }
