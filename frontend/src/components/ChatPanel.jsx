@@ -46,7 +46,19 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     content: ''
   });
 
-  const typingTimersRef = useRef({});
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const scrollContainerRef = useRef(null);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollBtn(distFromBottom > 200);
+  };
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const bottomRef        = useRef(null);
   const textareaRef      = useRef(null);
@@ -764,8 +776,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
       )}
 
-      {/* Timeline */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ background: 'transparent' }}>
+      {/* Timeline + scroll button */}
+      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <div ref={scrollContainerRef} onScroll={handleScroll} className="overflow-y-auto px-4 py-3 space-y-2" style={{ background: 'transparent', height: '100%' }}>
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
@@ -1003,6 +1016,28 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
           })
         )}
         <div ref={bottomRef}/>
+        </div>
+
+        {showScrollBtn && (
+          <button
+            onClick={scrollToBottom}
+            style={{
+              position: 'absolute', bottom: 16, right: 16, zIndex: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+              background: '#18181b', border: '1px solid rgba(255,255,255,0.15)',
+              color: '#fff', cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#27272a'}
+            onMouseLeave={e => e.currentTarget.style.background = '#18181b'}
+            title="Scroll to bottom"
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Typing indicator */}
@@ -1120,6 +1155,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
           </div>
         )}
       </div>
+
     </div>
   );
 }
