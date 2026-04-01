@@ -5,7 +5,6 @@ import { useToast } from '../context/ToastContext';
 import { duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { toISTDateInput, toISTTimeInput } from '../utils/time';
-
 const daysUntil = (dateStr) => {
   const diffMs = new Date(dateStr).getTime() - Date.now();
   if (diffMs < 0) return -1;
@@ -21,10 +20,9 @@ const dueBadge = (days) => {
 };
 
 function DueForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '' });
+  const [form, setForm]   = useState({ title: '', description: '', due_date: '', due_time: '' });
   const [loading, setLoading] = useState(false);
-  const [open, setOpen]       = useState(false);
-  const formRef = useRef(null);
+  const [open, setOpen]   = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -35,10 +33,9 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
         due_time: (() => { const t = toISTTimeInput(editing.due_date); return t === '00:00' ? '' : t; })(),
       });
       setOpen(true);
-      setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } else {
       setForm({ title: '', description: '', due_date: '', due_time: '' });
-      setOpen(false);
+      if (!editing) setOpen(false);
     }
   }, [editing]);
 
@@ -66,7 +63,59 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
     if (onCancel) onCancel();
   };
 
-  if (!open && !editing) return (
+  const formContent = (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <input className="form-input" placeholder="e.g. Assignment 3 submission" required
+        value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
+      <input className="form-input" placeholder="Description (optional)"
+        value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}/>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ flex: 1 }}>
+          <label className="form-label">Due date</label>
+          <input type="date" className="form-input" required value={form.due_date}
+            onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
+        </div>
+        <div style={{ flex: 1 }}>
+          <label className="form-label">Time <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 300 }}>(optional)</span></label>
+          <input type="time" className="form-input" value={form.due_time}
+            onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}/>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+        <button type="submit" disabled={loading}
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+          {loading ? (editing ? 'Updating…' : 'Adding…') : (editing ? 'Update' : 'Add')}
+        </button>
+        <button type="button" onClick={handleCancel}
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+
+  // When editing — render as centered modal
+  if (editing) return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
+      onClick={handleCancel}>
+      <div style={{ width: '100%', maxWidth: 460, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}>Edit due date</span>
+          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+          </button>
+        </div>
+        {formContent}
+      </div>
+    </div>
+  );
+
+  // When creating — render inline trigger / form
+  if (!open) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
@@ -81,34 +130,9 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   );
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="card p-4 space-y-3">
-      <input className="form-input" placeholder="e.g. Assignment 3 submission" required
-        value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
-      <input className="form-input" placeholder="Description (optional)"
-        value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}/>
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <label className="form-label">Due date</label>
-          <input type="date" className="form-input" required value={form.due_date}
-            onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
-        </div>
-        <div className="flex-1">
-          <label className="form-label">Time <span className="dark:text-gray-600 text-gray-400">(optional)</span></label>
-          <input type="time" className="form-input" value={form.due_time}
-            onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}/>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button type="submit" disabled={loading}
-          className="flex-1 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition">
-          {loading ? (editing ? 'Updating...' : 'Adding...') : (editing ? 'Update' : 'Add')}
-        </button>
-        <button type="button" onClick={handleCancel}
-          className="flex-1 py-2 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-400 text-gray-600 text-sm rounded-xl transition">
-          Cancel
-        </button>
-      </div>
-    </form>
+    <div className="card p-4">
+      {formContent}
+    </div>
   );
 }
 

@@ -107,8 +107,8 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
     </div>
   );
 
-  return (
-    <form onSubmit={handleSubmit} className="card p-4 space-y-3">
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-3">
       {/* Tag picker */}
       <div className="flex flex-wrap gap-2">
         {Object.entries(ANNOUNCEMENT_TAGS).map(([key, t]) => (
@@ -176,21 +176,44 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-1">
         <button type="submit" disabled={loading}
-          className="flex-1 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition">
-          {loading
-            ? (editing ? 'Saving...' : 'Saving...')
-            : scheduled
-              ? (editing ? 'Reschedule' : 'Schedule')
-              : (editing ? 'Update' : 'Post now')}
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+          {loading ? 'Saving…' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post now')}
         </button>
         <button type="button" onClick={handleCancel}
-          className="flex-1 py-2 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-400 text-gray-600 text-sm rounded-xl transition">
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
           Cancel
         </button>
       </div>
     </form>
+  );
+
+  // Editing — centered modal
+  if (editing) return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
+      onClick={handleCancel}>
+      <div style={{ width: '100%', maxWidth: 520, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}>Edit announcement</span>
+          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+          </button>
+        </div>
+        {formContent}
+      </div>
+    </div>
+  );
+
+  // Creating — inline card
+  return (
+    <div className="card p-4">
+      {formContent}
+    </div>
   );
 }
 
