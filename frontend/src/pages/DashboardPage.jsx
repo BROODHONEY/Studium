@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
@@ -60,7 +60,7 @@ function TabBtn({ id, active, onClick, badge }) {
     <button onClick={onClick} style={{
       flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       gap: 3, padding: '8px 0', border: 'none', background: 'none', cursor: 'pointer',
-      color: active ? 'rgba(167,139,250,0.95)' : 'rgba(255,255,255,0.3)', position: 'relative',
+      color: active ? 'rgba(167,139,250,0.95)' : 'rgba(255,255,255,0.55)', position: 'relative',
     }}>
       <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_ICONS[id]} /></svg>
       <span style={{ fontSize: 9, fontWeight: active ? 500 : 300, letterSpacing: '0.03em', textTransform: 'capitalize' }}>{id}</span>
@@ -95,6 +95,9 @@ export default function DashboardPage() {
   // Mobile: track whether we're showing the list or the detail panel
   // 'list' = sidebar content visible, 'detail' = main content visible
   const [mobileView, setMobileView] = useState('list');
+  // Lock in which nav was active when detail panel was opened, so switching tabs
+  // doesn't change the content rendered inside the (off-screen) detail panel
+  const [mobileDetailNav, setMobileDetailNav] = useState('groups');
 
   useEffect(() => {
     groupsAPI.list()
@@ -118,11 +121,13 @@ export default function DashboardPage() {
     setActiveGroup(group);
     setActiveTab('Overview');
     setActiveNav('groups');
+    setMobileDetailNav('groups');
     setMobileView('detail');
   }, []);
 
   const handleSelectConvo = useCallback((convo) => {
     setActiveConvo(convo);
+    setMobileDetailNav('dms');
     setMobileView('detail');
   }, []);
 
@@ -131,6 +136,7 @@ export default function DashboardPage() {
     setActiveGroup(group);
     setActiveTab('Overview');
     setActiveNav('groups');
+    setMobileDetailNav('groups');
     setMobileView('detail');
   }, []);
 
@@ -156,6 +162,7 @@ export default function DashboardPage() {
     if (!group) return;
     setActiveGroup(group);
     setActiveNav('groups');
+    setMobileDetailNav('groups');
     setMobileView('detail');
     if (result.type === 'message') { setActiveTab('Chat'); setHighlightMessageId(result.messageId); }
     else if (result.type === 'file') { setActiveTab('Files'); setHighlightFileId(result.fileId); }
@@ -167,6 +174,7 @@ export default function DashboardPage() {
     if (!group) return;
     setActiveGroup(group);
     setActiveNav('groups');
+    setMobileDetailNav('groups');
     setMobileView('detail');
     setActiveTab(n.type === 'message' ? 'Chat' : n.type === 'due' ? 'Dues' : 'Overview');
   }, [groups]);
@@ -177,7 +185,9 @@ export default function DashboardPage() {
   }, []);
 
   // When switching nav tabs on mobile, go back to list view
-  const handleNavChange = (id) => {
+  const navChangedByTabRef = useRef(false);
+  const wrappedHandleNavChange = (id) => {
+    navChangedByTabRef.current = true;
     setActiveNav(id);
     setMobileView('list');
   };
@@ -187,7 +197,7 @@ export default function DashboardPage() {
     if (activeNav === 'groups') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
           {/* FAB with popover */}
           <div style={{ position: 'relative' }}>
             <button
@@ -234,7 +244,7 @@ export default function DashboardPage() {
     if (activeNav === 'dms') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Messages</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Messages</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
@@ -244,7 +254,7 @@ export default function DashboardPage() {
     if (activeNav === 'search') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <SearchSidebar groups={groups} searchState={searchState} onNavigate={handleSearchNavigate} />
@@ -254,14 +264,14 @@ export default function DashboardPage() {
     if (activeNav === 'notifications') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Notifications</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Notifications</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <NotificationBell inline onNavigate={handleNotificationNavigate} />
         </div>
       </div>
     );
-    if (activeNav === 'settings') return <SettingsSidebar activeSection={settingsSection} onSection={(s) => { setSettingsSection(s); setMobileView('detail'); }} onViewProfile={setProfileUserId} />;
+    if (activeNav === 'settings') return <SettingsSidebar activeSection={settingsSection} onSection={(s) => { setSettingsSection(s); setMobileDetailNav('settings'); setMobileView('detail'); }} onViewProfile={setProfileUserId} />;
     return null;
   };
 
@@ -283,7 +293,7 @@ export default function DashboardPage() {
             <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
           </svg>
           <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.4)', margin: '0 0 8px' }}>Select a group</p>
-          <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.2)', margin: 0, lineHeight: 1.6 }}>Choose a group from the sidebar or create a new one.</p>
+          <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.6 }}>Choose a group from the sidebar or create a new one.</p>
         </div>
       </div>
     );
@@ -373,7 +383,13 @@ export default function DashboardPage() {
               </button>
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              {renderMain()}
+              {mobileDetailNav === 'dms'
+                ? <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
+                    onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileDetailNav('groups'); setMobileView('detail'); } }} />
+                : mobileDetailNav === 'settings'
+                ? <SettingsPanel activeSection={settingsSection} />
+                : renderMain()
+              }
             </div>
           </div>
         </div>
@@ -384,7 +400,7 @@ export default function DashboardPage() {
           display: 'flex', alignItems: 'stretch',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}>
-          {NAV.map(id => <TabBtn key={id} id={id} active={activeNav === id} onClick={() => handleNavChange(id)} />)}
+          {NAV.map(id => <TabBtn key={id} id={id} active={activeNav === id} onClick={() => wrappedHandleNavChange(id)} />)}
         </div>
       </div>
 

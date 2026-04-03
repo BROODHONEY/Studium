@@ -149,6 +149,8 @@ export default function DuesPanel({ group }) {
   const [editingDue, setEditingDue]           = useState(null);
   const [deleteConfirm, setDeleteConfirm]     = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [selectedDue, setSelectedDue] = useState(null);
 
   useEffect(() => {
     if (!group || !socket) return;
@@ -237,40 +239,67 @@ export default function DuesPanel({ group }) {
                   const hasTime = istTime !== '00:00';
                   return (
                     <div key={d.id}
-                      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 16px', borderRadius: 10, border: '1px solid #1c1c1c', background: '#080808', transition: 'border-color 0.15s', cursor: 'default' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, border: '1px solid #1c1c1c', background: '#080808', transition: 'border-color 0.15s', cursor: 'pointer', position: 'relative' }}
                       className="group"
+                      onClick={() => setSelectedDue(d)}
                       onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
                       onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
                       {/* Date block */}
-                      <div className="flex-shrink-0 w-12 text-center">
-                        <p className="text-lg font-semibold dark:text-white text-gray-900 leading-none">
+                      <div className="flex-shrink-0 w-10 text-center">
+                        <p className="text-base font-semibold dark:text-white text-gray-900 leading-none">
                           {dt.toLocaleString('en-IN', { day: 'numeric', timeZone: 'Asia/Kolkata' })}
                         </p>
-                        <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 uppercase">
+                        <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 uppercase" style={{ fontSize: 10 }}>
                           {dt.toLocaleDateString('en-GB', { month: 'short', timeZone: 'Asia/Kolkata' })}
                         </p>
                         {hasTime && (
-                          <p className="text-xs dark:text-gray-600 text-gray-400 mt-0.5">
+                          <p className="dark:text-gray-600 text-gray-400 mt-0.5" style={{ fontSize: 10 }}>
                             {dt.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
                           </p>
                         )}
                       </div>
 
-                      <div style={{ width: 1, height: 32, background: '#1c1c1c', flexShrink: 0 }}/>
+                      <div style={{ width: 1, height: 28, background: '#1c1c1c', flexShrink: 0 }}/>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium dark:text-white text-gray-900 truncate">{d.title}</p>
-                        {d.description && <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5 truncate">{d.description}</p>}
+                        <p className="font-medium dark:text-white text-gray-900 truncate" style={{ fontSize: 12 }}>{d.title}</p>
+                        {d.description && <p className="dark:text-gray-500 text-gray-500 mt-0.5 truncate" style={{ fontSize: 11 }}>{d.description}</p>}
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className={`text-xs px-2.5 py-1 rounded-full border ${badge.cls}`}>{badge.label}</span>
+                        <span className={`px-2 py-0.5 rounded-full border ${badge.cls}`} style={{ fontSize: 11 }}>{badge.label}</span>
                         {(isTeacher || d.users?.id === user?.id) && (
-                          <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition">
-                            <button onClick={() => setEditingDue(d)}
-                              className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition px-1 py-0.5">Edit</button>
-                            <button onClick={() => setDeleteConfirm(d.id)}
-                              className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
+                          <div style={{ position: 'relative' }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === d.id ? null : d.id); }}
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)' }}
+                              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                              </svg>
+                            </button>
+                            {openMenuId === d.id && (
+                              <>
+                                <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
+                                <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                                  <button
+                                    onClick={() => { setEditingDue(d); setOpenMenuId(null); }}
+                                    style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                  >Edit</button>
+                                  <div style={{ height: 1, background: '#1c1c1c' }} />
+                                  <button
+                                    onClick={() => { setDeleteConfirm(d.id); setOpenMenuId(null); }}
+                                    style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                  >Delete</button>
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -280,6 +309,76 @@ export default function DuesPanel({ group }) {
           }
         </div>
       </div>
+
+      {/* Due detail popup */}
+      {selectedDue && (() => {
+        const d = selectedDue;
+        const days  = daysUntil(d.due_date);
+        const badge = dueBadge(days);
+        const dt    = new Date(d.due_date);
+        const hasTime = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }) !== '00:00';
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '0 20px' }}
+            onClick={() => setSelectedDue(null)}
+          >
+            <div
+              style={{ background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: 0, lineHeight: 1.4 }}>{d.title}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedDue(null)}
+                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 2, lineHeight: 0 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Badge */}
+              <span className={`px-2.5 py-0.5 rounded-full border ${badge.cls}`} style={{ fontSize: 11 }}>{badge.label}</span>
+
+              {/* Date / time */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0 }}>
+                  <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                </svg>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontWeight: 300 }}>
+                  {dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+                  {hasTime && ` · ${dt.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`}
+                </span>
+              </div>
+
+              {/* Description */}
+              {d.description && (
+                <div style={{ marginTop: 14, padding: '12px 14px', background: '#080808', borderRadius: 8, border: '1px solid #1c1c1c' }}>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontWeight: 300, margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{d.description}</p>
+                </div>
+              )}
+
+              {/* Teacher actions */}
+              {(isTeacher || d.users?.id === user?.id) && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                  <button
+                    onClick={() => { setEditingDue(d); setSelectedDue(null); }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: 'rgba(167,139,250,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                  >Edit</button>
+                  <button
+                    onClick={() => { setDeleteConfirm(d.id); setSelectedDue(null); }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                  >Delete</button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

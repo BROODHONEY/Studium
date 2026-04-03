@@ -142,14 +142,14 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
     if (!highlightFileId) return;
     const attempt = (tries) => {
       const el = fileRowRefs.current[highlightFileId];
-      if (!el) { if (tries > 0) setTimeout(() => attempt(tries - 1), 200); return; }
+      if (!el) { if (tries > 0) setTimeout(() => attempt(tries - 1), 300); return; }
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       el.classList.add('file-highlight');
       const t = setTimeout(() => { el.classList.remove('file-highlight'); onHighlightClear?.(); }, 2000);
       return () => clearTimeout(t);
     };
-    attempt(5);
-  }, [highlightFileId]);
+    attempt(15); // up to 4.5s — files may need to load first
+  }, [highlightFileId, files]); // re-run when files load
 
   const [files, setFiles]         = useState([]);
   const [loading, setLoading]     = useState(true);

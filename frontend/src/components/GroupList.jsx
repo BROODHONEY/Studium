@@ -50,8 +50,8 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
   return (
     <button
       draggable
-      onDragStart={onDragStart}
-      onDragOver={e => { e.preventDefault(); onDragOver(); }}
+      onDragStart={e => { e.dataTransfer.setData('groupId', group.id); e.dataTransfer.effectAllowed = 'move'; onDragStart(e); }}
+      onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; onDragOver(); }}
       onDrop={onDrop}
       onTouchStart={handleTouchStart}
       onTouchEnd={cancelPress}
@@ -75,11 +75,11 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
             <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
           </svg>
         )}
-        <p className="text-sm truncate flex-1" style={{ fontWeight: active ? 400 : 300, color: active ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)' }}>
+        <p className="text-sm truncate flex-1" style={{ fontWeight: active ? 400 : 300, color: active ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)' }}>
           {group.name}
         </p>
         {label && (
-          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em' }}>
+          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em' }}>
             {label}
           </span>
         )}
@@ -87,7 +87,7 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
           <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full" style={{ background: '#7c3aed' }}/>
         )}
       </div>
-      <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 300, fontSize: 12 }}>
+      <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 300, fontSize: 12 }}>
         {group.subject} · {group.my_role}
       </p>
     </button>
@@ -102,6 +102,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   const [folders, setFolders]         = useState([]);
   const [collapsed, setCollapsed]     = useState({});
   const [dragGroupId, setDragGroupId] = useState(null);
+  const dragGroupIdRef = useRef(null);
   const [dragFolderId, setDragFolderId] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [folderModal, setFolderModal] = useState(false);
@@ -222,22 +223,26 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
   };
 
   // ── Drag ───────────────────────────────────────────
-  const handleDropOnFolder = (folderId) => {
-    if (!dragGroupId) return;
-    moveToFolder(dragGroupId, folderId);
+  const handleDropOnFolder = (folderId, e) => {
+    const gid = e?.dataTransfer?.getData('groupId') || dragGroupIdRef.current;
+    if (!gid) return;
+    moveToFolder(gid, folderId);
+    dragGroupIdRef.current = null;
     setDragGroupId(null); setDragFolderId(null);
   };
 
-  const handleDropOnGroup = (targetId, folderId) => {
-    if (!dragGroupId || dragGroupId === targetId) return;
+  const handleDropOnGroup = (targetId, folderId, e) => {
+    const gid = e?.dataTransfer?.getData('groupId') || dragGroupIdRef.current;
+    if (!gid || gid === targetId) return;
     const next = folders.map(f => {
       if (f.id !== folderId) return f;
-      const ids = f.groupIds.filter(id => id !== dragGroupId);
+      const ids = f.groupIds.filter(id => id !== gid);
       const idx = ids.indexOf(targetId);
-      ids.splice(idx >= 0 ? idx : ids.length, 0, dragGroupId);
+      ids.splice(idx >= 0 ? idx : ids.length, 0, gid);
       return { ...f, groupIds: ids };
     });
     persist(next);
+    dragGroupIdRef.current = null;
     setDragGroupId(null); setDragFolderId(null);
   };
 
@@ -312,7 +317,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
                     <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
                   </svg>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned</span>
                 </div>
                 <div className="space-y-0.5">
                   {pinnedGroups.map(group => (
@@ -321,7 +326,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                       onSelect={onSelect}
                       dragging={dragGroupId === group.id}
                       onLongPress={handleLongPress}
-                      onDragStart={() => setDragGroupId(group.id)}
+                      onDragStart={() => { dragGroupIdRef.current = group.id; setDragGroupId(group.id); }}
                       onDragOver={() => {}}
                       onDrop={() => {}}
                       {...itemProps(group)}
@@ -336,7 +341,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               <div className="mb-1">
                 {/* Section header */}
                 <div className="flex items-center justify-between px-1 mb-2">
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Folders</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Folders</span>
                   <div className="flex items-center gap-1">
                     <button onClick={() => setFolderModal(true)}
                       style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)' }}>
@@ -370,9 +375,9 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
                     return (
                       <div key={folder.id}
-                        onDragOver={e => { e.preventDefault(); setDragFolderId(folder.id); }}
-                        onDragLeave={() => setDragFolderId(p => p === folder.id ? null : p)}
-                        onDrop={e => { e.preventDefault(); handleDropOnFolder(folder.id); }}
+                        onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragFolderId(folder.id); }}
+                        onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragFolderId(p => p === folder.id ? null : p); }}
+                        onDrop={e => { e.preventDefault(); e.stopPropagation(); handleDropOnFolder(folder.id, e); }}
                         style={{ borderRadius: 0, overflow: 'hidden', border: dragFolderId === folder.id ? '1px solid rgba(124,58,237,0.4)' : '1px solid #1c1c1c' }}>
 
                         {/* Folder card header */}
@@ -428,7 +433,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         {!isCollapsed && (
                           <div style={{ borderTop: '1px solid #1c1c1c' }}>
                             {folderGroups.length === 0
-                              ? <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', padding: '8px 12px', fontStyle: 'italic' }}>Empty — drag groups here</p>
+                              ? <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.45)', padding: '8px 12px', fontStyle: 'italic' }}>Empty — drag groups here</p>
                               : folderGroups.map(group => (
                                 <div key={group.id} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                                   <GroupItem group={group}
@@ -436,9 +441,9 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                     onSelect={onSelect}
                                     dragging={dragGroupId === group.id}
                                     onLongPress={handleLongPress}
-                                    onDragStart={() => setDragGroupId(group.id)}
+                                    onDragStart={() => { dragGroupIdRef.current = group.id; setDragGroupId(group.id); }}
                                     onDragOver={() => {}}
-                                    onDrop={() => handleDropOnGroup(group.id, folder.id)}
+                                    onDrop={e => handleDropOnGroup(group.id, folder.id, e)}
                                     noColorBorder
                                     {...itemProps(group, folderColors[folder.id] || null)}
                                   />
@@ -456,15 +461,15 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
             {/* ── Ungrouped / drop-to-remove zone ── */}
             <div
-              onDragOver={e => { e.preventDefault(); setDragFolderId('__none__'); }}
-              onDragLeave={() => setDragFolderId(p => p === '__none__' ? null : p)}
-              onDrop={e => { e.preventDefault(); if (dragGroupId) { moveToFolder(dragGroupId, null); setDragGroupId(null); setDragFolderId(null); } }}
+              onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragFolderId('__none__'); }}
+              onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragFolderId(p => p === '__none__' ? null : p); }}
+              onDrop={e => { e.preventDefault(); const gid = e.dataTransfer.getData('groupId') || dragGroupIdRef.current; if (gid) { moveToFolder(gid, null); dragGroupIdRef.current = null; setDragGroupId(null); setDragFolderId(null); } }}
               className={`rounded-xl transition min-h-[4px] ${dragFolderId === '__none__' ? 'ring-1 ring-brand-500/30' : ''}`}>
               {folders.length > 0 && ungrouped.length > 0 && (
-                <p style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 2px' }}>Other</p>
+                <p style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 2px' }}>Other</p>
               )}
               {dragFolderId === '__none__' && ungrouped.length === 0 && (
-                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', padding: '8px 12px', fontStyle: 'italic', textAlign: 'center' }}>Drop to remove from folder</p>
+                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.45)', padding: '8px 12px', fontStyle: 'italic', textAlign: 'center' }}>Drop to remove from folder</p>
               )}
               <div className="space-y-0.5">
                 {ungrouped.map(group => (
@@ -473,7 +478,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                     onSelect={onSelect}
                     dragging={dragGroupId === group.id}
                     onLongPress={handleLongPress}
-                    onDragStart={() => setDragGroupId(group.id)}
+                    onDragStart={() => { dragGroupIdRef.current = group.id; setDragGroupId(group.id); }}
                     onDragOver={() => {}}
                     onDrop={() => {}}
                     {...itemProps(group)}
@@ -491,7 +496,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.2)' }}>
                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
                   </svg>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Archived</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Archived</span>
                   <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.15)', marginLeft: 2 }}>{archivedGroups.length}</span>
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"
                     style={{ flexShrink: 0, color: 'rgba(255,255,255,0.15)', marginLeft: 'auto', transform: showArchived ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}>
@@ -506,7 +511,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         onSelect={onSelect}
                         dragging={dragGroupId === group.id}
                         onLongPress={handleLongPress}
-                        onDragStart={() => setDragGroupId(group.id)}
+                        onDragStart={() => { dragGroupIdRef.current = group.id; setDragGroupId(group.id); }}
                         onDragOver={() => {}}
                         onDrop={() => {}}
                         {...itemProps(group)}

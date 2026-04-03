@@ -105,9 +105,9 @@ export default function DMList({ activeConvoId, onSelect }) {
       {search.trim() && (
         <div style={{ borderBottom: '1px solid #1c1c1c', flexShrink: 0 }}>
           {searching ? (
-            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>Searching…</p>
+            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.45)' }}>Searching…</p>
           ) : results.length === 0 ? (
-            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>No users found</p>
+            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.45)' }}>No users found</p>
           ) : results.map(u => (
             <button key={u.id} onClick={() => handleStartConvo(u)}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
@@ -121,9 +121,9 @@ export default function DMList({ activeConvoId, onSelect }) {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
-                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
+                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.5)', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', textTransform: 'capitalize', flexShrink: 0 }}>{u.role}</span>
+              <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.45)', textTransform: 'capitalize', flexShrink: 0 }}>{u.role}</span>
             </button>
           ))}
         </div>
@@ -136,7 +136,7 @@ export default function DMList({ activeConvoId, onSelect }) {
             <div key={i} style={{ height: 56, borderRadius: 8, background: '#0d0d0d', marginBottom: 4 }}/>
           ))
         ) : convos.length === 0 && !search ? (
-          <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.15)', textAlign: 'center', padding: '24px 12px', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '24px 12px', lineHeight: 1.6 }}>
             Search for someone by email to start a conversation
           </p>
         ) : convos.map(convo => {
@@ -170,15 +170,15 @@ export default function DMList({ activeConvoId, onSelect }) {
               {/* Text */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                  <p style={{ fontSize: 13, fontWeight: active ? 400 : 300, color: active ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: active ? 400 : 300, color: active ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                     {other?.name}
                   </p>
                   {timeStr && (
-                    <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>{timeStr}</span>
+                    <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.45)', flexShrink: 0 }}>{timeStr}</span>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 2 }}>
-                  <p style={{ fontSize: 12, fontWeight: 300, color: hasUnread ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                  <p style={{ fontSize: 12, fontWeight: 300, color: hasUnread ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.5)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                     {preview}
                   </p>
                   {hasUnread && (
