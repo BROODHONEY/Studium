@@ -231,6 +231,8 @@ export default function GroupOverview({ group, onFileRef }) {
   const [deleteConfirm, setDeleteConfirm]       = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   useEffect(() => {
     if (!group || !socket) return;
@@ -365,8 +367,11 @@ export default function GroupOverview({ group, onFileRef }) {
                 });
                 return (
                   <div key={a.id}
-                    style={{ padding: '16px', borderRadius: 10, borderLeft: `2px solid ${tag.accentColor || '#2a2a2a'}`, border: '1px solid #1c1c1c', background: '#080808' }}
-                    className="group">
+                    onClick={() => setSelectedAnnouncement(a)}
+                    style={{ padding: '16px', borderRadius: 10, borderLeft: `2px solid ${tag.accentColor || '#2a2a2a'}`, border: '1px solid #1c1c1c', background: '#080808', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                    className="group"
+                    onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
@@ -376,23 +381,44 @@ export default function GroupOverview({ group, onFileRef }) {
                         <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
                       </div>
                       {(isTeacher || a.users?.id === user?.id) && (
-                        <div style={{ display: 'flex', gap: 8 }} className="opacity-0 group-hover:opacity-100 transition">
-                          <button onClick={() => setEditingAnnouncement(a)}
-                            style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}
+                        <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => setOpenMenuId(openMenuId === a.id ? null : a.id)}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)' }}
                             onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>Edit</button>
-                          <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })}
-                            style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 300, background: 'none', border: 'none', cursor: 'pointer' }}
-                            onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.8)'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>Delete</button>
+                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                            </svg>
+                          </button>
+                          {openMenuId === a.id && (
+                            <>
+                              <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
+                              <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                                <button
+                                  onClick={() => { setEditingAnnouncement(a); setOpenMenuId(null); }}
+                                  style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                >Edit</button>
+                                <div style={{ height: 1, background: '#1c1c1c' }} />
+                                <button
+                                  onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setOpenMenuId(null); }}
+                                  style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                >Delete</button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', marginTop: 12, lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', marginTop: 12, lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
                     </div>
                     {Object.keys(reactionMap).length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }} onClick={e => e.stopPropagation()}>
                         {Object.entries(reactionMap).map(([emoji, userIds]) => (
                           <button key={emoji} onClick={() => handleReact(a.id, emoji)}
                             style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
@@ -459,6 +485,71 @@ export default function GroupOverview({ group, onFileRef }) {
           </section>
         )}
       </div>
+
+      {/* Announcement detail popup */}
+      {selectedAnnouncement && (() => {
+        const a = selectedAnnouncement;
+        const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
+        const reactionMap = {};
+        (a.announcement_reactions || []).forEach(r => {
+          if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+          reactionMap[r.emoji].push(r.user_id);
+        });
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '0 20px' }}
+            onClick={() => setSelectedAnnouncement(null)}
+          >
+            <div
+              style={{ background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.7)', maxHeight: '80vh', overflowY: 'auto' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+                    <TagIcon type={a.tag || 'general'} />{tag.label}
+                  </span>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: 0, lineHeight: 1.4 }}>{a.title}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedAnnouncement(null)}
+                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 2, lineHeight: 0 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
+                  </svg>
+                </button>
+              </div>
+              <div style={{ padding: '12px 14px', background: '#080808', borderRadius: 8, border: '1px solid #1c1c1c', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>
+                <MessageContent content={a.content} isOwn={false} onFileRef={(id) => { onFileRef(id); setSelectedAnnouncement(null); }} />
+              </div>
+              {Object.keys(reactionMap).length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+                  {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                    <button key={emoji} onClick={() => handleReact(a.id, emoji)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
+                      <span>{emoji}</span><span>{userIds.length}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {(isTeacher || a.users?.id === user?.id) && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                  <button
+                    onClick={() => { setEditingAnnouncement(a); setSelectedAnnouncement(null); }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: 'rgba(167,139,250,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                  >Edit</button>
+                  <button
+                    onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setSelectedAnnouncement(null); }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                  >Delete</button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

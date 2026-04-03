@@ -137,6 +137,12 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   const catNameInput    = useRef(null);
   const fileRowRefs     = useRef({});  // fileId -> DOM element
 
+  const [files, setFiles]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError]         = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
+
   // Scroll to and highlight the referenced file
   useEffect(() => {
     if (!highlightFileId) return;
@@ -148,14 +154,8 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
       const t = setTimeout(() => { el.classList.remove('file-highlight'); onHighlightClear?.(); }, 2000);
       return () => clearTimeout(t);
     };
-    attempt(15); // up to 4.5s — files may need to load first
-  }, [highlightFileId, files]); // re-run when files load
-
-  const [files, setFiles]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError]         = useState('');
-  const [pendingFile, setPendingFile] = useState(null);
+    attempt(15);
+  }, [highlightFileId, files]);
 
   // Select mode
   const [selecting, setSelecting]   = useState(false);
