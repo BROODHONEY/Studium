@@ -36,17 +36,14 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
 
   return (
     <div style={{
-      padding: '12px 20px',
+      height: 44,
+      padding: '0 20px',
       borderBottom: '1px solid var(--border-color)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexShrink: 0,
       background: 'var(--bg-surface)',
-      backdropFilter: 'blur(20px) saturate(150%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(150%)',
       gap: 16, fontFamily: 'Inter, sans-serif', position: 'relative',
     }}>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.2), transparent)', pointerEvents: 'none' }}/>
-
       {/* Title */}
       <div style={{ minWidth: 0, flex: 1 }}>
         <h2 style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
