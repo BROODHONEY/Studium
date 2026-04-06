@@ -21,7 +21,7 @@ import ProfileModal from '../components/ProfileModal';
 import KickNotification from '../components/KickNotification';
 import { SearchSidebar, useSearch } from '../components/SearchPanel';
 
-const NAV_MAIN = ['groups', 'dms', 'notifications'];
+const NAV_MAIN = ['groups', 'dms'];
 const NAV_ALL  = ['groups', 'dms', 'notifications', 'settings'];
 
 const NAV_META = {
@@ -183,6 +183,11 @@ export default function DashboardPage() {
         <NotificationBell inline onNavigate={handleNotificationNavigate} />
       </div>
     );
+    if (activeNav === 'notifications') return (
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <NotificationBell inline onNavigate={handleNotificationNavigate} />
+      </div>
+    );
     if (activeNav === 'settings') return (
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <SettingsSidebar activeSection={settingsSection}
@@ -244,8 +249,12 @@ export default function DashboardPage() {
           </div>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em', marginRight: 16 }}>Studi+</span>
           <div style={{ flex: 1 }} />
-          {/* Right: settings + avatar */}
+          {/* Right: notifications + settings + avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <NotificationBell
+              onNavigate={handleNotificationNavigate}
+              onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
+            />
             <button onClick={() => { setActiveNav('settings'); setPanelOpen(true); }}
               title="Settings"
               style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: activeNav === 'settings' ? 'rgba(124,58,237,0.12)' : 'none', color: activeNav === 'settings' ? '#7c3aed' : 'var(--text-3)', transition: 'all 0.15s' }}
