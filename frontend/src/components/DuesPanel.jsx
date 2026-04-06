@@ -83,7 +83,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
       </div>
       <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
         <button type="submit" disabled={loading}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#4338ca)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
           {loading ? (editing ? 'Updating…' : 'Adding…') : (editing ? 'Update' : 'Add')}
         </button>
         <button type="button" onClick={handleCancel}
@@ -100,7 +100,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
       onClick={handleCancel}>
       <div style={{ width: '100%', maxWidth: 460, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)' }}>Edit due date</span>
           <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
@@ -118,9 +118,9 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   if (!open) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(124,58,237,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(99,102,241,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
         </svg>
@@ -197,7 +197,7 @@ export default function DuesPanel({ group }) {
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: 'transparent', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div className="max-w-3xl mx-auto px-6 py-8">
         <ConfirmDialog
           open={!!deleteConfirm} danger
@@ -370,7 +370,7 @@ export default function DuesPanel({ group }) {
                 <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                   <button
                     onClick={() => { setEditingDue(d); setSelectedDue(null); }}
-                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: 'rgba(167,139,250,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: 'rgba(165,180,252,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
                   >Edit</button>
                   <button
                     onClick={() => { setDeleteConfirm(d.id); setSelectedDue(null); }}

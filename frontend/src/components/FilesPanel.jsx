@@ -60,7 +60,7 @@ function ConfirmUploadModal({ file, onConfirm, onCancel }) {
         </div>
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm dark:text-gray-400 text-gray-600 dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 transition">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 transition">Upload</button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 transition">Upload</button>
         </div>
       </div>
     </div>
@@ -76,15 +76,15 @@ function FileCard({ file, selecting, selected, onToggle, canDelete, onDelete, ca
       onMouseLeave={() => setHov(false)}
       style={{
         position: 'relative', borderRadius: 12,
-        border: `1px solid ${selected ? 'rgba(124,58,237,0.4)' : hov ? '#2a2a2a' : '#1c1c1c'}`,
-        background: selected ? 'rgba(124,58,237,0.06)' : '#0d0d0d',
+        border: `1px solid ${selected ? 'rgba(99,102,241,0.4)' : hov ? '#2a2a2a' : '#1c1c1c'}`,
+        background: selected ? 'rgba(99,102,241,0.06)' : '#0d0d0d',
         padding: '18px 14px 14px', cursor: selecting ? 'pointer' : 'default',
         transition: 'border-color 0.15s, background 0.15s',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, minWidth: 0,
       }}>
       {/* Checkbox */}
       {selecting && (
-        <div style={{ position: 'absolute', top: 9, right: 9, width: 17, height: 17, borderRadius: 5, border: selected ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)', background: selected ? '#7c3aed' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+        <div style={{ position: 'absolute', top: 9, right: 9, width: 17, height: 17, borderRadius: 5, border: selected ? '2px solid #6366F1' : '2px solid rgba(255,255,255,0.2)', background: selected ? '#6366F1' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
           {selected && <svg width="9" height="9" viewBox="0 0 16 16" fill="white"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
         </div>
       )}
@@ -100,7 +100,7 @@ function FileCard({ file, selecting, selected, onToggle, canDelete, onDelete, ca
       {!selecting && hov && (
         <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: 'rgba(0,0,0,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 10px' }}>
           <a href={file.file_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-            style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.35)', color: 'rgba(167,139,250,0.9)', fontSize: 11, fontWeight: 400, textDecoration: 'none', textAlign: 'center' }}>
+            style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.35)', color: 'rgba(165,180,252,0.9)', fontSize: 11, fontWeight: 400, textDecoration: 'none', textAlign: 'center' }}>
             Download
           </a>
           {canAssign && (
@@ -304,7 +304,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'transparent', overflowY: 'auto', position: 'relative' }}
       onClick={() => {}}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div className="p-5 space-y-6">
         {error && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 300 }}>{error}</div>}
 
@@ -362,9 +362,9 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         {canDelete && (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button onClick={() => setCatModal(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(124,58,237,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(99,102,241,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
                 <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
               </svg>
@@ -451,7 +451,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
               placeholder="e.g. Week 1, Assignments, Slides…" className="w-full form-input"/>
             <div className="flex gap-2">
               <button onClick={createCategory} disabled={!catName.trim()}
-                className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition">Create</button>
+                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition">Create</button>
               <button onClick={() => { setCatModal(false); setCatName(''); }}
                 className="flex-1 py-2.5 dark:bg-surface-3 bg-gray-100 dark:text-gray-300 text-gray-700 text-sm rounded-xl transition">Cancel</button>
             </div>
@@ -483,7 +483,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
                       <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
                     </svg>
                     {cat.name}
-                    {isAssigned && <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="ml-auto dark:text-brand-400 text-brand-500"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
+                    {isAssigned && <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="ml-auto dark:text-indigo-400 text-indigo-500"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>}
                   </button>
                 );
               })}

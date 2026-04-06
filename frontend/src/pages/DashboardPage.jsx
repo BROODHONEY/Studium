@@ -21,6 +21,7 @@ import NotificationBell from '../components/NotificationBell';
 import ProfileModal from '../components/ProfileModal';
 import KickNotification from '../components/KickNotification';
 import { SearchSidebar, useSearch } from '../components/SearchPanel';
+import SupportPanel from '../components/SupportPanel';
 
 const NAV_MAIN = ['groups', 'dms'];
 const NAV_ALL  = ['groups', 'dms', 'notifications', 'settings'];
@@ -34,7 +35,7 @@ const NAV_META = {
   archive:       { label: 'Archive',       icon: 'M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z' },
 };
 
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
@@ -47,13 +48,13 @@ function RailBtn({ id, active, onClick, badge }) {
         width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s', position: 'relative',
-        background: active ? 'linear-gradient(135deg,rgba(124,58,237,0.18),rgba(37,99,235,0.1))' : 'none',
-        color: active ? '#7c3aed' : 'var(--text-3)',
+        background: active ? 'linear-gradient(135deg,rgba(99,102,241,0.18),rgba(37,99,235,0.1))' : 'none',
+        color: active ? '#6366F1' : 'var(--text-3)',
       }}
-      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(124,58,237,0.07)'; e.currentTarget.style.color = 'var(--text-2)'; } }}
+      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(99,102,241,0.07)'; e.currentTarget.style.color = 'var(--text-2)'; } }}
       onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-3)'; } }}
     >
-      {active && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }}/>}
+      {active && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#6366F1' }}/>}
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={icon}/></svg>
       {badge > 0 && (
         <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
@@ -98,6 +99,7 @@ export default function DashboardPage() {
 
   const [activeNav, setActiveNav]   = useState('groups');
   const [settingsOpen, setSettingsOpen] = useState(false); // desktop settings overlay
+  const [supportOpen, setSupportOpen]   = useState(false); // support panel
   const [groups, setGroups]         = useState([]);
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [activeGroup, setActiveGroup] = useState(null);
@@ -200,7 +202,8 @@ export default function DashboardPage() {
         </div>
         {/* Support button */}
         <div className="t-divider" style={{ borderTopWidth: 1, borderTopStyle: 'solid', padding: '8px 8px', flexShrink: 0 }}>
-          <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'none', fontFamily: 'Inter, sans-serif', color: 'var(--text-3)', transition: 'background 0.15s' }}>
+          <button onClick={() => { setSupportOpen(true); setMobileDetailNav('support'); setMobileView('detail'); }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'none', fontFamily: 'Inter, sans-serif', color: 'var(--text-3)', transition: 'background 0.15s' }}>
             <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
               <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
@@ -230,7 +233,7 @@ export default function DashboardPage() {
                 + Folder
               </button>
               <button onClick={() => setShowGroupModal(true)}
-                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.08)', color: '#7c3aed', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#6366F1', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 + Group
               </button>
             </div>
@@ -258,6 +261,7 @@ export default function DashboardPage() {
 
   // ── Main content ───────────────────────────────────────
   const renderMain = () => {
+    if (supportOpen) return <SupportPanel />;
     if (settingsOpen) return <SettingsPanel activeSection={settingsSection} />;
     if (activeNav === 'dms') return (
       <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
@@ -265,9 +269,9 @@ export default function DashboardPage() {
     );
     if (!activeGroup) return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(99,102,241,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px' }}>
-          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.4)', margin: '0 auto 16px', display: 'block' }}>
+          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(99,102,241,0.4)', margin: '0 auto 16px', display: 'block' }}>
             <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
           </svg>
           <p style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-2)', margin: '0 0 8px' }}>Select a group</p>
@@ -313,11 +317,11 @@ export default function DashboardPage() {
               onNavigate={handleNotificationNavigate}
               onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
             />
-            <button onClick={() => { setSettingsOpen(v => { const next = !v; if (next) setPanelOpen(true); return next; }); }}
+            <button onClick={() => { setSettingsOpen(v => { const next = !v; if (next) { setPanelOpen(true); setSupportOpen(false); } return next; }); }}
               title="Settings"
-              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(124,58,237,0.12)' : 'none', color: settingsOpen ? '#7c3aed' : 'var(--text-3)', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; e.currentTarget.style.color = '#7c3aed'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = settingsOpen ? 'rgba(124,58,237,0.12)' : 'none'; e.currentTarget.style.color = settingsOpen ? '#7c3aed' : 'var(--text-3)'; }}>
+              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(99,102,241,0.12)' : 'none', color: settingsOpen ? '#6366F1' : 'var(--text-3)', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.color = '#6366F1'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = settingsOpen ? 'rgba(99,102,241,0.12)' : 'none'; e.currentTarget.style.color = settingsOpen ? '#6366F1' : 'var(--text-3)'; }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_META.settings.icon}/></svg>
             </button>
             <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
@@ -342,8 +346,9 @@ export default function DashboardPage() {
             {/* Support at bottom */}
             <div style={{ flex: 1 }} />
             <button title="Support"
+              onClick={() => { setSupportOpen(v => !v); setSettingsOpen(false); setPanelOpen(true); }}
               style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: 'var(--text-3)', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.07)'; e.currentTarget.style.color = 'var(--text-2)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.07)'; e.currentTarget.style.color = 'var(--text-2)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-3)'; }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -372,7 +377,7 @@ export default function DashboardPage() {
                 {activeNav === 'groups' && !settingsOpen && (
                   <div style={{ position: 'relative' }}>
                     <button onClick={() => setFabOpen(v => !v)}
-                      style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(124,58,237,0.3)', background: fabOpen ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.08)', color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
+                      style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: fabOpen ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.08)', color: '#6366F1', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
                       <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
                     </button>
                     {fabOpen && (
@@ -381,7 +386,7 @@ export default function DashboardPage() {
                         <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
                           <button onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
                             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.06)'}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
                               <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
@@ -391,7 +396,7 @@ export default function DashboardPage() {
                           <div style={{ height: 1, background: 'var(--border-color)' }} />
                           <button onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
                             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.06)'}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
                               <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
@@ -452,6 +457,8 @@ export default function DashboardPage() {
                     onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileDetailNav('groups'); setMobileView('detail'); } }} />
                 : mobileDetailNav === 'settings'
                 ? <SettingsPanel activeSection={settingsSection} />
+                : mobileDetailNav === 'support'
+                ? <SupportPanel />
                 : renderMain()
               }
             </div>

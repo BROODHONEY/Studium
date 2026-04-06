@@ -1,4 +1,4 @@
-import ReactMarkdown from 'react-markdown';
+﻿import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const FILE_ICONS = {
@@ -75,7 +75,7 @@ function parseContent(content) {
 export default function MessageContent({ content, isOwn, onFileRef }) {
   const linkClass = isOwn
     ? 'underline text-brand-200 hover:text-white'
-    : 'underline text-brand-400 hover:text-brand-300';
+    : 'underline text-indigo-400 hover:text-indigo-300';
 
   const mdComponents = {
     a: ({ href, children }) => (
@@ -115,7 +115,7 @@ export default function MessageContent({ content, isOwn, onFileRef }) {
           if (part.type === 'mention') {
             return (
               <span key={i} className={`inline font-semibold rounded px-0.5
-                ${isOwn ? 'text-brand-200 bg-white/10' : 'text-brand-400 dark:bg-brand-900/40 bg-brand-100'}`}>
+                ${isOwn ? 'text-brand-200 bg-white/10' : 'text-indigo-400 dark:bg-brand-900/40 bg-brand-100'}`}>
                 @{part.name}
               </span>
             );

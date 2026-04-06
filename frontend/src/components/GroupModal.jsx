@@ -44,7 +44,7 @@ export default function GroupModal({ onClose, onSuccess }) {
         onClick={e => e.stopPropagation()}>
 
         {/* Subtle top gradient */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, position: 'relative' }}>
@@ -63,13 +63,13 @@ export default function GroupModal({ onClose, onSuccess }) {
 
         {/* Mode tabs — only show if teacher (has both options) */}
         {isTeacher && (
-          <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'rgba(124,58,237,0.04)', borderRadius: 10, padding: 3, border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'rgba(99,102,241,0.04)', borderRadius: 10, padding: 3, border: '1px solid var(--border-color)' }}>
             {['create', 'join'].map(m => (
               <button key={m} onClick={() => { setMode(m); setError(''); }}
                 style={{ flex: 1, padding: '8px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: mode === m ? 400 : 300, transition: 'all 0.15s',
-                  background: mode === m ? 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(76,29,149,0.2))' : 'transparent',
-                  color: mode === m ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.35)',
-                  boxShadow: mode === m ? '0 0 10px rgba(124,58,237,0.12)' : 'none',
+                  background: mode === m ? 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(55,48,163,0.2))' : 'transparent',
+                  color: mode === m ? 'rgba(199,210,254,0.95)' : 'rgba(255,255,255,0.35)',
+                  boxShadow: mode === m ? '0 0 10px rgba(99,102,241,0.12)' : 'none',
                 }}>
                 {m === 'create' ? 'Create' : 'Join'}
               </button>
@@ -91,25 +91,25 @@ export default function GroupModal({ onClose, onSuccess }) {
               <label style={lbl}>Group name</label>
               <input style={inp} placeholder="OS Section A" value={createForm.name} required
                 onChange={e => setCreateForm(p => ({ ...p, name: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
             </div>
             <div>
               <label style={lbl}>Subject</label>
               <input style={inp} placeholder="Operating Systems" value={createForm.subject} required
                 onChange={e => setCreateForm(p => ({ ...p, subject: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
             </div>
             <div>
               <label style={lbl}>Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
               <input style={inp} placeholder="Morning batch, Room 301" value={createForm.description}
                 onChange={e => setCreateForm(p => ({ ...p, description: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
             </div>
             <button type="submit" disabled={loading}
-              style={{ padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 2 }}>
+              style={{ padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#3730a3)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 2 }}>
               {loading ? 'Creating…' : 'Create group'}
             </button>
           </form>
@@ -121,12 +121,12 @@ export default function GroupModal({ onClose, onSuccess }) {
                 style={{ ...inp, textAlign: 'center', letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: 20, fontWeight: 400, fontFamily: 'monospace' }}
                 placeholder="XK92PL" value={joinCode} required maxLength={6}
                 onChange={e => setJoinCode(e.target.value)}
-                onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
               <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 6 }}>Ask your teacher for the 6-character code</p>
             </div>
             <button type="submit" disabled={loading}
-              style={{ padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 2 }}>
+              style={{ padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#3730a3)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 2 }}>
               {loading ? 'Joining…' : 'Join group'}
             </button>
           </form>

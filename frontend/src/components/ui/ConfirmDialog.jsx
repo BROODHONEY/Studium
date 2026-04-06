@@ -1,4 +1,4 @@
-import Modal from './Modal';
+﻿import Modal from './Modal';
 
 export default function ConfirmDialog({
   open,
@@ -41,7 +41,7 @@ export default function ConfirmDialog({
           className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-50 ${
             danger
               ? 'bg-red-600 hover:bg-red-500 text-white'
-              : 'bg-brand-600 hover:bg-brand-500 text-white'
+              : 'bg-indigo-600 hover:bg-indigo-500 text-white'
           }`}>
           {confirmText}
         </button>

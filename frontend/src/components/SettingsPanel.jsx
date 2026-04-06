@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
@@ -11,7 +11,7 @@ const DEPARTMENTS = [
   'B. Tech Computer Science',
 ];
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
@@ -46,7 +46,7 @@ function Toggle({ on, onToggle, label, sub }) {
         {sub && <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: '2px 0 0' }}>{sub}</p>}
       </div>
       <button onClick={onToggle}
-        style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: on ? '#7c3aed' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
+        style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: on ? '#6366F1' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
         <span style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }}/>
       </button>
     </div>
@@ -81,7 +81,7 @@ function AccountSection({ user, login, token, addToast }) {
           <div>
             <label style={lbl}>Full name</label>
             <input name="name" value={profile.name} onChange={handleChange} placeholder="Your name" required style={inp}
-              onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+              onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
               onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
           </div>
           {user?.role === 'student' && (
@@ -89,7 +89,7 @@ function AccountSection({ user, login, token, addToast }) {
               <div>
                 <label style={lbl}>Department</label>
                 <select name="department" value={profile.department} onChange={handleChange} style={{ ...inp, appearance: 'none' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+                  onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                   onBlur={e => e.target.style.borderColor = 'var(--border-color)'}>
                   <option value="">Select department</option>
                   {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -98,7 +98,7 @@ function AccountSection({ user, login, token, addToast }) {
               <div>
                 <label style={lbl}>Year</label>
                 <select name="year" value={profile.year} onChange={handleChange} style={{ ...inp, appearance: 'none' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+                  onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                   onBlur={e => e.target.style.borderColor = 'var(--border-color)'}>
                   <option value="">Select year</option>
                   {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -107,7 +107,7 @@ function AccountSection({ user, login, token, addToast }) {
             </>
           )}
           <button type="submit" disabled={saving || !edited}
-            style={{ padding: '10px', borderRadius: 10, background: edited && !saving ? '#7c3aed' : 'var(--bg-raised)', border: '1px solid', borderColor: edited && !saving ? '#7c3aed' : 'var(--border-color)', color: edited && !saving ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: edited && !saving ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+            style={{ padding: '10px', borderRadius: 10, background: edited && !saving ? '#6366F1' : 'var(--bg-raised)', border: '1px solid', borderColor: edited && !saving ? '#6366F1' : 'var(--border-color)', color: edited && !saving ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: edited && !saving ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </form>
@@ -150,7 +150,7 @@ function SecuritySection({ addToast }) {
       <input type={showPw[field] ? 'text' : 'password'} value={pwForm[field]}
         onChange={e => setPwForm(p => ({ ...p, [field]: e.target.value }))}
         placeholder={placeholder} style={{ ...inp, paddingRight: 40 }}
-        onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
+        onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
         onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
       <button type="button" onClick={() => setShowPw(p => ({ ...p, [field]: !p[field] }))}
         style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0 }}>
@@ -171,7 +171,7 @@ function SecuritySection({ addToast }) {
         <div><label style={lbl}>Confirm new password</label><PwInput field="confirm" placeholder="Repeat new password"/></div>
         {error && <p style={{ fontSize: 12, color: 'rgba(239,68,68,0.8)', margin: 0 }}>{error}</p>}
         <button type="submit" disabled={saving || !pwForm.current || !pwForm.next || !pwForm.confirm}
-          style={{ padding: '10px', borderRadius: 10, background: pwForm.current && pwForm.next && pwForm.confirm ? '#7c3aed' : 'var(--bg-raised)', border: '1px solid', borderColor: pwForm.current && pwForm.next && pwForm.confirm ? '#7c3aed' : 'var(--border-color)', color: pwForm.current && pwForm.next && pwForm.confirm ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}>
+          style={{ padding: '10px', borderRadius: 10, background: pwForm.current && pwForm.next && pwForm.confirm ? '#6366F1' : 'var(--bg-raised)', border: '1px solid', borderColor: pwForm.current && pwForm.next && pwForm.confirm ? '#6366F1' : 'var(--border-color)', color: pwForm.current && pwForm.next && pwForm.confirm ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}>
           {saving ? 'Updating…' : 'Update password'}
         </button>
       </form>
@@ -230,7 +230,7 @@ export function SettingsSidebar({ activeSection, onSection, onViewProfile }) {
       {/* Profile header */}
       <button onClick={() => onViewProfile?.(user?.id)}
         style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 16px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', borderBottom: '1px solid var(--border-color)' }}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.04)'}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
         onMouseLeave={e => e.currentTarget.style.background = 'none'}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
           {ini(user?.name)}
@@ -251,12 +251,12 @@ export function SettingsSidebar({ activeSection, onSection, onViewProfile }) {
           return (
             <button key={item.key} onClick={() => onSection(item.key)}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', position: 'relative',
-                background: isActive ? 'linear-gradient(135deg,rgba(124,58,237,0.2),rgba(76,29,149,0.12))' : 'none',
-                color: isActive ? '#7c3aed' : 'var(--text-2)',
+                background: isActive ? 'linear-gradient(135deg,rgba(99,102,241,0.2),rgba(55,48,163,0.12))' : 'none',
+                color: isActive ? '#6366F1' : 'var(--text-2)',
               }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'none'; }}>
-              {isActive && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }}/>}
+              {isActive && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#6366F1' }}/>}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d={item.icon}/>
               </svg>
@@ -303,9 +303,9 @@ export default function SettingsPanel({ activeSection }) {
 
   const empty = (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.35) 0%, rgba(76,29,149,0.15) 35%, transparent 65%)', pointerEvents: 'none' }}/>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(99,102,241,0.35) 0%, rgba(55,48,163,0.15) 35%, transparent 65%)', pointerEvents: 'none' }}/>
       <div style={{ position: 'relative', textAlign: 'center' }}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(124,58,237,0.4)', margin: '0 auto 12px', display: 'block' }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(99,102,241,0.4)', margin: '0 auto 12px', display: 'block' }}>
           <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
         <p style={{ color: 'var(--text-3)', fontSize: 13, fontWeight: 300, margin: 0 }}>Select a setting from the sidebar</p>
@@ -315,7 +315,7 @@ export default function SettingsPanel({ activeSection }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', background: 'transparent', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }}/>
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }}/>
       {!activeSection && empty}
       {activeSection && (
         <div style={{ maxWidth: 560, margin: '0 auto', width: '100%', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 }}>

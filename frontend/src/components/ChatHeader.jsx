@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -53,7 +53,7 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
           {group.subject}
           {user?.role === 'teacher' && group.invite_code && (
             <span style={{ marginLeft: 8, color: 'var(--text-4)' }}>
-              · <span style={{ fontFamily: 'monospace', color: 'rgba(124,58,237,0.65)' }}>{group.invite_code}</span>
+              · <span style={{ fontFamily: 'monospace', color: 'rgba(99,102,241,0.65)' }}>{group.invite_code}</span>
             </span>
           )}
         </p>
@@ -68,14 +68,14 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
               style={{
                 padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 500 : 300,
                 border: 'none', cursor: 'pointer', transition: 'all 0.15s', position: 'relative',
-                background: isActive ? 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(37,99,235,0.12))' : 'transparent',
-                color: isActive ? '#7c3aed' : 'var(--text-3)',
+                background: isActive ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(37,99,235,0.12))' : 'transparent',
+                color: isActive ? '#6366F1' : 'var(--text-3)',
               }}
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'var(--text-2)'; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'var(--text-3)'; }}>
               {tab}
               {tabUnreads.has(tab) && (
-                <span style={{ position: 'absolute', top: 3, right: 3, width: 5, height: 5, borderRadius: '50%', background: '#7c3aed' }} />
+                <span style={{ position: 'absolute', top: 3, right: 3, width: 5, height: 5, borderRadius: '50%', background: '#6366F1' }} />
               )}
             </button>
           );
@@ -100,11 +100,11 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
           {tabs.map(tab => (
             <button key={tab}
               onClick={() => { onTabChange(tab); setDropdownOpen(false); }}
-              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', fontSize: 13, fontWeight: activeTab === tab ? 500 : 300, color: activeTab === tab ? '#7c3aed' : 'var(--text-2)', background: activeTab === tab ? 'rgba(124,58,237,0.08)' : 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', fontFamily: 'Inter, sans-serif' }}
-              onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.background = 'rgba(124,58,237,0.04)'; }}
+              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', fontSize: 13, fontWeight: activeTab === tab ? 500 : 300, color: activeTab === tab ? '#6366F1' : 'var(--text-2)', background: activeTab === tab ? 'rgba(99,102,241,0.08)' : 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', fontFamily: 'Inter, sans-serif' }}
+              onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.background = 'rgba(99,102,241,0.04)'; }}
               onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.background = 'none'; }}>
               {tab}
-              {tabUnreads.has(tab) && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7c3aed', flexShrink: 0 }} />}
+              {tabUnreads.has(tab) && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#6366F1', flexShrink: 0 }} />}
             </button>
           ))}
         </div>,

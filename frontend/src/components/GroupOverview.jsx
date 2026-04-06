@@ -96,9 +96,9 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   if (!open && !editing) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(124,58,237,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(99,102,241,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
         </svg>
@@ -129,7 +129,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
         <button ref={fileButtonRef} type="button" title="Attach file reference"
           onClick={() => setShowFilePicker(v => !v)}
           className={`absolute bottom-2 right-2 p-1.5 rounded-lg transition
-            ${showFilePicker ? 'bg-brand-600 text-white' : 'dark:text-gray-500 text-gray-400 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
+            ${showFilePicker ? 'bg-indigo-600 text-white' : 'dark:text-gray-500 text-gray-400 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
             <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
           </svg>
@@ -155,7 +155,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
       {/* Schedule toggle */}
       <div className="flex items-center gap-2.5 pt-1">
         <button type="button" onClick={() => setScheduled(v => !v)}
-          className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${scheduled ? 'bg-brand-600' : 'dark:bg-surface-4 bg-gray-300'}`}>
+          className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${scheduled ? 'bg-indigo-600' : 'dark:bg-surface-4 bg-gray-300'}`}>
           <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${scheduled ? 'translate-x-4' : ''}`}/>
         </button>
         <span className="text-xs dark:text-gray-400 text-gray-500">Schedule for later</span>
@@ -178,7 +178,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
 
       <div className="flex gap-2 pt-1">
         <button type="submit" disabled={loading}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#4c1d95)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#3730a3)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
           {loading ? 'Saving…' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post now')}
         </button>
         <button type="button" onClick={handleCancel}
@@ -195,7 +195,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
       onClick={handleCancel}>
       <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)' }}>Edit announcement</span>
           <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
@@ -303,191 +303,292 @@ export default function GroupOverview({ group, onFileRef }) {
     } finally { setConfirmingDelete(false); }
   };
 
-  const roleColor = myRole === 'admin'  // kept for potential future use
-    ? 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/20'
-    : myRole === 'teacher'
-      ? 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/20'
-      : 'dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:border-surface-4 border-gray-200';
-  void roleColor;
+  // ── Palette ────────────────────────────────────────────
+  const P = {
+    bg:        '#0A0A0B',
+    surface:   '#111114',
+    card:      '#16161A',
+    border:    '#1E1E24',
+    primary:   '#6366F1',
+    secondary: '#7072AC',
+    tertiary:  '#B95F00',
+    text1:     '#F0F0F5',
+    text2:     '#9090A8',
+    text3:     '#55556A',
+  };
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', background: 'transparent', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
-      <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
+    <div style={{ flex: 1, overflowY: 'auto', background: P.bg, fontFamily: 'Inter, sans-serif', position: 'relative' }}>
+      {/* Subtle top-right glow */}
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 400, height: 400, background: `radial-gradient(ellipse at top right, ${P.primary}18 0%, transparent 65%)`, pointerEvents: 'none' }} />
+
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 28px 60px', position: 'relative' }}>
         <ConfirmDialog
           open={!!deleteConfirm} danger={true}
-          title={deleteConfirm?.type === 'announcement' ? 'Delete this announcement?' : 'Delete this due date?'}
+          title="Delete this announcement?"
           description="This action will remove it for everyone."
           confirmText="Delete"
           onCancel={() => { if (!confirmingDelete) setDeleteConfirm(null); }}
           onConfirm={handleConfirmDelete} disabled={confirmingDelete}
         />
 
-        {/* Group header */}
-        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: 24 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>{group.name}</h1>
-          <p style={{ color: 'var(--text-3)', fontSize: 13, fontWeight: 300, marginTop: 4 }}>{group.subject}</p>
-          {group.description && <p style={{ color: 'var(--text-3)', fontSize: 13, fontWeight: 300, marginTop: 6 }}>{group.description}</p>}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 400, padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border-color)', color: 'var(--text-2)', textTransform: 'capitalize' }}>{myRole}</span>
+        {/* ── Greeting + group info ── */}
+        <div style={{ marginBottom: 32 }}>
+          <p style={{ fontSize: 13, fontWeight: 400, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 6px' }}>
+            {group.subject}
+          </p>
+          <h1 style={{ fontSize: 36, fontWeight: 700, color: P.text1, margin: '0 0 4px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
+            {greeting()}, {user?.name?.split(' ')[0]}.
+          </h1>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: P.text3, margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+            Welcome to {group.name}.
+          </h2>
+
+          {/* Meta strip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 16, flexWrap: 'wrap' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, color: P.primary, background: `${P.primary}18`, border: `1px solid ${P.primary}40`, borderRadius: 6, padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
+              {myRole}
+            </span>
             {isTeacher && (
-              <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--text-3)' }}>
-                Invite code: <span style={{ fontFamily: 'monospace', color: 'rgba(124,58,237,0.8)' }}>{group.invite_code}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 400, color: P.text3 }}>
+                Invite code:
+                <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: P.secondary, letterSpacing: '0.08em' }}>{group.invite_code}</span>
               </span>
+            )}
+            {group.description && (
+              <span style={{ fontSize: 12, fontWeight: 300, color: P.text3 }}>{group.description}</span>
             )}
           </div>
         </div>
 
-        {/* Announcements */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Announcements</h2>
-            <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)' }}>{announcements.length} total</span>
-          </div>
-          <div className="space-y-3">
-            {isTeacher && (
-              <AnnouncementForm groupId={group.id}
-                onCreated={editingAnnouncement
-                  ? handleAnnouncementUpdate
-                  : (a => {
-                      // For scheduled announcements the socket won't fire, so add directly.
-                      // For published ones the socket event handles it — no need to add here.
-                      if (!a.published) setScheduled(prev => [...prev, a].sort((x, y) => new Date(x.scheduled_at) - new Date(y.scheduled_at)));
-                    })
-                }
-                editing={editingAnnouncement} onCancel={() => setEditingAnnouncement(null)}/>
-            )}
-            {loadingA ? [1,2].map(i => <div key={i} className="h-24 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>) :
-              announcements.length === 0 ? (
-                <div className="py-10 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
-                  <p className="dark:text-gray-600 text-gray-400 text-sm">No announcements yet</p>
-                </div>
-              ) : announcements.map(a => {
-                const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
-                const reactionMap = {};
-                (a.announcement_reactions || []).forEach(r => {
-                  if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
-                  reactionMap[r.emoji].push(r.user_id);
-                });
-                return (
-                  <div key={a.id}
-                    onClick={() => setSelectedAnnouncement(a)}
-                    style={{ padding: '16px', borderRadius: 10, borderLeft: `2px solid ${tag.accentColor || '#2a2a2a'}`, border: '1px solid var(--border-color)', background: 'var(--bg-page)', cursor: 'pointer', transition: 'border-color 0.15s' }}
-                    className="group"
-                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid var(--border-color)', color: 'var(--text-3)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                          <TagIcon type={a.tag || 'general'} />{tag.label}
-                        </span>
-                        <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>{a.title}</p>
-                        <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 3 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
-                      </div>
-                      {(isTeacher || a.users?.id === user?.id) && (
-                        <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                          <button
-                            onClick={() => setOpenMenuId(openMenuId === a.id ? null : a.id)}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}
-                            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-2)'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                            </svg>
-                          </button>
-                          {openMenuId === a.id && (
-                            <>
-                              <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
-                              <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
-                                <button
-                                  onClick={() => { setEditingAnnouncement(a); setOpenMenuId(null); }}
-                                  style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
-                                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
-                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                >Edit</button>
-                                <div style={{ height: 1, background: 'var(--border-color)' }} />
-                                <button
-                                  onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setOpenMenuId(null); }}
-                                  style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
-                                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
-                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                >Delete</button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)', marginTop: 12, lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                      <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
-                    </div>
-                    {Object.keys(reactionMap).length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }} onClick={e => e.stopPropagation()}>
-                        {Object.entries(reactionMap).map(([emoji, userIds]) => (
-                          <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
-                            <span>{emoji}</span><span>{userIds.length}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            }
-          </div>
-        </section>
+        {/* ── Two-column layout ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
 
-        {/* Scheduled announcements — teachers only */}
-        {isTeacher && scheduled.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold dark:text-white text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-brand-400">
-                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                </svg>
-                Scheduled
-              </h2>
-              <span className="text-xs dark:text-gray-600 text-gray-400">{scheduled.length} pending</span>
-            </div>
-            <div className="space-y-3">
-              {scheduled.map(a => {
-                const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
-                const sendAt = new Date(a.scheduled_at);
-                return (
-                  <div key={a.id} className={`card p-4 group border-l-4 ${tag.border} opacity-80`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${tag.badge}`}>
-                            <TagIcon type={a.tag || 'general'} />{tag.label}
-                          </span>
-                          <span className="text-xs dark:bg-surface-3 bg-gray-100 dark:text-gray-400 text-gray-500 dark:border-surface-4 border-gray-200 border px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
-                              <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                            </svg>
-                            {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })} at {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
-                          </span>
+          {/* ── Left column ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Announcements section */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Announcements</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 11, color: P.text3 }}>{announcements.length} total</span>
+                  {isTeacher && (
+                    <AnnouncementForm groupId={group.id}
+                      onCreated={editingAnnouncement
+                        ? handleAnnouncementUpdate
+                        : (a => { if (!a.published) setScheduled(prev => [...prev, a].sort((x, y) => new Date(x.scheduled_at) - new Date(y.scheduled_at))); })
+                      }
+                      editing={editingAnnouncement} onCancel={() => setEditingAnnouncement(null)}/>
+                  )}
+                </div>
+              </div>
+
+              {loadingA ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[1,2].map(i => <div key={i} style={{ height: 88, borderRadius: 12, background: P.card, animation: 'pulse 1.5s infinite' }}/>)}
+                </div>
+              ) : announcements.length === 0 ? (
+                <div style={{ padding: '40px 20px', textAlign: 'center', border: `1px dashed ${P.border}`, borderRadius: 12 }}>
+                  <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor" style={{ color: P.text3, margin: '0 auto 10px', display: 'block' }}>
+                    <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 74.663 74.663 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199V2.5z"/>
+                  </svg>
+                  <p style={{ fontSize: 13, color: P.text3, fontWeight: 300, margin: 0 }}>No announcements yet</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {announcements.map(a => {
+                    const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
+                    const reactionMap = {};
+                    (a.announcement_reactions || []).forEach(r => {
+                      if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+                      reactionMap[r.emoji].push(r.user_id);
+                    });
+                    const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+                    const avatarColors = ['#6366F1','#7072AC','#B95F00','#0d9488','#db2777'];
+                    const avatarBg = (n) => avatarColors[(n?.charCodeAt(0) || 0) % avatarColors.length];
+                    return (
+                      <div key={a.id}
+                        onClick={() => setSelectedAnnouncement(a)}
+                        style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: '16px 18px', cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = `${P.primary}50`; e.currentTarget.style.background = P.surface; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = P.card; }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                          {/* Avatar */}
+                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: avatarBg(a.users?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: '#fff', flexShrink: 0 }}>
+                            {ini(a.users?.name)}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 13, fontWeight: 500, color: P.text1 }}>{a.users?.name}</span>
+                                <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 5, background: `${P.primary}20`, color: P.primary, border: `1px solid ${P.primary}35`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                  {tag.label}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 11, color: P.text3, flexShrink: 0 }}>{formatDate(a.created_at)}</span>
+                                {(isTeacher || a.users?.id === user?.id) && (
+                                  <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+                                    <button onClick={() => setOpenMenuId(openMenuId === a.id ? null : a.id)}
+                                      style={{ width: 24, height: 24, borderRadius: 5, background: 'none', border: 'none', cursor: 'pointer', color: P.text3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                      onMouseEnter={e => e.currentTarget.style.color = P.text2}
+                                      onMouseLeave={e => e.currentTarget.style.color = P.text3}>
+                                      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                                    </button>
+                                    {openMenuId === a.id && (
+                                      <>
+                                        <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
+                                        <div style={{ position: 'absolute', right: 0, top: 28, zIndex: 999, background: P.surface, border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+                                          <button onClick={() => { setEditingAnnouncement(a); setOpenMenuId(null); }}
+                                            style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: P.text2, fontSize: 12, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = P.card}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'none'}>Edit</button>
+                                          <div style={{ height: 1, background: P.border }} />
+                                          <button onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setOpenMenuId(null); }}
+                                            style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.8)', fontSize: 12, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = P.card}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'none'}>Delete</button>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <p style={{ fontSize: 13, fontWeight: 400, color: P.text1, margin: '0 0 4px' }}>{a.title}</p>
+                            <div style={{ fontSize: 12, fontWeight: 300, color: P.text2, lineHeight: 1.55, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
+                            </div>
+                            {/* Reaction pills */}
+                            {Object.keys(reactionMap).length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }} onClick={e => e.stopPropagation()}>
+                                {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                                  <button key={emoji} onClick={() => handleReact(a.id, emoji)}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ${P.primary}60` : `1px solid ${P.border}`, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
+                                    <span>{emoji}</span><span>{userIds.length}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm font-medium dark:text-white text-gray-900">{a.title}</p>
-                        <p className="text-xs dark:text-gray-500 text-gray-500 mt-0.5">{a.users?.name}</p>
                       </div>
-                      <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition">
-                        <button onClick={() => setEditingAnnouncement(a)} className="dark:text-gray-600 text-gray-400 hover:text-brand-400 text-xs transition px-1 py-0.5">Edit</button>
-                        <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })} className="dark:text-gray-600 text-gray-400 hover:text-red-400 text-xs transition px-1 py-0.5">Delete</button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Scheduled — teachers only */}
+            {isTeacher && scheduled.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scheduled</span>
+                  <span style={{ fontSize: 11, color: P.text3 }}>{scheduled.length} pending</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {scheduled.map(a => {
+                    const tag = ANNOUNCEMENT_TAGS[a.tag] || ANNOUNCEMENT_TAGS.general;
+                    const sendAt = new Date(a.scheduled_at);
+                    return (
+                      <div key={a.id} style={{ background: P.card, border: `1px solid ${P.border}`, borderLeft: `3px solid ${P.secondary}`, borderRadius: 10, padding: '14px 16px', opacity: 0.85 }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 5, background: `${P.secondary}25`, color: P.secondary, border: `1px solid ${P.secondary}40`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tag.label}</span>
+                              <span style={{ fontSize: 10, color: P.text3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })} · {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                              </span>
+                            </div>
+                            <p style={{ fontSize: 13, fontWeight: 500, color: P.text1, margin: '0 0 2px' }}>{a.title}</p>
+                            <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>{a.users?.name}</p>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={() => setEditingAnnouncement(a)}
+                              style={{ padding: '4px 10px', borderRadius: 6, background: 'none', border: `1px solid ${P.border}`, color: P.text3, fontSize: 11, cursor: 'pointer' }}
+                              onMouseEnter={e => e.currentTarget.style.color = P.text2}
+                              onMouseLeave={e => e.currentTarget.style.color = P.text3}>Edit</button>
+                            <button onClick={() => setDeleteConfirm({ type: 'announcement', id: a.id })}
+                              style={{ padding: '4px 10px', borderRadius: 6, background: 'none', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.6)', fontSize: 11, cursor: 'pointer' }}>Delete</button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-sm dark:text-gray-400 text-gray-600 mt-3 leading-relaxed line-clamp-2">
-                      <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Right column ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Group info card */}
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>
+              <p style={{ fontSize: 10, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Group Info</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <p style={{ fontSize: 11, color: P.text3, margin: '0 0 2px', fontWeight: 400 }}>Subject</p>
+                  <p style={{ fontSize: 13, color: P.text1, margin: 0, fontWeight: 400 }}>{group.subject}</p>
+                </div>
+                {group.description && (
+                  <div>
+                    <p style={{ fontSize: 11, color: P.text3, margin: '0 0 2px', fontWeight: 400 }}>Description</p>
+                    <p style={{ fontSize: 12, color: P.text2, margin: 0, fontWeight: 300, lineHeight: 1.5 }}>{group.description}</p>
+                  </div>
+                )}
+                {isTeacher && (
+                  <div style={{ paddingTop: 10, borderTop: `1px solid ${P.border}` }}>
+                    <p style={{ fontSize: 11, color: P.text3, margin: '0 0 6px', fontWeight: 400 }}>Invite Code</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: P.primary, letterSpacing: '0.15em' }}>{group.invite_code}</span>
+                      <button onClick={() => navigator.clipboard.writeText(group.invite_code)}
+                        style={{ padding: '4px 10px', borderRadius: 6, background: `${P.primary}18`, border: `1px solid ${P.primary}35`, color: P.primary, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                        Copy
+                      </button>
                     </div>
                   </div>
-                );
-              })}
+                )}
+              </div>
             </div>
-          </section>
-        )}
+
+            {/* Quick actions */}
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>
+              <p style={{ fontSize: 10, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Quick Access</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {[
+                  { label: 'Chat', icon: 'M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2z', color: P.primary },
+                  { label: 'Files', icon: 'M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1z', color: P.secondary },
+                  { label: 'Dues', icon: 'M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z', color: P.tertiary },
+                  { label: 'Members', icon: 'M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', color: '#10b981' },
+                ].map(item => (
+                  <div key={item.label}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, background: 'transparent', border: `1px solid ${P.border}`, cursor: 'default', transition: 'border-color 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = `${item.color}50`}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = P.border}>
+                    <div style={{ width: 28, height: 28, borderRadius: 7, background: `${item.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill={item.color}><path d={item.icon}/></svg>
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 400, color: P.text2 }}>{item.label}</span>
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ color: P.text3, marginLeft: 'auto' }}>
+                      <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Announcement detail popup */}
@@ -500,39 +601,31 @@ export default function GroupOverview({ group, onFileRef }) {
           reactionMap[r.emoji].push(r.user_id);
         });
         return (
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '0 20px' }}
-            onClick={() => setSelectedAnnouncement(null)}
-          >
-            <div
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.7)', maxHeight: '80vh', overflowY: 'auto' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', padding: '0 20px' }}
+            onClick={() => setSelectedAnnouncement(null)}>
+            <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 16, padding: '22px', width: '100%', maxWidth: 440, boxShadow: '0 24px 80px rgba(0,0,0,0.8)', maxHeight: '80vh', overflowY: 'auto' }}
+              onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid var(--border-color)', color: 'var(--text-3)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+                  <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 5, background: `${P.primary}20`, color: P.primary, border: `1px solid ${P.primary}35`, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     <TagIcon type={a.tag || 'general'} />{tag.label}
                   </span>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)', margin: 0, lineHeight: 1.4 }}>{a.title}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 4 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
+                  <p style={{ fontSize: 16, fontWeight: 600, color: P.text1, margin: 0, lineHeight: 1.4 }}>{a.title}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
                 </div>
-                <button
-                  onClick={() => setSelectedAnnouncement(null)}
-                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2, lineHeight: 0 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
-                  </svg>
+                <button onClick={() => setSelectedAnnouncement(null)}
+                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 2, lineHeight: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
                 </button>
               </div>
-              <div style={{ padding: '12px 14px', background: 'var(--bg-page)', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', lineHeight: 1.7 }}>
+              <div style={{ padding: '14px 16px', background: P.card, borderRadius: 10, border: `1px solid ${P.border}`, fontSize: 13, fontWeight: 300, color: P.text2, lineHeight: 1.7 }}>
                 <MessageContent content={a.content} isOwn={false} onFileRef={(id) => { onFileRef(id); setSelectedAnnouncement(null); }} />
               </div>
               {Object.keys(reactionMap).length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
                   {Object.entries(reactionMap).map(([emoji, userIds]) => (
                     <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ${P.primary}60` : `1px solid ${P.border}`, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
                       <span>{emoji}</span><span>{userIds.length}</span>
                     </button>
                   ))}
@@ -540,14 +633,14 @@ export default function GroupOverview({ group, onFileRef }) {
               )}
               {(isTeacher || a.users?.id === user?.id) && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                  <button
-                    onClick={() => { setEditingAnnouncement(a); setSelectedAnnouncement(null); }}
-                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: 'rgba(167,139,250,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-                  >Edit</button>
-                  <button
-                    onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setSelectedAnnouncement(null); }}
-                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-                  >Delete</button>
+                  <button onClick={() => { setEditingAnnouncement(a); setSelectedAnnouncement(null); }}
+                    style={{ flex: 1, padding: '9px', borderRadius: 8, background: `${P.primary}18`, border: `1px solid ${P.primary}35`, color: P.primary, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                    Edit
+                  </button>
+                  <button onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setSelectedAnnouncement(null); }}
+                    style={{ flex: 1, padding: '9px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                    Delete
+                  </button>
                 </div>
               )}
             </div>

@@ -4,12 +4,12 @@ import { useToast } from '../context/ToastContext';
 import { profileAPI } from '../services/api';
 
 const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
-const COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+const COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
 const roleStyles = {
   teacher: { bg: 'rgba(250,204,21,0.1)', color: '#facc15', border: 'rgba(250,204,21,0.2)' },
-  admin:   { bg: 'rgba(124,58,237,0.12)', color: '#a78bfa', border: 'rgba(124,58,237,0.25)' },
+  admin:   { bg: 'rgba(99,102,241,0.12)', color: '#818cf8', border: 'rgba(99,102,241,0.25)' },
   student: { bg: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: 'rgba(56,189,248,0.2)' },
 };
 
@@ -76,7 +76,7 @@ export default function ProfileModal({ userId, onClose }) {
 
         {loading ? (
           <div style={{ padding: 48, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: 24, height: 24, border: '2px solid #7c3aed', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/>
+            <div style={{ width: 24, height: 24, border: '2px solid #6366F1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/>
           </div>
         ) : editing ? (
           <>
@@ -113,7 +113,7 @@ export default function ProfileModal({ userId, onClose }) {
               )}
               <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
                 <button type="submit" disabled={saving}
-                  style={{ flex: 1, padding: '11px', borderRadius: 12, background: '#7c3aed', border: 'none', color: '#fff', fontSize: 14, fontWeight: 500, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+                  style={{ flex: 1, padding: '11px', borderRadius: 12, background: '#6366F1', border: 'none', color: '#fff', fontSize: 14, fontWeight: 500, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1, transition: 'opacity 0.15s' }}>
                   {saving ? 'Saving…' : 'Save changes'}
                 </button>
                 <button type="button" onClick={() => setEditing(false)}

@@ -7,7 +7,7 @@ import OnlineDot from './OnlineDot';
 import { formatShort } from '../utils/time';
 
 const ini = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
 const cleanPreview = (content) => {
@@ -111,7 +111,7 @@ export default function DMList({ activeConvoId, onSelect }) {
           ) : results.map(u => (
             <button key={u.id} onClick={() => handleStartConvo(u)}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.04)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
               onMouseLeave={e => e.currentTarget.style.background = 'none'}>
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: avatarBg(u.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff' }}>
@@ -156,7 +156,7 @@ export default function DMList({ activeConvoId, onSelect }) {
                 textAlign: 'left', background: active ? 'rgba(255,255,255,0.07)' : 'none',
                 transition: 'background 0.1s', marginBottom: 2,
               }}
-              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(124,58,237,0.04)'; }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(99,102,241,0.04)'; }}
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'none'; }}>
 
               {/* Avatar */}
@@ -182,7 +182,7 @@ export default function DMList({ activeConvoId, onSelect }) {
                     {preview}
                   </p>
                   {hasUnread && (
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7c3aed', flexShrink: 0 }}/>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366F1', flexShrink: 0 }}/>
                   )}
                 </div>
               </div>

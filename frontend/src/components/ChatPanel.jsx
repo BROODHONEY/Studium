@@ -577,7 +577,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative' }}>
       {/* Subtle purple accent — top-right corner */}
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
       {/* Delete confirmation */}
       <ConfirmDialog
@@ -598,7 +598,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
           <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative' }}
             onClick={e => e.stopPropagation()}>
             {/* Subtle top glow */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
 
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: '1px solid var(--border-color)' }}>
@@ -612,7 +612,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             </div>
 
             {/* Unified input pill — same as chat input */}
-            <div style={{ margin: '14px 20px', background: 'var(--bg-raised)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ margin: '14px 20px', background: 'var(--bg-raised)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 14, overflow: 'hidden' }}>
               {/* Format toolbar */}
               <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <FormatToolbar textareaRef={editTextareaRef} setText={setEditText} />
@@ -635,7 +635,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             {/* Actions */}
             <div style={{ display: 'flex', gap: 10, padding: '0 20px 20px' }}>
               <button onClick={() => handleEditMessage(editingId)} disabled={!editText.trim()}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'var(--bg-raised)', border: '1px solid', borderColor: editText.trim() ? '#7c3aed' : 'var(--border-color)', color: editText.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', border: '1px solid', borderColor: editText.trim() ? '#6366F1' : 'var(--border-color)', color: editText.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
                 Save changes
               </button>
               <button onClick={() => { setEditingId(null); setEditText(''); }}
@@ -670,7 +670,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: p.value }))}
                     className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
                       ${pinTimeModal.pin_ttl_minutes === p.value && !isCustom
-                        ? 'bg-brand-600/20 border-brand-500/50 text-brand-300'
+                        ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
                         : 'dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/50 border-gray-200 dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-200 dark:hover:border-surface-4 hover:border-gray-300'}`}>
                     {p.label}
                     {p.value && <span className="text-gray-500 text-xs ml-1.5">({Number(p.value) >= 60 ? `${Number(p.value)/60}h` : `${p.value}m`})</span>}
@@ -682,7 +682,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: isCustom ? s.pin_ttl_minutes : '30' }))}
                   className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
                     ${isCustom
-                      ? 'bg-brand-600/20 border-brand-500/50 text-brand-300'
+                      ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
                       : 'dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/50 border-gray-200 dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
                   Custom time
                 </button>
@@ -697,7 +697,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                       value={pinTimeModal.pin_ttl_minutes}
                       onChange={e => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: e.target.value }))}
                       className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-300 border rounded-lg px-3 py-2
-                        text-sm dark:text-white text-gray-900 focus:outline-none focus:border-brand-500"
+                        text-sm dark:text-white text-gray-900 focus:outline-none focus:border-indigo-500"
                       placeholder="Minutes"
                     />
                     <span className="text-xs dark:text-gray-500 text-gray-400 flex-shrink-0">minutes</span>
@@ -718,7 +718,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     await handlePinWithTime(messageId, pin_ttl_minutes, content);
                     scrollToMessage(messageId);
                   }}
-                  className="flex-1 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition"
+                  className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition"
                   disabled={!pinTimeModal.messageId}>
                   Pin
                 </button>
@@ -730,11 +730,11 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
       {/* Admins only banner */}
       {adminsOnly && (
-        <div style={{ margin: '10px 16px 0', padding: '8px 14px', borderRadius: 8, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(167,139,250,0.7)', flexShrink: 0 }}>
+        <div style={{ margin: '10px 16px 0', padding: '8px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(165,180,252,0.7)', flexShrink: 0 }}>
             <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
           </svg>
-          <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(167,139,250,0.8)' }}>Admins only — only admins can send messages</span>
+          <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(165,180,252,0.8)' }}>Admins only — only admins can send messages</span>
         </div>
       )}
 
@@ -755,7 +755,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') scrollToMessage(pinnedMsgs[0]?.id);
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 dark:bg-surface-2/60 bg-gray-100 dark:border-surface-3/70 border-gray-200 border rounded-lg text-brand-400 text-xs dark:hover:bg-surface-2/80 hover:bg-gray-200 transition cursor-pointer"
+            className="w-full flex items-center gap-2 px-3 py-2 dark:bg-surface-2/60 bg-gray-100 dark:border-surface-3/70 border-gray-200 border rounded-lg text-indigo-400 text-xs dark:hover:bg-surface-2/80 hover:bg-gray-200 transition cursor-pointer"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
@@ -770,7 +770,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                 </span>
               )}
             </span>
-            <span className="text-brand-400/60 flex-shrink-0">{pinnedMsgs.length} pinned</span>
+            <span className="text-indigo-400/60 flex-shrink-0">{pinnedMsgs.length} pinned</span>
             <button
               onClick={(e) => { e.stopPropagation(); setShowPinned(v => !v); }}
               className="p-1 rounded dark:hover:bg-surface-3/60 hover:bg-gray-200/60 transition flex-shrink-0"
@@ -924,7 +924,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
               : sender?.role === 'teacher'
               ? 'text-neon-cyan'
               : isOwn
-              ? 'text-brand-400'
+              ? 'text-indigo-400'
               : 'text-green-400';
 
             // Group reactions: { emoji -> [userIds] }
@@ -978,16 +978,16 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     {(
                       <div className={`chat-bubble px-3 py-2 rounded-xl text-sm leading-relaxed break-words
                         ${isOwn
-                          ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white'
+                          ? 'bg-gradient-to-br from-indigo-600 to-brand-700 text-white'
                           : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900'}
-                        ${highlightedMessageId === item.id ? 'ring-2 ring-brand-400/70 shadow-[0_0_0_3px_rgba(168,85,247,0.15)]' : ''}`}>
+                        ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(168,85,247,0.15)]' : ''}`}>
                         {/* Replied-to preview */}
                         {item.replied_message && (
                           <button
                             onClick={() => scrollToMessage(item.replied_message.id)}
                             className={`block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
                               ${isOwn
-                                ? 'bg-brand-700/50 border-brand-300/50 text-brand-200'
+                                ? 'bg-brand-700/50 border-indigo-300/50 text-brand-200'
                                 : 'dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600'}`}>
                             <span className="font-medium block truncate">
                               {item.replied_message.users?.name || 'Unknown'}
@@ -1053,7 +1053,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                           onClick={() => handleReact(item.id, emoji)}
                           className={`chat-reaction flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
                             ${userIds.includes(user?.id)
-                              ? 'bg-brand-500/20 border-brand-500/40 text-brand-300'
+                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
                               : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
                           <span>{emoji}</span>
                           <span>{userIds.length}</span>
@@ -1120,9 +1120,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1')
             .slice(0, 60);
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(124,58,237,0.5)', background: isPrivate ? 'rgba(124,58,237,0.08)' : 'var(--bg-raised)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(99,102,241,0.5)', background: isPrivate ? 'rgba(99,102,241,0.08)' : 'var(--bg-raised)' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.8)' }}>{isPrivate ? 'Private reply to ' : '↩ Replying to '}</span>
+                <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(99,102,241,0.8)' }}>{isPrivate ? 'Private reply to ' : '↩ Replying to '}</span>
                 <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)' }}>{r.senderName}</span>
                 <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? '…' : ''}</span>
               </div>
@@ -1152,7 +1152,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
         {canSend ? (
           <div style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.15s' }}
-            onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
+            onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'}
             onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
 
             {/* Format toolbar — toggled */}
@@ -1170,8 +1170,8 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   style={{ position: 'absolute', bottom: '100%', left: 0, width: 220, zIndex: 50, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', marginBottom: 4 }}>
                   {filteredMembers.map((m, i) => (
                     <button key={m.id} onMouseDown={e => { e.preventDefault(); insertMention(m); }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: i === mentionIndex ? 'rgba(124,58,237,0.15)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                      <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: i === mentionIndex ? 'rgba(99,102,241,0.15)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                      <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
                         {m.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
                       </span>
                       <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-1)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
@@ -1187,7 +1187,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                 <button
                   onClick={() => setShowToolbar(v => !v)}
                   title="Formatting"
-                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: showToolbar ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.25)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: showToolbar ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.25)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
                   onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-2)'; }}
                   onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-3)'; }}
                 >
@@ -1213,9 +1213,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                 <button
                   onClick={privateReply ? handlePrivateReply : sendMessage}
                   disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
-                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: (text.trim() || fileRefs.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)' }}
+                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: (text.trim() || fileRefs.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)' }}
                   onMouseEnter={e => { if (text.trim() || fileRefs.length > 0) e.currentTarget.style.color = '#fff'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || fileRefs.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || fileRefs.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)'; }}
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>

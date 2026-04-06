@@ -10,7 +10,7 @@ import ConfirmDialog from './ui/ConfirmDialog';
 import { formatTime, getDateLabel } from '../utils/time';
 
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+const COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
 const PIN_MAX = 4;
@@ -204,7 +204,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
       {/* Header */}
       <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--bg-void)' }}>
@@ -221,7 +221,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
         {/* Pin toggle button */}
         {pinnedIds.length > 0 && (
           <button onClick={() => setShowPins(v => !v)} title="Pinned messages"
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: showPins ? 'rgba(124,58,237,0.15)' : 'none', border: `1px solid ${showPins ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.08)'}`, color: showPins ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: showPins ? 'rgba(99,102,241,0.15)' : 'none', border: `1px solid ${showPins ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)'}`, color: showPins ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
               <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
             </svg>
@@ -242,9 +242,9 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
             return (
               <button key={pid} onClick={() => { const el = messageRefs.current[pid]; el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); setShowPins(false); }}
                 style={{ width: '100%', textAlign: 'left', padding: '6px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.04)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.6)', flexShrink: 0 }}>
+                <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(99,102,241,0.6)', flexShrink: 0 }}>
                   <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
                 </svg>
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -316,14 +316,14 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                     <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 'min(65%, 360px)', flex: '1 1 0', alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, flexDirection: isOwn ? 'row-reverse' : 'row' }}>
                         {(
-                          <div style={{ padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 300, lineHeight: 1.5, wordBreak: 'break-words', background: isOwn ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'var(--bg-raised)', color: isOwn ? 'rgba(255,255,255,0.9)' : 'var(--text-1)' }}>
+                          <div style={{ padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 300, lineHeight: 1.5, wordBreak: 'break-words', background: isOwn ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', color: isOwn ? 'rgba(255,255,255,0.9)' : 'var(--text-1)' }}>
                             {(() => {
                               const pr = parsePrivateReply(msg.content);
                               if (pr) return (
                                 <>
                                   <button onClick={() => pr.groupId && onNavigateToGroup?.(pr.groupId)}
-                                    style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, borderRadius: 8, overflow: 'hidden', borderLeft: '3px solid rgba(124,58,237,0.5)', background: isOwn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)', padding: '6px 10px', cursor: 'pointer', border: 'none' }}>
-                                    <p style={{ fontSize: 11, fontWeight: 400, color: isOwn ? 'rgba(196,181,253,0.9)' : 'rgba(124,58,237,0.9)', margin: '0 0 2px' }}>{pr.senderName}{pr.groupName && ` · ${pr.groupName}`}</p>
+                                    style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, borderRadius: 8, overflow: 'hidden', borderLeft: '3px solid rgba(99,102,241,0.5)', background: isOwn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)', padding: '6px 10px', cursor: 'pointer', border: 'none' }}>
+                                    <p style={{ fontSize: 11, fontWeight: 400, color: isOwn ? 'rgba(199,210,254,0.9)' : 'rgba(99,102,241,0.9)', margin: '0 0 2px' }}>{pr.senderName}{pr.groupName && ` · ${pr.groupName}`}</p>
                                     <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pr.quoted}</p>
                                   </button>
                                   <MessageContent content={pr.message} isOwn={isOwn} />
@@ -333,8 +333,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                                 <>
                                   {msg.replied_message && (
                                     <button onClick={() => { const el = messageRefs.current[msg.replied_message.id]; el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
-                                      style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(124,58,237,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                      <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.8)', display: 'block' }}>{msg.replied_message.sender?.name}</span>
+                                      style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(99,102,241,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                      <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(99,102,241,0.8)', display: 'block' }}>{msg.replied_message.sender?.name}</span>
                                       <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: 200 }}>{msg.replied_message.content}</span>
                                     </button>
                                   )}
@@ -344,7 +344,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                             })()}
                             {msg.edited && <span style={{ fontSize: 10, opacity: 0.4, marginLeft: 4 }}>(edited)</span>}
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-                              <span style={{ fontSize: 10, color: isOwn ? 'rgba(196,181,253,0.5)' : 'rgba(255,255,255,0.2)', fontWeight: 300 }}>
+                              <span style={{ fontSize: 10, color: isOwn ? 'rgba(199,210,254,0.5)' : 'rgba(255,255,255,0.2)', fontWeight: 300 }}>
                                 {formatTime(msg.created_at)}{isOwn && msg.read && ' · seen'}
                               </span>
                             </div>
@@ -376,7 +376,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4, justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
                           {Object.entries(reactionMap).map(([emoji, userIds]) => (
                             <button key={emoji} onClick={() => handleReact(msg.id, emoji)}
-                              style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
+                              style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
                               <span>{emoji}</span><span>{userIds.length}</span>
                             </button>
                           ))}
@@ -419,9 +419,9 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', flexShrink: 0, background: 'var(--bg-void)' }}>
         {/* Reply banner */}
         {replyTo && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(124,58,237,0.5)', background: 'var(--bg-raised)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(99,102,241,0.5)', background: 'var(--bg-raised)' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(124,58,237,0.8)' }}>↩ Replying to </span>
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(99,102,241,0.8)' }}>↩ Replying to </span>
               <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)' }}>{replyTo.senderName}</span>
               <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyTo.content?.slice(0, 60)}</p>
             </div>
@@ -449,13 +449,13 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
 
         {/* Unified pill input */}
         <div style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.15s' }}
-          onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'}
+          onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'}
           onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
           {showToolbar && (
             <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 4 }}>
               <FormatToolbar textareaRef={textareaRef} setText={setText} />
               <button type="button" title="Upload file" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: uploading ? 'rgba(124,58,237,0.6)' : 'rgba(255,255,255,0.3)', transition: 'color 0.15s' }}
+                style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: uploading ? 'rgba(99,102,241,0.6)' : 'rgba(255,255,255,0.3)', transition: 'color 0.15s' }}
                 onMouseEnter={e => { if (!uploading) e.currentTarget.style.color = 'var(--text-1)'; }}
                 onMouseLeave={e => { if (!uploading) e.currentTarget.style.color = 'var(--text-3)'; }}>
                 {uploading
@@ -467,7 +467,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
           )}
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
             <button onClick={() => setShowToolbar(v => !v)} title="Formatting"
-              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderRight: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.25)', transition: 'color 0.15s' }}
+              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderRight: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.25)', transition: 'color 0.15s' }}
               onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-2)'; }}
               onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-3)'; }}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
@@ -479,9 +479,9 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
               style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '11px 12px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 44, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
               onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
             <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0}
-              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: (text.trim() || attachedFiles.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)', transition: 'color 0.15s' }}
+              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: (text.trim() || attachedFiles.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)', transition: 'color 0.15s' }}
               onMouseEnter={e => { if (text.trim() || attachedFiles.length > 0) e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || attachedFiles.length > 0) ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.15)'; }}>
+              onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || attachedFiles.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)'; }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
               </svg>
@@ -510,7 +510,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
           onClick={() => { setEditingId(null); setEditText(''); }}>
           <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative' }}
             onClick={e => e.stopPropagation()}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: '1px solid var(--border-color)' }}>
               <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}>Edit message</span>
               <button onClick={() => { setEditingId(null); setEditText(''); }}
@@ -520,7 +520,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
               </button>
             </div>
-            <div style={{ margin: '14px 20px', background: 'var(--bg-raised)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ margin: '14px 20px', background: 'var(--bg-raised)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <FormatToolbar textareaRef={editTextareaRef} setText={setEditText} />
               </div>
@@ -540,7 +540,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
             </div>
             <div style={{ display: 'flex', gap: 10, padding: '0 20px 20px' }}>
               <button onClick={() => handleEditSave(editingId)} disabled={!editText.trim()}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'var(--bg-raised)', border: '1px solid', borderColor: editText.trim() ? '#7c3aed' : 'var(--border-color)', color: editText.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', border: '1px solid', borderColor: editText.trim() ? '#6366F1' : 'var(--border-color)', color: editText.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
                 Save changes
               </button>
               <button onClick={() => { setEditingId(null); setEditText(''); }}

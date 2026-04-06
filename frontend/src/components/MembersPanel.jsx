@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { groupsAPI } from '../services/api';
@@ -6,7 +6,7 @@ import QRCode from 'qrcode';
 import ConfirmDialog from './ui/ConfirmDialog';
 
 const ini = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34a'];
+const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
 const S = {
@@ -19,10 +19,10 @@ function ActionBtn({ label, onClick, danger, accent }) {
   const [hov, setHov] = useState(false);
   const base = { padding: '4px 10px', borderRadius: 7, fontSize: 11, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'Inter, sans-serif' };
   let bg = hov
-    ? danger ? 'rgba(239,68,68,0.15)' : accent ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.08)'
+    ? danger ? 'rgba(239,68,68,0.15)' : accent ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.08)'
     : 'var(--bg-raised)';
   let color = hov
-    ? danger ? 'rgba(239,68,68,0.9)' : accent ? 'rgba(167,139,250,0.9)' : 'var(--text-1)'
+    ? danger ? 'rgba(239,68,68,0.9)' : accent ? 'rgba(165,180,252,0.9)' : 'var(--text-1)'
     : 'var(--text-3)';
   return (
     <button onClick={onClick} style={{ ...base, background: bg, color }}
@@ -39,7 +39,7 @@ function MemberRow({ m, currentUserId, isAdmin, canKick, canPromote, canDemote, 
   const isMe = u.id === currentUserId;
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: hov ? 'rgba(124,58,237,0.04)' : 'none', transition: 'background 0.1s' }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: hov ? 'rgba(99,102,241,0.04)' : 'none', transition: 'background 0.1s' }}>
       <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(u.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
         {ini(u.name)}
       </div>
@@ -197,7 +197,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   return (
     <>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', background: 'transparent', position: 'relative', fontFamily: 'Inter, sans-serif' }}>
-        <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto', width: '100%', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 24, position: 'relative', zIndex: 1 }}>
 
@@ -216,7 +216,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               <div style={{ marginBottom: 16 }}>
                 <p style={{ ...S.label, marginBottom: 8 }}>Invite code</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 600, color: 'rgba(167,139,250,0.9)', letterSpacing: '0.15em' }}>{group.invite_code}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 600, color: 'rgba(165,180,252,0.9)', letterSpacing: '0.15em' }}>{group.invite_code}</span>
                   <button onClick={copyCode}
                     style={{ marginLeft: 'auto', padding: '5px 12px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: copied ? 'rgba(48,209,88,0.8)' : 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer', transition: 'all 0.15s' }}>
                     {copied ? 'Copied!' : 'Copy'}
@@ -237,7 +237,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                   <p style={S.label}>Group info</p>
                   {!editingDesc && (
                     <button onClick={() => setEditingDesc(true)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 300, color: 'rgba(124,58,237,0.8)' }}>Edit</button>
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 300, color: 'rgba(99,102,241,0.8)' }}>Edit</button>
                   )}
                 </div>
                 {editingDesc ? (
@@ -256,7 +256,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button onClick={handleSaveDescription} disabled={savingDesc || !editForm.name.trim() || !editForm.subject.trim()}
-                        style={{ padding: '6px 14px', borderRadius: 8, background: '#7c3aed', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer', opacity: savingDesc ? 0.6 : 1 }}>
+                        style={{ padding: '6px 14px', borderRadius: 8, background: '#6366F1', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer', opacity: savingDesc ? 0.6 : 1 }}>
                         {savingDesc ? 'Saving…' : 'Save'}
                       </button>
                       <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
@@ -282,7 +282,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                   <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 2 }}>Only admins can send messages</p>
                 </div>
                 <button onClick={handleToggleAdminsOnly} disabled={toggling}
-                  style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: adminsOnly ? '#7c3aed' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
+                  style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: adminsOnly ? '#6366F1' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
                   <span style={{ position: 'absolute', top: 3, left: adminsOnly ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }}/>
                 </button>
               </div>
@@ -392,7 +392,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               ? <img src={qrDataUrl} alt="QR code" style={{ width: 200, height: 200, borderRadius: 12, margin: '0 auto', display: 'block' }}/>
               : <div style={{ width: 200, height: 200, borderRadius: 12, background: 'var(--bg-raised)', margin: '0 auto' }}/>
             }
-            <p style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 600, color: 'rgba(167,139,250,0.9)', letterSpacing: '0.15em', margin: 0 }}>{group.invite_code}</p>
+            <p style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 600, color: 'rgba(165,180,252,0.9)', letterSpacing: '0.15em', margin: 0 }}>{group.invite_code}</p>
             <button onClick={() => setShowQR(false)}
               style={{ padding: '10px', borderRadius: 10, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
               Close

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import FilePickerPopover from './FilePickerPopover';
 
 function wrap(textareaRef, setText, before, after = before) {
@@ -57,7 +57,7 @@ export default function FormatToolbar({ textareaRef, setText, groupId, onFilePic
           onMouseDown={e => { e.preventDefault(); setShowFilePicker(v => !v); }}
           className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs transition select-none
             ${showFilePicker
-              ? 'bg-brand-600 text-white'
+              ? 'bg-indigo-600 text-white'
               : 'dark:text-gray-400 text-gray-500 dark:hover:bg-surface-3 hover:bg-gray-200 dark:hover:text-gray-200 hover:text-gray-700'}`}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
             <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
