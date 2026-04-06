@@ -90,7 +90,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab]   = useState('Overview');
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [activeConvo, setActiveConvo] = useState(null);
-  const [settingsSection, setSettingsSection] = useState(null); void setSettingsSection;
+  const [settingsSection, setSettingsSection] = useState(null);
   const [fabOpen, setFabOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
@@ -175,6 +175,13 @@ export default function DashboardPage() {
 
   // ── Sidebar panel content (below nav) ─────────────────
   const renderSideContent = () => {
+    if (settingsOpen) return (
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <SettingsSidebar activeSection={settingsSection}
+          onSection={(s) => { setSettingsSection(s); }}
+          onViewProfile={setProfileUserId} />
+      </div>
+    );
     if (activeNav === 'groups') return (
       <div style={{ flex: 1, minHeight: 0 }}>
         <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={handleSelectGroup}
@@ -185,11 +192,6 @@ export default function DashboardPage() {
     if (activeNav === 'dms') return (
       <div style={{ flex: 1, minHeight: 0 }}>
         <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
-      </div>
-    );
-    if (activeNav === 'notifications') return (
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <NotificationBell inline onNavigate={handleNotificationNavigate} />
       </div>
     );
     if (activeNav === 'notifications') return (
@@ -257,7 +259,7 @@ export default function DashboardPage() {
               onNavigate={handleNotificationNavigate}
               onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
             />
-            <button onClick={() => setSettingsOpen(v => !v)}
+            <button onClick={() => { setSettingsOpen(v => { const next = !v; if (next) setPanelOpen(true); return next; }); }}
               title="Settings"
               style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(124,58,237,0.12)' : 'none', color: settingsOpen ? '#7c3aed' : 'var(--text-3)', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; e.currentTarget.style.color = '#7c3aed'; }}
@@ -310,10 +312,10 @@ export default function DashboardPage() {
               {/* Panel header */}
               <div className="t-divider" style={{ height: 44, padding: '0 14px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  {NAV_META[activeNav]?.label}
+                  {settingsOpen ? 'Settings' : NAV_META[activeNav]?.label}
                 </span>
                 {/* FAB for groups */}
-                {activeNav === 'groups' && (
+                {activeNav === 'groups' && !settingsOpen && (
                   <div style={{ position: 'relative' }}>
                     <button onClick={() => setFabOpen(v => !v)}
                       style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(124,58,237,0.3)', background: fabOpen ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.08)', color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
