@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { dmAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -84,15 +84,15 @@ export default function DMList({ activeConvoId, onSelect }) {
 
       {/* Search bar — identical to GroupList */}
       <div style={{ padding: '8px 12px 8px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, padding: '8px 12px' }}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '8px 12px' }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search by email…"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif' }}/>
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', fontFamily: 'Inter, sans-serif' }}/>
           {search && (
-            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', lineHeight: 0, padding: 0 }}>
+            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 0 }}>
               <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
               </svg>
@@ -103,15 +103,15 @@ export default function DMList({ activeConvoId, onSelect }) {
 
       {/* Search results */}
       {search.trim() && (
-        <div style={{ borderBottom: '1px solid #1c1c1c', flexShrink: 0 }}>
+        <div style={{ borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
           {searching ? (
-            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.45)' }}>Searching…</p>
+            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>Searching…</p>
           ) : results.length === 0 ? (
-            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.45)' }}>No users found</p>
+            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>No users found</p>
           ) : results.map(u => (
             <button key={u.id} onClick={() => handleStartConvo(u)}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.04)'}
               onMouseLeave={e => e.currentTarget.style.background = 'none'}>
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: avatarBg(u.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff' }}>
@@ -120,10 +120,10 @@ export default function DMList({ activeConvoId, onSelect }) {
                 <OnlineDot userId={u.id} style={{ position: 'absolute', bottom: 0, right: 0, width: 9, height: 9, border: '1.5px solid #080808' }}/>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
-                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.5)', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
+                <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
+                <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.45)', textTransform: 'capitalize', flexShrink: 0 }}>{u.role}</span>
+              <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-2)', textTransform: 'capitalize', flexShrink: 0 }}>{u.role}</span>
             </button>
           ))}
         </div>
@@ -133,10 +133,10 @@ export default function DMList({ activeConvoId, onSelect }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} style={{ height: 56, borderRadius: 8, background: '#0d0d0d', marginBottom: 4 }}/>
+            <div key={i} style={{ height: 56, borderRadius: 8, background: 'var(--bg-surface)', marginBottom: 4 }}/>
           ))
         ) : convos.length === 0 && !search ? (
-          <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '24px 12px', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 12, fontWeight: 300, color: 'var(--text-2)', textAlign: 'center', padding: '24px 12px', lineHeight: 1.6 }}>
             Search for someone by email to start a conversation
           </p>
         ) : convos.map(convo => {
@@ -156,7 +156,7 @@ export default function DMList({ activeConvoId, onSelect }) {
                 textAlign: 'left', background: active ? 'rgba(255,255,255,0.07)' : 'none',
                 transition: 'background 0.1s', marginBottom: 2,
               }}
-              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(124,58,237,0.04)'; }}
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'none'; }}>
 
               {/* Avatar */}
@@ -174,7 +174,7 @@ export default function DMList({ activeConvoId, onSelect }) {
                     {other?.name}
                   </p>
                   {timeStr && (
-                    <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.45)', flexShrink: 0 }}>{timeStr}</span>
+                    <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', flexShrink: 0 }}>{timeStr}</span>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 2 }}>

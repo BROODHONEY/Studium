@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { filesAPI } from '../services/api';
@@ -93,9 +93,9 @@ function FileCard({ file, selecting, selected, onToggle, canDelete, onDelete, ca
         <FileTypeIcon type={file.file_type} size={32} />
       </div>
       {/* Name */}
-      <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, width: '100%', textAlign: 'center' }}>{file.filename}</p>
+      <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, width: '100%', textAlign: 'center' }}>{file.filename}</p>
       {/* Size */}
-      <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: 0 }}>{formatSize(file.size_bytes)}</p>
+      <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0 }}>{formatSize(file.size_bytes)}</p>
       {/* Hover overlay with actions */}
       {!selecting && hov && (
         <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: 'rgba(0,0,0,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 10px' }}>
@@ -105,7 +105,7 @@ function FileCard({ file, selecting, selected, onToggle, canDelete, onDelete, ca
           </a>
           {canAssign && (
             <button onClick={e => { e.stopPropagation(); onAssign(file.id); }}
-              style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
               Move
             </button>
           )}
@@ -269,15 +269,15 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   const SectionHeader = ({ title, subtitle, fileList, uploadRef }) => (
     <div className="flex items-center justify-between mb-3">
       <div>
-        <h3 style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{title}</h3>
-        {subtitle && <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', marginTop: 2 }}>{subtitle}</p>}
+        <h3 style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-2)', margin: 0 }}>{title}</h3>
+        {subtitle && <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 2 }}>{subtitle}</p>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {uploadRef && (canUploadAll || isStudent) && (
           <button onClick={() => uploadRef.current?.click()}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'none', color: 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
               <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
               <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
@@ -287,7 +287,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         )}
         {canDelete && fileList.length > 0 && (
           <button onClick={() => { if (selecting) { setSelecting(false); setSelected(new Set()); } else setSelecting(true); }}
-            style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.08)', background: selecting ? 'rgba(255,255,255,0.06)' : 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
+            style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid var(--border-color)', background: selecting ? 'rgba(255,255,255,0.06)' : 'none', color: 'var(--text-3)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
             {selecting ? 'Cancel' : 'Select'}
           </button>
         )}
@@ -362,9 +362,9 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         {canDelete && (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button onClick={() => setCatModal(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(124,58,237,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
                 <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
               </svg>
@@ -377,10 +377,10 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         <section>
           <SectionHeader title="Study materials" subtitle="Uploaded by teachers" fileList={teacherFiles} uploadRef={canUploadAll ? teacherInputRef : null}/>
           {loading
-            ? <div className="space-y-2">{[1,2].map(i => <div key={i} style={{ height: 56, borderRadius: 8, background: '#0d0d0d', animation: 'pulse 1.5s infinite' }}/>)}</div>
+            ? <div className="space-y-2">{[1,2].map(i => <div key={i} style={{ height: 56, borderRadius: 8, background: 'var(--bg-surface)', animation: 'pulse 1.5s infinite' }}/>)}</div>
             : teacherFiles.length === 0
               ? <div style={{ padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8 }}>
-                  <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300 }}>No study materials yet</p>
+                  <p style={{ color: 'var(--text-3)', fontSize: 12, fontWeight: 300 }}>No study materials yet</p>
                 </div>
               : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
                   {teacherFiles.map(file => (
@@ -399,10 +399,10 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
           <section>
             <SectionHeader title="Student media" subtitle="Images and PDFs from students" fileList={studentFiles} uploadRef={isStudent ? studentInputRef : null}/>
             {loading
-              ? <div className="space-y-2">{[1,2].map(i => <div key={i} style={{ height: 56, borderRadius: 8, background: '#0d0d0d' }}/>)}</div>
+              ? <div className="space-y-2">{[1,2].map(i => <div key={i} style={{ height: 56, borderRadius: 8, background: 'var(--bg-surface)' }}/>)}</div>
               : studentFiles.length === 0
                 ? <div style={{ padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8 }}>
-                    <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: 300 }}>No student uploads yet</p>
+                    <p style={{ color: 'var(--text-3)', fontSize: 12, fontWeight: 300 }}>No student uploads yet</p>
                   </div>
                 : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
                     {studentFiles.map(file => (

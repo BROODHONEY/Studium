@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+﻿import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -31,7 +31,7 @@ const DEFAULT_ACCENTS = ['bg-brand-500', 'bg-teal-500', 'bg-purple-500', 'bg-amb
 
 // ── Helpers ────────────────────────────────────────────
 const initials = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const roleColor = () => 'text-[rgba(255,255,255,0.3)]';
+const roleColor = () => 'text-[var(--text-3)]';
 
 // ── GroupItem ──────────────────────────────────────────
 function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived, noColorBorder, hasUnread }) {
@@ -62,24 +62,24 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
         ${isArchived ? 'opacity-40' : ''}
         ${dragging ? 'opacity-30' : ''}
         ${active
-          ? 'bg-white/[0.07]'
-          : 'hover:bg-white/[0.04]'}`}>
+          ? 'bg-[rgba(124,58,237,0.1)]'
+          : 'hover:bg-[rgba(124,58,237,0.05)]'}`}>
       <div className="flex items-center gap-1.5 min-w-0">
         {pinned && (
-          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
             <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
           </svg>
         )}
         {isArchived && (
-          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
             <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
           </svg>
         )}
-        <p className="text-sm truncate flex-1" style={{ fontWeight: active ? 400 : 300, color: active ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)' }}>
+        <p className="text-sm truncate flex-1" style={{ fontWeight: active ? 400 : 300, color: active ? 'var(--text-1)' : 'var(--text-1)' }}>
           {group.name}
         </p>
         {label && (
-          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em' }}>
+          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 300, color: 'var(--text-2)', letterSpacing: '0.02em' }}>
             {label}
           </span>
         )}
@@ -87,7 +87,7 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
           <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full" style={{ background: '#7c3aed' }}/>
         )}
       </div>
-      <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 300, fontSize: 12 }}>
+      <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-2)', fontWeight: 300, fontSize: 12 }}>
         {group.subject} · {group.my_role}
       </p>
     </button>
@@ -282,18 +282,18 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
       {/* Search bar */}
       <div className="px-3 pt-2 pb-1 flex-shrink-0">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, padding: '8px 12px' }}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '8px 12px' }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', fontFamily: 'Inter, sans-serif' }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} style={{ color: 'rgba(255,255,255,0.2)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
+            <button onClick={() => setSearchQuery('')} style={{ color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
               <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
               </svg>
@@ -314,10 +314,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             {pinnedGroups.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 px-2 py-1.5">
-                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
                     <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
                   </svg>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned</span>
                 </div>
                 <div className="space-y-0.5">
                   {pinnedGroups.map(group => (
@@ -341,10 +341,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               <div className="mb-1">
                 {/* Section header */}
                 <div className="flex items-center justify-between px-1 mb-2">
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Folders</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Folders</span>
                   <div className="flex items-center gap-1">
                     <button onClick={() => setFolderModal(true)}
-                      style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)' }}>
+                      style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
                       </svg>
@@ -354,7 +354,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         const allCollapsed = folders.every(f => p[f.id]);
                         return Object.fromEntries(folders.map(f => [f.id, !allCollapsed]));
                       })}
-                      style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)' }}>
+                      style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                       </svg>
@@ -378,10 +378,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragFolderId(folder.id); }}
                         onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragFolderId(p => p === folder.id ? null : p); }}
                         onDrop={e => { e.preventDefault(); e.stopPropagation(); handleDropOnFolder(folder.id, e); }}
-                        style={{ borderRadius: 0, overflow: 'hidden', border: dragFolderId === folder.id ? '1px solid rgba(124,58,237,0.4)' : '1px solid #1c1c1c' }}>
+                        style={{ borderRadius: 0, overflow: 'hidden', border: dragFolderId === folder.id ? '1px solid rgba(124,58,237,0.4)' : '1px solid var(--border-color)' }}>
 
                         {/* Folder card header */}
-                        <div style={{ display: 'flex', alignItems: 'center', background: '#0d0d0d' }}
+                        <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-raised)' }}
                           onClick={e => e.stopPropagation()}>
                           
 
@@ -390,7 +390,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                             onClick={() => setCollapsed(p => ({ ...p, [folder.id]: !p[folder.id] }))}
                             style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                             <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"
-                              style={{ flexShrink: 0, color: 'rgba(255,255,255,0.25)' }}>
+                              style={{ flexShrink: 0, color: 'var(--text-3)' }}>
                               <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
                             </svg>
                             {renamingId === folder.id ? (
@@ -402,10 +402,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                 }}
                                 onBlur={() => { if (renameVal.trim()) persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); setRenamingId(null); }}
                                 onClick={e => e.stopPropagation()}
-                                style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', fontFamily: 'Inter, sans-serif', borderBottom: '1px solid rgba(124,58,237,0.5)' }}
+                                style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 400, color: 'var(--text-1)', fontFamily: 'Inter, sans-serif', borderBottom: '1px solid rgba(124,58,237,0.5)' }}
                               />
                             ) : (
-                              <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.7)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {folder.name}
                               </span>
                             )}
@@ -420,7 +420,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                 setFolderMenuPos({ x: r.right, y: r.bottom + 4 });
                                 setFolderMenu(folder.id);
                               }}
-                              style={{ padding: 4, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', lineHeight: 0 }}>
+                              style={{ padding: 4, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0 }}>
                               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                               </svg>
@@ -431,11 +431,11 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
 
                         {/* Folder contents */}
                         {!isCollapsed && (
-                          <div style={{ borderTop: '1px solid #1c1c1c' }}>
+                          <div style={{ borderTop: '1px solid var(--border-color)' }}>
                             {folderGroups.length === 0
-                              ? <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.45)', padding: '8px 12px', fontStyle: 'italic' }}>Empty — drag groups here</p>
+                              ? <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', padding: '8px 12px', fontStyle: 'italic' }}>Empty — drag groups here</p>
                               : folderGroups.map(group => (
-                                <div key={group.id} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                                <div key={group.id} style={{ borderTop: '1px solid var(--border-color)' }}>
                                   <GroupItem group={group}
                                     active={activeGroupId === group.id}
                                     onSelect={onSelect}
@@ -466,10 +466,10 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               onDrop={e => { e.preventDefault(); const gid = e.dataTransfer.getData('groupId') || dragGroupIdRef.current; if (gid) { moveToFolder(gid, null); dragGroupIdRef.current = null; setDragGroupId(null); setDragFolderId(null); } }}
               className={`rounded-xl transition min-h-[4px] ${dragFolderId === '__none__' ? 'ring-1 ring-brand-500/30' : ''}`}>
               {folders.length > 0 && ungrouped.length > 0 && (
-                <p style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 2px' }}>Other</p>
+                <p style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 2px' }}>Other</p>
               )}
               {dragFolderId === '__none__' && ungrouped.length === 0 && (
-                <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.45)', padding: '8px 12px', fontStyle: 'italic', textAlign: 'center' }}>Drop to remove from folder</p>
+                <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', padding: '8px 12px', fontStyle: 'italic', textAlign: 'center' }}>Drop to remove from folder</p>
               )}
               <div className="space-y-0.5">
                 {ungrouped.map(group => (
@@ -493,13 +493,13 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                 <button
                   onClick={() => setShowArchived(v => !v)}
                   style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.2)' }}>
+                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'var(--text-3)' }}>
                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
                   </svg>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Archived</span>
-                  <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.15)', marginLeft: 2 }}>{archivedGroups.length}</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Archived</span>
+                  <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)', marginLeft: 2 }}>{archivedGroups.length}</span>
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"
-                    style={{ flexShrink: 0, color: 'rgba(255,255,255,0.15)', marginLeft: 'auto', transform: showArchived ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}>
+                    style={{ flexShrink: 0, color: 'var(--text-3)', marginLeft: 'auto', transform: showArchived ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}>
                     <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                   </svg>
                 </button>
@@ -535,27 +535,27 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
       {folderModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '16px' }}
           onClick={() => { setFolderModal(false); setFolderName(''); }}>
-          <div style={{ width: '100%', maxWidth: 400, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '24px 20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', position: 'relative', overflow: 'hidden' }}
+          <div style={{ width: '100%', maxWidth: 400, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '24px 20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', position: 'relative', overflow: 'hidden' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-            <h3 style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: '0 0 16px' }}>New folder</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)', margin: '0 0 16px' }}>New folder</h3>
             <input
               ref={folderInput}
               value={folderName}
               onChange={e => setFolderName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setFolderModal(false); setFolderName(''); } }}
               placeholder="e.g. Semester 3, Electives…"
-              style={{ width: '100%', background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10, padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', marginBottom: 14, transition: 'border-color 0.15s' }}
+              style={{ width: '100%', background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', marginBottom: 14, transition: 'border-color 0.15s' }}
               onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
-              onBlur={e => e.target.style.borderColor = '#1c1c1c'}
+              onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
             />
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={createFolder} disabled={!folderName.trim()}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: folderName.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : '#111111', border: '1px solid', borderColor: folderName.trim() ? '#7c3aed' : '#1c1c1c', color: folderName.trim() ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 500, cursor: folderName.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: folderName.trim() ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'var(--bg-raised)', border: '1px solid', borderColor: folderName.trim() ? '#7c3aed' : 'var(--border-color)', color: folderName.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: folderName.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
                 Create
               </button>
               <button onClick={() => { setFolderModal(false); setFolderName(''); }}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
                 Cancel
               </button>
             </div>
@@ -600,8 +600,8 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               top: Math.min(folderMenuPos.y, window.innerHeight - 200),
               left: Math.max(folderMenuPos.x - 160, 8),
               zIndex: 9999,
-              background: '#111111',
-              border: '1px solid #1c1c1c',
+              background: 'var(--bg-raised)',
+              border: '1px solid var(--border-color)',
               borderRadius: 8,
               boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
               padding: '4px 0',
@@ -614,17 +614,17 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               return (
                 <>
                   <button onClick={() => { setRenameVal(folder.name); setRenamingId(folder.id); setFolderMenu(null); }}
-                    style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-2)' }}>
                       <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
                     </svg>
                     Rename
                   </button>
                   <button onClick={() => { setDeleteConfirm(folder.id); setFolderMenu(null); }}
                     style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(239,68,68,0.7)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                     <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66H14.5a.5.5 0 0 0 0-1h-.996a.59.59 0 0 0-.01 0zM3.04 3.5h9.92l-.845 10.56a1 1 0 0 1-.997.94h-6.23a1 1 0 0 1-.997-.94z"/>
@@ -642,40 +642,40 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
       {/* Context menu */}
       {contextMenu && (
         <div ref={contextRef}
-          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 9999, background: '#111111', border: '1px solid #1c1c1c', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', padding: '4px 0', minWidth: 180 }}
+          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 9999, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', padding: '4px 0', minWidth: 180 }}
           onClick={e => e.stopPropagation()}>
           <button onClick={() => { setFolderPickTarget(contextMenu.groupId); setContextMenu(null); }}
-            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-2)' }}>
               <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
             </svg>
             Move to folder
           </button>
           <button onClick={() => { togglePin(contextMenu.groupId); setContextMenu(null); }}
-            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-2)' }}>
               <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
             </svg>
             {pins.includes(contextMenu.groupId) ? 'Unpin' : 'Pin to top'}
           </button>
           <button onClick={() => { setLabelPickTarget(contextMenu.groupId); setLabelInput(labels[contextMenu.groupId] || ''); setContextMenu(null); }}
-            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-2)' }}>
               <path d="M2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2zm3.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
             </svg>
             Set label
           </button>
           <button onClick={() => { toggleArchive(contextMenu.groupId); setContextMenu(null); }}
-            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            style={{ width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter, sans-serif' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-2)' }}>
               <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
             </svg>
             {archived.includes(contextMenu.groupId) ? 'Unarchive' : 'Archive'}

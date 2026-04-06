@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
@@ -76,7 +76,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
             onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
         </div>
         <div style={{ flex: 1 }}>
-          <label className="form-label">Time <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 300 }}>(optional)</span></label>
+          <label className="form-label">Time <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
           <input type="time" className="form-input" value={form.due_time}
             onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}/>
         </div>
@@ -87,7 +87,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
           {loading ? (editing ? 'Updating…' : 'Adding…') : (editing ? 'Update' : 'Add')}
         </button>
         <button type="button" onClick={handleCancel}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
           Cancel
         </button>
       </div>
@@ -98,14 +98,14 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   if (editing) return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
       onClick={handleCancel}>
-      <div style={{ width: '100%', maxWidth: 460, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}
+      <div style={{ width: '100%', maxWidth: 460, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}>Edit due date</span>
-          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)' }}>Edit due date</span>
+          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
           </button>
         </div>
@@ -118,9 +118,9 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   if (!open) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}>
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(124,58,237,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
         </svg>
@@ -153,13 +153,16 @@ export default function DuesPanel({ group }) {
   const [selectedDue, setSelectedDue] = useState(null);
 
   useEffect(() => {
-    if (!group || !socket) return;
+    if (!group) return;
     setLoading(true);
     duesAPI.list(group.id)
       .then(res => setDues(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
+  }, [group?.id]);
 
+  useEffect(() => {
+    if (!group || !socket) return;
     socket.emit('join_group', group.id);
 
     const onNewDue    = (d) => setDues(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
@@ -239,11 +242,11 @@ export default function DuesPanel({ group }) {
                   const hasTime = istTime !== '00:00';
                   return (
                     <div key={d.id}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, border: '1px solid #1c1c1c', background: '#080808', transition: 'border-color 0.15s', cursor: 'pointer', position: 'relative' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-page)', transition: 'border-color 0.15s', cursor: 'pointer', position: 'relative' }}
                       className="group"
                       onClick={() => setSelectedDue(d)}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
                       {/* Date block */}
                       <div className="flex-shrink-0 w-10 text-center">
                         <p className="text-base font-semibold dark:text-white text-gray-900 leading-none">
@@ -259,7 +262,7 @@ export default function DuesPanel({ group }) {
                         )}
                       </div>
 
-                      <div style={{ width: 1, height: 28, background: '#1c1c1c', flexShrink: 0 }}/>
+                      <div style={{ width: 1, height: 28, background: 'var(--border-color)', flexShrink: 0 }}/>
 
                       <div className="flex-1 min-w-0">
                         <p className="font-medium dark:text-white text-gray-900 truncate" style={{ fontSize: 12 }}>{d.title}</p>
@@ -272,9 +275,9 @@ export default function DuesPanel({ group }) {
                           <div style={{ position: 'relative' }}>
                             <button
                               onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === d.id ? null : d.id); }}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)' }}
-                              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}
+                              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-2)'}
+                              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
                             >
                               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
@@ -283,18 +286,18 @@ export default function DuesPanel({ group }) {
                             {openMenuId === d.id && (
                               <>
                                 <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
-                                <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                                <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
                                   <button
                                     onClick={() => { setEditingDue(d); setOpenMenuId(null); }}
-                                    style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                    style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                   >Edit</button>
-                                  <div style={{ height: 1, background: '#1c1c1c' }} />
+                                  <div style={{ height: 1, background: 'var(--border-color)' }} />
                                   <button
                                     onClick={() => { setDeleteConfirm(d.id); setOpenMenuId(null); }}
                                     style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                   >Delete</button>
                                 </div>
@@ -323,17 +326,17 @@ export default function DuesPanel({ group }) {
             onClick={() => setSelectedDue(null)}
           >
             <div
-              style={{ background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}
               onClick={e => e.stopPropagation()}
             >
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: 0, lineHeight: 1.4 }}>{d.title}</p>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)', margin: 0, lineHeight: 1.4 }}>{d.title}</p>
                 </div>
                 <button
                   onClick={() => setSelectedDue(null)}
-                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 2, lineHeight: 0 }}
+                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2, lineHeight: 0 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
@@ -346,10 +349,10 @@ export default function DuesPanel({ group }) {
 
               {/* Date / time */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14 }}>
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
                   <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                 </svg>
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontWeight: 300 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 300 }}>
                   {dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                   {hasTime && ` · ${dt.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`}
                 </span>
@@ -357,8 +360,8 @@ export default function DuesPanel({ group }) {
 
               {/* Description */}
               {d.description && (
-                <div style={{ marginTop: 14, padding: '12px 14px', background: '#080808', borderRadius: 8, border: '1px solid #1c1c1c' }}>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontWeight: 300, margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{d.description}</p>
+                <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--bg-page)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 300, margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{d.description}</p>
                 </div>
               )}
 

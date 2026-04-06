@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
@@ -96,9 +96,9 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   if (!open && !editing) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}>
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(124,58,237,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
         </svg>
@@ -182,7 +182,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
           {loading ? 'Saving…' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post now')}
         </button>
         <button type="button" onClick={handleCancel}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
           Cancel
         </button>
       </div>
@@ -193,14 +193,14 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   if (editing) return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
       onClick={handleCancel}>
-      <div style={{ width: '100%', maxWidth: 520, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
+      <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}>Edit announcement</span>
-          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)' }}>Edit announcement</span>
+          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
           </button>
         </div>
@@ -235,10 +235,14 @@ export default function GroupOverview({ group, onFileRef }) {
   const [openMenuId, setOpenMenuId] = useState(null);
 
   useEffect(() => {
-    if (!group || !socket) return;
+    if (!group) return;
     setLoadingA(true);
     announcementsAPI.list(group.id).then(res => setAnnouncements(res.data)).catch(console.error).finally(() => setLoadingA(false));
     if (isTeacher) announcementsAPI.scheduled(group.id).then(res => setScheduled(res.data)).catch(console.error);
+  }, [group?.id]);
+
+  useEffect(() => {
+    if (!group || !socket) return;
 
     // Ensure we're in the socket room (ChatPanel may not be mounted)
     socket.emit('join_group', group.id);
@@ -320,14 +324,14 @@ export default function GroupOverview({ group, onFileRef }) {
         />
 
         {/* Group header */}
-        <div style={{ borderBottom: '1px solid #1c1c1c', paddingBottom: 24 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0 }}>{group.name}</h1>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: 300, marginTop: 4 }}>{group.subject}</p>
-          {group.description && <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: 300, marginTop: 6 }}>{group.description}</p>}
+        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: 24 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>{group.name}</h1>
+          <p style={{ color: 'var(--text-3)', fontSize: 13, fontWeight: 300, marginTop: 4 }}>{group.subject}</p>
+          {group.description && <p style={{ color: 'var(--text-3)', fontSize: 13, fontWeight: 300, marginTop: 6 }}>{group.description}</p>}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 400, padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', textTransform: 'capitalize' }}>{myRole}</span>
+            <span style={{ fontSize: 11, fontWeight: 400, padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border-color)', color: 'var(--text-2)', textTransform: 'capitalize' }}>{myRole}</span>
             {isTeacher && (
-              <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>
+              <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--text-3)' }}>
                 Invite code: <span style={{ fontFamily: 'monospace', color: 'rgba(124,58,237,0.8)' }}>{group.invite_code}</span>
               </span>
             )}
@@ -337,8 +341,8 @@ export default function GroupOverview({ group, onFileRef }) {
         {/* Announcements */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Announcements</h2>
-            <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>{announcements.length} total</span>
+            <h2 style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Announcements</h2>
+            <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)' }}>{announcements.length} total</span>
           </div>
           <div className="space-y-3">
             {isTeacher && (
@@ -368,25 +372,25 @@ export default function GroupOverview({ group, onFileRef }) {
                 return (
                   <div key={a.id}
                     onClick={() => setSelectedAnnouncement(a)}
-                    style={{ padding: '16px', borderRadius: 10, borderLeft: `2px solid ${tag.accentColor || '#2a2a2a'}`, border: '1px solid #1c1c1c', background: '#080808', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                    style={{ padding: '16px', borderRadius: 10, borderLeft: `2px solid ${tag.accentColor || '#2a2a2a'}`, border: '1px solid var(--border-color)', background: 'var(--bg-page)', cursor: 'pointer', transition: 'border-color 0.15s' }}
                     className="group"
-                    onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = '#1c1c1c'}>
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid var(--border-color)', color: 'var(--text-3)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
                           <TagIcon type={a.tag || 'general'} />{tag.label}
                         </span>
-                        <p style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0 }}>{a.title}</p>
-                        <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
+                        <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>{a.title}</p>
+                        <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 3 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
                       </div>
                       {(isTeacher || a.users?.id === user?.id) && (
                         <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => setOpenMenuId(openMenuId === a.id ? null : a.id)}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)' }}
-                            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-2)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                             </svg>
@@ -394,18 +398,18 @@ export default function GroupOverview({ group, onFileRef }) {
                           {openMenuId === a.id && (
                             <>
                               <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
-                              <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                              <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
                                 <button
                                   onClick={() => { setEditingAnnouncement(a); setOpenMenuId(null); }}
-                                  style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
-                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                  style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
+                                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 >Edit</button>
-                                <div style={{ height: 1, background: '#1c1c1c' }} />
+                                <div style={{ height: 1, background: 'var(--border-color)' }} />
                                 <button
                                   onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setOpenMenuId(null); }}
                                   style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
-                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 >Delete</button>
                               </div>
@@ -414,7 +418,7 @@ export default function GroupOverview({ group, onFileRef }) {
                         </div>
                       )}
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', marginTop: 12, lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    <div style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)', marginTop: 12, lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
                     </div>
                     {Object.keys(reactionMap).length > 0 && (
@@ -501,27 +505,27 @@ export default function GroupOverview({ group, onFileRef }) {
             onClick={() => setSelectedAnnouncement(null)}
           >
             <div
-              style={{ background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.7)', maxHeight: '80vh', overflowY: 'auto' }}
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.7)', maxHeight: '80vh', overflowY: 'auto' }}
               onClick={e => e.stopPropagation()}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+                  <span style={{ fontSize: 10, fontWeight: 400, padding: '2px 8px', borderRadius: 20, border: '1px solid var(--border-color)', color: 'var(--text-3)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
                     <TagIcon type={a.tag || 'general'} />{tag.label}
                   </span>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: 0, lineHeight: 1.4 }}>{a.title}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)', margin: 0, lineHeight: 1.4 }}>{a.title}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 4 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
                 </div>
                 <button
                   onClick={() => setSelectedAnnouncement(null)}
-                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 2, lineHeight: 0 }}
+                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2, lineHeight: 0 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
                   </svg>
                 </button>
               </div>
-              <div style={{ padding: '12px 14px', background: '#080808', borderRadius: 8, border: '1px solid #1c1c1c', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>
+              <div style={{ padding: '12px 14px', background: 'var(--bg-page)', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 13, fontWeight: 300, color: 'var(--text-2)', lineHeight: 1.7 }}>
                 <MessageContent content={a.content} isOwn={false} onFileRef={(id) => { onFileRef(id); setSelectedAnnouncement(null); }} />
               </div>
               {Object.keys(reactionMap).length > 0 && (

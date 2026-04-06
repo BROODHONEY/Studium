@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { profileAPI } from '../services/api';
@@ -16,7 +16,7 @@ const roleStyles = {
 function InfoRow({ label, value }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+      <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
       <span style={{ fontSize: 14, fontWeight: 300, color: value ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.2)', fontStyle: value ? 'normal' : 'italic' }}>
         {value || 'Not set'}
       </span>
@@ -71,7 +71,7 @@ export default function ProfileModal({ userId, onClose }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: 420, margin: '0 16px', borderRadius: 20, background: '#0d0d0d', border: '1px solid #1c1c1c', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}
+      <div style={{ width: '100%', maxWidth: 420, margin: '0 16px', borderRadius: 20, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}
         onClick={e => e.stopPropagation()}>
 
         {loading ? (
@@ -81,11 +81,11 @@ export default function ProfileModal({ userId, onClose }) {
         ) : editing ? (
           <>
             {/* Edit header */}
-            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #1c1c1c', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>Edit Profile</span>
-              <button onClick={() => setEditing(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', lineHeight: 0, padding: 4 }}
-                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)' }}>Edit Profile</span>
+              <button onClick={() => setEditing(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
               </button>
             </div>
@@ -117,7 +117,7 @@ export default function ProfileModal({ userId, onClose }) {
                   {saving ? 'Saving…' : 'Save changes'}
                 </button>
                 <button type="button" onClick={() => setEditing(false)}
-                  style={{ flex: 1, padding: '11px', borderRadius: 12, background: '#111111', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: 300, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 14, fontWeight: 300, cursor: 'pointer' }}>
                   Cancel
                 </button>
               </div>
@@ -128,9 +128,9 @@ export default function ProfileModal({ userId, onClose }) {
             {/* Banner + avatar */}
             <div style={{ position: 'relative', height: 100, background: `linear-gradient(135deg, ${avatarBg(profile?.name)}33, #0d0d0d)` }}>
               {/* Close button */}
-              <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}
-                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+              <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
               </button>
               {/* Avatar — overlaps banner */}
@@ -140,14 +140,14 @@ export default function ProfileModal({ userId, onClose }) {
             </div>
 
             {/* Name + role */}
-            <div style={{ padding: '48px 24px 20px', borderBottom: '1px solid #1c1c1c' }}>
-              <p style={{ fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: 0 }}>{profile?.name}</p>
+            <div style={{ padding: '48px 24px 20px', borderBottom: '1px solid var(--border-color)' }}>
+              <p style={{ fontSize: 20, fontWeight: 500, color: 'var(--text-1)', margin: 0 }}>{profile?.name}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 400, padding: '3px 10px', borderRadius: 20, background: rs.bg, color: rs.color, border: `1px solid ${rs.border}`, textTransform: 'capitalize' }}>
                   {profile?.role}
                 </span>
                 {profile?.roll_no && (
-                  <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.3)' }}>{profile.roll_no}</span>
+                  <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--text-3)' }}>{profile.roll_no}</span>
                 )}
               </div>
             </div>
@@ -163,9 +163,9 @@ export default function ProfileModal({ userId, onClose }) {
             {isOwnProfile && (
               <div style={{ padding: '0 24px 24px' }}>
                 <button onClick={() => setEditing(true)}
-                  style={{ width: '100%', padding: '12px', borderRadius: 12, background: '#111111', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 400, cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#111111'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}>
+                  style={{ width: '100%', padding: '12px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 14, fontWeight: 400, cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'var(--text-1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-raised)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
                   Edit Profile
                 </button>
               </div>

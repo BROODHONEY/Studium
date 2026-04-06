@@ -2,8 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS tokens ─────────────────────────────────────── */
+/* ── Light theme (default) ──────────────────────────── */
 :root {
+  --void:    #ffffff;
+  --page:    #f5f3ff;
+  --surface: #ffffff;
+  --raised:  #f0ebff;
+  --border:  #ddd6fe;
+  --subtle:  #c4b5fd;
+  --accent:  #7c3aed;
+  --accent-low: #6d28d9;
+  --text-1:  #0a0a0a;
+  --text-2:  rgba(0,0,0,0.55);
+  --text-3:  rgba(0,0,0,0.35);
+  --text-4:  rgba(0,0,0,0.12);
+
+  --bg-void:    #ffffff;
+  --bg-page:    #f5f3ff;
+  --bg-surface: #ffffff;
+  --bg-raised:  #f0ebff;
+  --bg-card:    #ffffff;
+
+  --border-color: #ddd6fe;
+  --border-subtle: #ede9fe;
+
+  --glass-bg:     rgba(255,255,255,0.85);
+  --glass-border: rgba(124,58,237,0.15);
+  --glass-blur:   blur(18px) saturate(160%);
+
+  /* Rail / sidebar */
+  --rail-bg:     #ffffff;
+  --sidebar-bg:  #faf8ff;
+  --main-bg:     #f5f3ff;
+
+  /* Nav icon */
+  --nav-icon-active:   rgba(124,58,237,0.95);
+  --nav-icon-inactive: rgba(0,0,0,0.35);
+  --nav-active-bg:     linear-gradient(135deg,rgba(124,58,237,0.12),rgba(76,29,149,0.08));
+  --nav-active-bar:    #7c3aed;
+
+  /* Tab bar (mobile) */
+  --tabbar-bg:    #ffffff;
+  --tabbar-border: #ddd6fe;
+  --tab-active:   rgba(124,58,237,0.9);
+  --tab-inactive: rgba(0,0,0,0.4);
+
+  /* Scrollbar */
+  --scroll-thumb: rgba(124,58,237,0.3);
+  --scroll-thumb-hover: rgba(124,58,237,0.55);
+}
+
+/* ── Dark theme ─────────────────────────────────────── */
+html.dark {
   --void:    #000000;
   --page:    #080808;
   --surface: #0d0d0d;
@@ -17,10 +67,35 @@
   --text-3:  rgba(255,255,255,0.25);
   --text-4:  rgba(255,255,255,0.12);
 
-  /* Frosted glass */
+  --bg-void:    #000000;
+  --bg-page:    #080808;
+  --bg-surface: #0d0d0d;
+  --bg-raised:  #111111;
+  --bg-card:    #080808;
+
+  --border-color: #1c1c1c;
+  --border-subtle: #2a2a2a;
+
   --glass-bg:     rgba(10,10,10,0.72);
   --glass-border: rgba(255,255,255,0.07);
   --glass-blur:   blur(18px) saturate(160%);
+
+  --rail-bg:     #000000;
+  --sidebar-bg:  #000000;
+  --main-bg:     #080808;
+
+  --nav-icon-active:   rgba(196,181,253,0.95);
+  --nav-icon-inactive: rgba(255,255,255,0.35);
+  --nav-active-bg:     linear-gradient(135deg,rgba(124,58,237,0.25),rgba(76,29,149,0.15));
+  --nav-active-bar:    #7c3aed;
+
+  --tabbar-bg:    #000000;
+  --tabbar-border: #1c1c1c;
+  --tab-active:   rgba(167,139,250,0.95);
+  --tab-inactive: rgba(255,255,255,0.55);
+
+  --scroll-thumb: rgba(124,58,237,0.25);
+  --scroll-thumb-hover: rgba(124,58,237,0.45);
 }
 
 /* ── Reset & base ───────────────────────────────────── */
@@ -32,20 +107,17 @@
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 300;
     min-height: 100dvh;
-    background-color: #000000;
+    background-color: var(--bg-void);
     color: var(--text-1);
-  }
-  html.dark body {
-    background-color: #000000;
-    color: var(--text-1);
+    transition: background-color 0.2s, color 0.2s;
   }
 
   input, button, textarea, select { font-family: inherit; }
 
   ::-webkit-scrollbar { width: 3px; height: 3px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background-color: rgba(124,58,237,0.25); border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background-color: rgba(124,58,237,0.45); }
+  ::-webkit-scrollbar-thumb { background-color: var(--scroll-thumb); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--scroll-thumb-hover); }
 }
 
 /* ── Frosted glass panels ───────────────────────────── */
@@ -73,8 +145,12 @@
   cursor: pointer;
   border: none;
   transition: opacity 0.15s;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #ffffff;
+}
+html.dark .btn-primary {
   background: #ffffff;
-  color: var(--void);
+  color: #000000;
 }
 .btn-primary:hover:not(:disabled) { opacity: 0.9; }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -98,8 +174,8 @@
   border-radius: 0.625rem;
   font-size: 0.875rem;
   font-weight: 300;
-  border: 1px solid var(--border);
-  background-color: var(--raised);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-raised);
   color: var(--text-1);
   outline: none;
   transition: border-color 0.15s;
@@ -115,19 +191,16 @@
   font-weight: 300;
   border: 1px solid rgba(255,55,95,0.25);
   background-color: rgba(255,55,95,0.06);
-  color: #ff6b8a;
+  color: #e11d48;
 }
+html.dark .error-box { color: #ff6b8a; }
 
 /* ── Card ───────────────────────────────────────────── */
 .card {
   border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
   padding: 1rem;
-}
-html.dark .card {
-  background-color: var(--surface);
-  border-color: var(--border);
 }
 
 /* ── Tab buttons ────────────────────────────────────── */
@@ -135,216 +208,14 @@ html.dark .card {
   padding: 0.375rem 0.875rem;
   border-radius: 0.5rem;
   font-size: 0.8125rem;
-  font-weight: 400;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  background: rgba(255,255,255,0.09);
-  color: var(--text-1);
-}
-
-.tab-btn-inactive {
-  padding: 0.375rem 0.875rem;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 300;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  background: transparent;
-  color: var(--text-3);
-}
-.tab-btn-inactive:hover { background: rgba(255,255,255,0.04); color: var(--text-2); }
-
-/* ── Sidebar items ──────────────────────────────────── */
-.sidebar-item-active {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.5rem 0.75rem; border-radius: 0.5rem;
-  font-size: 0.8125rem; font-weight: 400; cursor: pointer;
-  transition: background-color 0.15s;
-  background-color: rgba(255,255,255,0.07);
-  color: var(--text-1);
-}
-.sidebar-item-inactive {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.5rem 0.75rem; border-radius: 0.5rem;
-  font-size: 0.8125rem; font-weight: 300; cursor: pointer;
-  transition: background-color 0.15s;
-  color: var(--text-3);
-}
-.sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04); color: var(--text-2); }
-
-/* ── Toggle switch ──────────────────────────────────── */
-.toggle {
-  position: relative; display: inline-block;
-  width: 2.5rem; height: 1.375rem;
-  border-radius: 9999px; cursor: pointer;
-  transition: background-color 0.2s;
-  background-color: var(--subtle);
-}
-.toggle.on { background-color: var(--accent); }
-.toggle-thumb {
-  position: absolute; top: 2px; left: 2px;
-  width: 1rem; height: 1rem; border-radius: 9999px;
-  background-color: #ffffff;
-  transition: transform 0.2s;
-}
-.toggle.on .toggle-thumb { transform: translateX(1.125rem); }
-
-/* ── Neon badge ─────────────────────────────────────── */
-.neon-badge {
-  display: inline-flex; align-items: center; gap: 0.25rem;
-  padding: 0.125rem 0.5rem; border-radius: 9999px;
-  font-size: 0.6875rem; font-weight: 400;
-  background-color: rgba(124,58,237,0.12);
-  color: #a78bfa;
-  border: 1px solid rgba(124,58,237,0.2);
-}
-
-/* ── Auth card ──────────────────────────────────────── */
-.auth-card {
-  width: 100%; max-width: 28rem;
-  border-radius: 1rem; padding: 2rem;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
-}
-
-/* ── Safe area ──────────────────────────────────────── */
-.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
-
-/* ── File highlight ─────────────────────────────────── */
-@keyframes file-highlight-pulse {
-  0%, 100% { box-shadow: none; background-color: transparent; }
-  30% { box-shadow: 0 0 0 2px rgba(124,58,237,0.3); background-color: rgba(124,58,237,0.06); }
-}
-.file-highlight { animation: file-highlight-pulse 2s ease-out forwards; border-radius: 0.75rem; }
-
-/* ── Mobile responsive ──────────────────────────────── */
-@media (max-width: 767px) {
-  .mobile-create-btn {
-    padding-bottom: calc(0px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-  div.md\:hidden { display: flex !important; }
-  button.sm\:hidden { display: flex !important; }
-  .mobile-list {
-    display: flex !important;
-    width: 100% !important;
-    border-right: none !important;
-    flex-direction: column;
-  }
-  .mobile-main {
-    display: flex !important;
-    flex-direction: column;
-  }
-  .mobile-rail { display: none !important; }
-}
-@media (min-width: 768px) {
-  .mobile-list, .mobile-main { display: flex !important; }
-}
-
-/* ── Reset & base ───────────────────────────────────── */
-@layer base {
-  *, *::before, *::after { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 300;
-    min-height: 100dvh;
-    background-color: #000000;
-    color: var(--text-1);
-  }
-  html.dark body {
-    background-color: #000000;
-    color: var(--text-1);
-  }
-
-  input, button, textarea, select { font-family: inherit; }
-
-  ::-webkit-scrollbar { width: 3px; height: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background-color: var(--subtle); border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background-color: var(--accent-low); }
-}
-
-/* ── Primary button ─────────────────────────────────── */
-.btn-primary {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
   font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.15s;
-  background: #ffffff;
-  color: var(--void);
-}
-.btn-primary:hover:not(:disabled) { opacity: 0.9; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ── Form label ─────────────────────────────────────── */
-.form-label {
-  display: block;
-  font-size: 0.6875rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  color: var(--text-2);
-}
-
-/* ── Form input ─────────────────────────────────────── */
-.form-input {
-  display: block;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border-radius: 0.625rem;
-  font-size: 0.875rem;
-  font-weight: 300;
-  border: 1px solid var(--border);
-  background-color: var(--raised);
-  color: var(--text-1);
-  outline: none;
-  transition: border-color 0.15s;
-}
-.form-input::placeholder { color: var(--text-3); }
-.form-input:focus { border-color: var(--accent); }
-
-/* ── Error box ──────────────────────────────────────── */
-.error-box {
-  padding: 0.625rem 0.875rem;
-  border-radius: 0.625rem;
-  font-size: 0.8125rem;
-  font-weight: 300;
-  border: 1px solid rgba(255,55,95,0.25);
-  background-color: rgba(255,55,95,0.06);
-  color: #ff6b8a;
-}
-
-/* ── Card ───────────────────────────────────────────── */
-.card {
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
-  padding: 1rem;
-}
-html.dark .card {
-  background-color: var(--surface);
-  border-color: var(--border);
-}
-
-/* ── Tab buttons ────────────────────────────────────── */
-.tab-btn-active {
-  padding: 0.375rem 0.875rem;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 400;
   cursor: pointer;
   border: none;
   transition: all 0.15s;
+  background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(37,99,235,0.1));
+  color: #7c3aed;
+}
+html.dark .tab-btn-active {
   background: rgba(255,255,255,0.09);
   color: var(--text-1);
 }
@@ -360,9 +231,14 @@ html.dark .card {
   background: transparent;
   color: var(--text-3);
 }
-.tab-btn-inactive:hover { background: rgba(255,255,255,0.04); color: var(--text-2); }
-html.dark .tab-btn-inactive { color: var(--text-3); }
-html.dark .tab-btn-inactive:hover { background: rgba(255,255,255,0.04); color: var(--text-2); }
+.tab-btn-inactive:hover {
+  background: rgba(124,58,237,0.06);
+  color: var(--text-2);
+}
+html.dark .tab-btn-inactive:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+}
 
 /* ── Sidebar items ──────────────────────────────────── */
 .sidebar-item-active {
@@ -370,6 +246,10 @@ html.dark .tab-btn-inactive:hover { background: rgba(255,255,255,0.04); color: v
   padding: 0.5rem 0.75rem; border-radius: 0.5rem;
   font-size: 0.8125rem; font-weight: 400; cursor: pointer;
   transition: background-color 0.15s;
+  background-color: rgba(124,58,237,0.1);
+  color: #7c3aed;
+}
+html.dark .sidebar-item-active {
   background-color: rgba(255,255,255,0.07);
   color: var(--text-1);
 }
@@ -380,9 +260,14 @@ html.dark .tab-btn-inactive:hover { background: rgba(255,255,255,0.04); color: v
   transition: background-color 0.15s;
   color: var(--text-3);
 }
-.sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04); color: var(--text-2); }
-html.dark .sidebar-item-inactive { color: var(--text-3); }
-html.dark .sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04); color: var(--text-2); }
+.sidebar-item-inactive:hover {
+  background-color: rgba(124,58,237,0.05);
+  color: var(--text-2);
+}
+html.dark .sidebar-item-inactive:hover {
+  background-color: rgba(255,255,255,0.04);
+  color: var(--text-2);
+}
 
 /* ── Toggle switch ──────────────────────────────────── */
 .toggle {
@@ -407,16 +292,17 @@ html.dark .sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04
   padding: 0.125rem 0.5rem; border-radius: 9999px;
   font-size: 0.6875rem; font-weight: 400;
   background-color: rgba(124,58,237,0.12);
-  color: #a78bfa;
-  border: 1px solid rgba(124,58,237,0.2);
+  color: #7c3aed;
+  border: 1px solid rgba(124,58,237,0.25);
 }
+html.dark .neon-badge { color: #a78bfa; }
 
 /* ── Auth card ──────────────────────────────────────── */
 .auth-card {
   width: 100%; max-width: 28rem;
   border-radius: 1rem; padding: 2rem;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
 }
 
 /* ── Safe area ──────────────────────────────────────── */
@@ -429,7 +315,105 @@ html.dark .sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04
 }
 .file-highlight { animation: file-highlight-pulse 2s ease-out forwards; border-radius: 0.75rem; }
 
-/* ── Compact chat bubbles on mobile ─────────────────── */
+/* ── Theme-aware utility classes ────────────────────── */
+/* These let JSX use className instead of inline style for theme-sensitive colors */
+.t-bg-void    { background-color: var(--bg-void); }
+.t-bg-page    { background-color: var(--bg-page); }
+.t-bg-surface { background-color: var(--bg-surface); }
+.t-bg-raised  { background-color: var(--bg-raised); }
+.t-bg-card    { background-color: var(--bg-card); }
+.t-border     { border-color: var(--border-color); }
+.t-text-1     { color: var(--text-1); }
+.t-text-2     { color: var(--text-2); }
+.t-text-3     { color: var(--text-3); }
+
+/* ── Dashboard layout theming ───────────────────────── */
+.dash-rail    { background-color: var(--rail-bg);    border-color: var(--border-color); }
+.dash-sidebar { background-color: var(--sidebar-bg); border-color: var(--border-color); }
+.dash-main    { background-color: var(--main-bg); }
+.dash-topbar  { background-color: var(--rail-bg);    border-color: var(--border-color); }
+.dash-tabbar  { background-color: var(--tabbar-bg);  border-color: var(--tabbar-border); }
+
+/* Rail icon button */
+.rail-icon-btn {
+  position: relative; width: 40px; height: 40px;
+  border-radius: 10px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  background: none;
+  color: var(--nav-icon-inactive);
+}
+.rail-icon-btn:hover { color: var(--text-2); }
+.rail-icon-btn.active {
+  background: var(--nav-active-bg);
+  color: var(--nav-icon-active);
+}
+.rail-icon-btn.active::before {
+  content: '';
+  position: absolute; left: 0; top: 20%; bottom: 20%;
+  width: 3px; border-radius: 0 2px 2px 0;
+  background: var(--nav-active-bar);
+}
+
+/* Tab button (mobile bottom bar) */
+.tab-nav-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; padding: 8px 0;
+  border: none; background: none; cursor: pointer;
+  color: var(--tab-inactive);
+  position: relative;
+  transition: color 0.15s;
+}
+.tab-nav-btn.active { color: var(--tab-active); }
+
+/* Sidebar section header */
+.sidebar-section-label {
+  font-size: 11px; font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* Generic panel divider */
+.t-divider { background-color: var(--border-color); }
+
+/* Back button */
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  color: var(--accent);
+  padding: 4px 0; font-size: 13px; font-weight: 400;
+}
+
+/* ── Light theme text color overrides ───────────────── */
+/* Components still using rgba(255,255,255,...) inline styles get corrected here */
+html:not(.dark) {
+  /* Any element that has white-alpha text via inline style won't be caught by CSS,
+     but we can fix the components that use className-based colors */
+  color-scheme: light;
+}
+
+/* Force readable text on light backgrounds for inline-styled elements */
+html:not(.dark) .t-text-fix,
+html:not(.dark) [data-theme-text] {
+  color: var(--text-1) !important;
+}
+
+/* ── Announcement / GroupOverview cards ─────────────── */
+html:not(.dark) .announcement-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* ── GroupItem text fix ──────────────────────────────── */
+html:not(.dark) .group-item-name  { color: var(--text-1) !important; }
+html:not(.dark) .group-item-sub   { color: var(--text-2) !important; }
+html:not(.dark) .group-item-icon  { color: var(--text-3) !important; }
+html:not(.dark) .group-item-label { color: var(--text-2) !important; }
+
+/* Active group item in light mode */
+html:not(.dark) .group-item-active   { background: rgba(124,58,237,0.1) !important; }
+html:not(.dark) .group-item-inactive:hover { background: rgba(124,58,237,0.05) !important; }
 @media (max-width: 767px) {
   .chat-bubble {
     font-size: 12px !important;
@@ -438,31 +422,10 @@ html.dark .sidebar-item-inactive:hover { background-color: rgba(255,255,255,0.04
     overflow-wrap: anywhere;
     line-height: 1.45 !important;
   }
-  .chat-bubble a {
-    max-width: 100%;
-    overflow: hidden;
-  }
-  /* Sender name above bubble */
-  .chat-sender-name {
-    font-size: 10px !important;
-  }
-  /* Timestamp inside bubble */
-  .chat-timestamp {
-    font-size: 9px !important;
-  }
-  /* System messages / date separators */
-  .chat-system-msg {
-    font-size: 10px !important;
-  }
-  /* Avatar */
-  .chat-avatar {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 8px !important;
-  }
-  /* Reaction pills */
-  .chat-reaction {
-    font-size: 10px !important;
-    padding: 1px 5px !important;
-  }
+  .chat-bubble a { max-width: 100%; overflow: hidden; }
+  .chat-sender-name { font-size: 10px !important; }
+  .chat-timestamp   { font-size: 9px !important; }
+  .chat-system-msg  { font-size: 10px !important; }
+  .chat-avatar      { width: 24px !important; height: 24px !important; font-size: 8px !important; }
+  .chat-reaction    { font-size: 10px !important; padding: 1px 5px !important; }
 }

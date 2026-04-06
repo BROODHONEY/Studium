@@ -16,24 +16,24 @@ const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COL
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
 const inp = {
-  width: '100%', background: '#111111', border: '1px solid #1c1c1c', borderRadius: 10,
-  padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.8)',
+  width: '100%', background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10,
+  padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)',
   outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s',
 };
 const lbl = {
-  fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.3)',
+  fontSize: 10, fontWeight: 400, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6,
 };
-const card = { background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 14, padding: '20px' };
-const sectionTitle = { fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' };
+const card = { background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px' };
+const sectionTitle = { fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' };
 const rowStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 };
-const divider = { height: 1, background: '#1c1c1c', margin: '16px 0' };
+const divider = { height: 1, background: 'var(--border-color)', margin: '16px 0' };
 
 function InfoRow({ label, value }) {
   return (
     <div style={rowStyle}>
-      <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.3)' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.6)' }}>{value || '—'}</span>
+      <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-3)' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)' }}>{value || '—'}</span>
     </div>
   );
 }
@@ -42,11 +42,11 @@ function Toggle({ on, onToggle, label, sub }) {
   return (
     <div style={rowStyle}>
       <div>
-        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.7)', margin: 0 }}>{label}</p>
-        {sub && <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', margin: '2px 0 0' }}>{sub}</p>}
+        <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>{label}</p>
+        {sub && <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: '2px 0 0' }}>{sub}</p>}
       </div>
       <button onClick={onToggle}
-        style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: on ? '#7c3aed' : '#2a2a2a', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
+        style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: on ? '#7c3aed' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
         <span style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }}/>
       </button>
     </div>
@@ -82,7 +82,7 @@ function AccountSection({ user, login, token, addToast }) {
             <label style={lbl}>Full name</label>
             <input name="name" value={profile.name} onChange={handleChange} placeholder="Your name" required style={inp}
               onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
-              onBlur={e => e.target.style.borderColor = '#1c1c1c'}/>
+              onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
           </div>
           {user?.role === 'student' && (
             <>
@@ -90,7 +90,7 @@ function AccountSection({ user, login, token, addToast }) {
                 <label style={lbl}>Department</label>
                 <select name="department" value={profile.department} onChange={handleChange} style={{ ...inp, appearance: 'none' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
-                  onBlur={e => e.target.style.borderColor = '#1c1c1c'}>
+                  onBlur={e => e.target.style.borderColor = 'var(--border-color)'}>
                   <option value="">Select department</option>
                   {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
@@ -99,7 +99,7 @@ function AccountSection({ user, login, token, addToast }) {
                 <label style={lbl}>Year</label>
                 <select name="year" value={profile.year} onChange={handleChange} style={{ ...inp, appearance: 'none' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
-                  onBlur={e => e.target.style.borderColor = '#1c1c1c'}>
+                  onBlur={e => e.target.style.borderColor = 'var(--border-color)'}>
                   <option value="">Select year</option>
                   {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
@@ -107,7 +107,7 @@ function AccountSection({ user, login, token, addToast }) {
             </>
           )}
           <button type="submit" disabled={saving || !edited}
-            style={{ padding: '10px', borderRadius: 10, background: edited && !saving ? '#7c3aed' : '#111111', border: '1px solid', borderColor: edited && !saving ? '#7c3aed' : '#1c1c1c', color: edited && !saving ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 500, cursor: edited && !saving ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+            style={{ padding: '10px', borderRadius: 10, background: edited && !saving ? '#7c3aed' : 'var(--bg-raised)', border: '1px solid', borderColor: edited && !saving ? '#7c3aed' : 'var(--border-color)', color: edited && !saving ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: edited && !saving ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </form>
@@ -151,9 +151,9 @@ function SecuritySection({ addToast }) {
         onChange={e => setPwForm(p => ({ ...p, [field]: e.target.value }))}
         placeholder={placeholder} style={{ ...inp, paddingRight: 40 }}
         onFocus={e => e.target.style.borderColor = 'rgba(124,58,237,0.5)'}
-        onBlur={e => e.target.style.borderColor = '#1c1c1c'}/>
+        onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
       <button type="button" onClick={() => setShowPw(p => ({ ...p, [field]: !p[field] }))}
-        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', lineHeight: 0 }}>
+        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0 }}>
         {showPw[field]
           ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -171,7 +171,7 @@ function SecuritySection({ addToast }) {
         <div><label style={lbl}>Confirm new password</label><PwInput field="confirm" placeholder="Repeat new password"/></div>
         {error && <p style={{ fontSize: 12, color: 'rgba(239,68,68,0.8)', margin: 0 }}>{error}</p>}
         <button type="submit" disabled={saving || !pwForm.current || !pwForm.next || !pwForm.confirm}
-          style={{ padding: '10px', borderRadius: 10, background: pwForm.current && pwForm.next && pwForm.confirm ? '#7c3aed' : '#111111', border: '1px solid', borderColor: pwForm.current && pwForm.next && pwForm.confirm ? '#7c3aed' : '#1c1c1c', color: pwForm.current && pwForm.next && pwForm.confirm ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}>
+          style={{ padding: '10px', borderRadius: 10, background: pwForm.current && pwForm.next && pwForm.confirm ? '#7c3aed' : 'var(--bg-raised)', border: '1px solid', borderColor: pwForm.current && pwForm.next && pwForm.confirm ? '#7c3aed' : 'var(--border-color)', color: pwForm.current && pwForm.next && pwForm.confirm ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}>
           {saving ? 'Updating…' : 'Update password'}
         </button>
       </form>
@@ -229,17 +229,17 @@ export function SettingsSidebar({ activeSection, onSection, onViewProfile }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'Inter, sans-serif' }}>
       {/* Profile header */}
       <button onClick={() => onViewProfile?.(user?.id)}
-        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 16px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 16px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', borderBottom: '1px solid var(--border-color)' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.04)'}
         onMouseLeave={e => e.currentTarget.style.background = 'none'}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
           {ini(user?.name)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</p>
-          <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0', textTransform: 'capitalize' }}>{user?.role}</p>
+          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</p>
+          <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: '2px 0 0', textTransform: 'capitalize' }}>{user?.role}</p>
         </div>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
           <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
         </svg>
       </button>
@@ -252,9 +252,9 @@ export function SettingsSidebar({ activeSection, onSection, onViewProfile }) {
             <button key={item.key} onClick={() => onSection(item.key)}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', position: 'relative',
                 background: isActive ? 'linear-gradient(135deg,rgba(124,58,237,0.2),rgba(76,29,149,0.12))' : 'none',
-                color: isActive ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.55)',
+                color: isActive ? '#7c3aed' : 'var(--text-2)',
               }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'none'; }}>
               {isActive && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }}/>}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -267,7 +267,7 @@ export function SettingsSidebar({ activeSection, onSection, onViewProfile }) {
       </div>
 
       {/* Sign out at bottom */}
-      <div style={{ padding: '10px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
+      <div style={{ padding: '10px 10px', borderTop: '1px solid var(--border-color)', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
         <SignOutButton />
       </div>
     </div>
@@ -280,7 +280,7 @@ function SignOutButton() {
   if (confirm) return (
     <div style={{ display: 'flex', gap: 8 }}>
       <button onClick={logout} style={{ flex: 1, padding: '9px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: 'rgba(239,68,68,0.9)', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>Sign out</button>
-      <button onClick={() => setConfirm(false)} style={{ flex: 1, padding: '9px', borderRadius: 10, background: '#111111', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>Cancel</button>
+      <button onClick={() => setConfirm(false)} style={{ flex: 1, padding: '9px', borderRadius: 10, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>Cancel</button>
     </div>
   );
   return (
@@ -308,7 +308,7 @@ export default function SettingsPanel({ activeSection }) {
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(124,58,237,0.4)', margin: '0 auto 12px', display: 'block' }}>
           <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
-        <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 300, margin: 0 }}>Select a setting from the sidebar</p>
+        <p style={{ color: 'var(--text-3)', fontSize: 13, fontWeight: 300, margin: 0 }}>Select a setting from the sidebar</p>
       </div>
     </div>
   );
@@ -319,7 +319,7 @@ export default function SettingsPanel({ activeSection }) {
       {!activeSection && empty}
       {activeSection && (
         <div style={{ maxWidth: 560, margin: '0 auto', width: '100%', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: '0 0 4px', textTransform: 'capitalize' }}>{activeSection}</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-1)', margin: '0 0 4px', textTransform: 'capitalize' }}>{activeSection}</h2>
           {activeSection === 'account'     && <AccountSection user={user} login={login} token={token} addToast={addToast}/>}
           {activeSection === 'security'    && <SecuritySection addToast={addToast}/>}
           {activeSection === 'personalise' && <PersonaliseSection/>}

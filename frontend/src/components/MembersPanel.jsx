@@ -10,8 +10,8 @@ const AVATAR_COLORS = ['#4f46e5','#0d9488','#7c3aed','#db2777','#d97706','#16a34
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
 const S = {
-  label: { fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' },
-  card:  { borderRadius: 12, border: '1px solid #1c1c1c', background: '#0d0d0d', padding: '16px 18px' },
+  label: { fontSize: 11, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' },
+  card:  { borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-card)', padding: '16px 18px' },
   row:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
 };
 
@@ -19,11 +19,11 @@ function ActionBtn({ label, onClick, danger, accent }) {
   const [hov, setHov] = useState(false);
   const base = { padding: '4px 10px', borderRadius: 7, fontSize: 11, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'Inter, sans-serif' };
   let bg = hov
-    ? danger ? 'rgba(239,68,68,0.15)' : accent ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.08)'
-    : 'rgba(255,255,255,0.05)';
+    ? danger ? 'rgba(239,68,68,0.15)' : accent ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.08)'
+    : 'var(--bg-raised)';
   let color = hov
-    ? danger ? 'rgba(239,68,68,0.9)' : accent ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.7)'
-    : 'rgba(255,255,255,0.3)';
+    ? danger ? 'rgba(239,68,68,0.9)' : accent ? 'rgba(167,139,250,0.9)' : 'var(--text-1)'
+    : 'var(--text-3)';
   return (
     <button onClick={onClick} style={{ ...base, background: bg, color }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
@@ -39,17 +39,17 @@ function MemberRow({ m, currentUserId, isAdmin, canKick, canPromote, canDemote, 
   const isMe = u.id === currentUserId;
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: hov ? 'rgba(255,255,255,0.03)' : 'none', transition: 'background 0.1s' }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: hov ? 'rgba(124,58,237,0.04)' : 'none', transition: 'background 0.1s' }}>
       <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(u.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
         {ini(u.name)}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <button onClick={() => onViewProfile?.(u.id)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)' }}>{u.name}</span>
-          {isMe && <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)' }}>you</span>}
+          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)' }}>{u.name}</span>
+          {isMe && <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)' }}>you</span>}
         </button>
-        {u.email && <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.2)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>}
+        {u.email && <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>}
       </div>
       {isAdmin && !isMe && hov && (
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -218,18 +218,18 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 600, color: 'rgba(167,139,250,0.9)', letterSpacing: '0.15em' }}>{group.invite_code}</span>
                   <button onClick={copyCode}
-                    style={{ marginLeft: 'auto', padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid #1c1c1c', color: copied ? 'rgba(48,209,88,0.8)' : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 300, cursor: 'pointer', transition: 'all 0.15s' }}>
+                    style={{ marginLeft: 'auto', padding: '5px 12px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: copied ? 'rgba(48,209,88,0.8)' : 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer', transition: 'all 0.15s' }}>
                     {copied ? 'Copied!' : 'Copy'}
                   </button>
                   <button onClick={() => setShowQR(true)}
-                    style={{ padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
+                    style={{ padding: '5px 12px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
                     QR
                   </button>
                 </div>
               </div>
 
               {/* Divider */}
-              <div style={{ height: 1, background: '#1c1c1c', margin: '16px 0' }}/>
+              <div style={{ height: 1, background: 'var(--border-color)', margin: '16px 0' }}/>
 
               {/* Group info */}
               <div>
@@ -251,7 +251,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                       <input className="form-input" value={editForm.subject} required onChange={e => setEditForm(p => ({ ...p, subject: e.target.value }))} placeholder="e.g. Mathematics"/>
                     </div>
                     <div>
-                      <label className="form-label">Description <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 300 }}>(optional)</span></label>
+                      <label className="form-label">Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
                       <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a description…" className="form-input" style={{ resize: 'none' }}/>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -260,7 +260,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                         {savingDesc ? 'Saving…' : 'Save'}
                       </button>
                       <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
-                        style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
+                        style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
                         Cancel
                       </button>
                     </div>
@@ -273,16 +273,16 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               </div>
 
               {/* Divider */}
-              <div style={{ height: 1, background: '#1c1c1c', margin: '16px 0' }}/>
+              <div style={{ height: 1, background: 'var(--border-color)', margin: '16px 0' }}/>
 
               {/* Admins only toggle */}
               <div style={S.row}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.7)', margin: 0 }}>Admins only mode</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>Only admins can send messages</p>
+                  <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>Admins only mode</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 2 }}>Only admins can send messages</p>
                 </div>
                 <button onClick={handleToggleAdminsOnly} disabled={toggling}
-                  style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: adminsOnly ? '#7c3aed' : '#2a2a2a', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
+                  style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: adminsOnly ? '#7c3aed' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
                   <span style={{ position: 'absolute', top: 3, left: adminsOnly ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }}/>
                 </button>
               </div>
@@ -294,8 +294,8 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[1,2,3,4].map(i => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#111111' }}/>
-                  <div style={{ height: 12, width: 120, borderRadius: 6, background: '#111111' }}/>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-raised)' }}/>
+                  <div style={{ height: 12, width: 120, borderRadius: 6, background: 'var(--bg-raised)' }}/>
                 </div>
               ))}
             </div>
@@ -309,7 +309,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
           {/* Leave group */}
           {!isCreator && (
-            <div style={{ paddingTop: 16, borderTop: '1px solid #1c1c1c' }}>
+            <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
               {confirmLeave ? (
                 <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(239,68,68,0.8)', margin: 0 }}>Leave this group?</p>
@@ -319,7 +319,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                       {leaving ? 'Leaving…' : 'Yes, leave'}
                     </button>
                     <button onClick={() => setConfirmLeave(false)}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
+                      style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
                       Cancel
                     </button>
                   </div>
@@ -337,18 +337,18 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
           {/* Delete group */}
           {isCreator && (
-            <div style={{ paddingTop: 16, borderTop: '1px solid #1c1c1c' }}>
+            <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
               {confirmDelete ? (
                 <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(239,68,68,0.8)', margin: 0 }}>Delete "{group.name}"?</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.25)', margin: 0 }}>This permanently removes the group, all messages, and all files.</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0 }}>This permanently removes the group, all messages, and all files.</p>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleDeleteGroup} disabled={deleting}
                       style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.8)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
                       {deleting ? 'Deleting…' : 'Yes, delete'}
                     </button>
                     <button onClick={() => setConfirmDelete(false)}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
+                      style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
                       Cancel
                     </button>
                   </div>
@@ -385,16 +385,16 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
       {showQR && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}
           onClick={() => setShowQR(false)}>
-          <div style={{ background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 16, padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}
             onClick={e => e.stopPropagation()}>
-            <p style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.7)', margin: 0 }}>Scan to join</p>
+            <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>Scan to join</p>
             {qrDataUrl
               ? <img src={qrDataUrl} alt="QR code" style={{ width: 200, height: 200, borderRadius: 12, margin: '0 auto', display: 'block' }}/>
-              : <div style={{ width: 200, height: 200, borderRadius: 12, background: '#111111', margin: '0 auto' }}/>
+              : <div style={{ width: 200, height: 200, borderRadius: 12, background: 'var(--bg-raised)', margin: '0 auto' }}/>
             }
             <p style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 600, color: 'rgba(167,139,250,0.9)', letterSpacing: '0.15em', margin: 0 }}>{group.invite_code}</p>
             <button onClick={() => setShowQR(false)}
-              style={{ padding: '10px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid #1c1c1c', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+              style={{ padding: '10px', borderRadius: 10, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
               Close
             </button>
           </div>

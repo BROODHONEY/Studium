@@ -34,16 +34,11 @@ const NAV_ICONS = {
 // ── Desktop side-rail icon button ──────────────────────
 function RailIcon({ id, active, onClick, badge }) {
   return (
-    <button onClick={onClick} title={id} style={{
-      position: 'relative', width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
-      background: active ? 'linear-gradient(135deg,rgba(124,58,237,0.25),rgba(76,29,149,0.15))' : 'none',
-      color: active ? 'rgba(196,181,253,0.95)' : 'rgba(255,255,255,0.35)',
-    }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+    <button onClick={onClick} title={id}
+      className={`rail-icon-btn${active ? ' active' : ''}`}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text-2)'; }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--nav-icon-inactive)'; }}
     >
-      {active && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#7c3aed' }} />}
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_ICONS[id]} /></svg>
       {badge > 0 && (
         <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
@@ -57,11 +52,7 @@ function RailIcon({ id, active, onClick, badge }) {
 // ── Mobile bottom-tab button ───────────────────────────
 function TabBtn({ id, active, onClick, badge }) {
   return (
-    <button onClick={onClick} style={{
-      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      gap: 3, padding: '8px 0', border: 'none', background: 'none', cursor: 'pointer',
-      color: active ? 'rgba(167,139,250,0.95)' : 'rgba(255,255,255,0.55)', position: 'relative',
-    }}>
+    <button onClick={onClick} className={`tab-nav-btn${active ? ' active' : ''}`}>
       <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_ICONS[id]} /></svg>
       <span style={{ fontSize: 9, fontWeight: active ? 500 : 300, letterSpacing: '0.03em', textTransform: 'capitalize' }}>{id}</span>
       {badge > 0 && (
@@ -196,8 +187,8 @@ export default function DashboardPage() {
   const renderSidebar = () => {
     if (activeNav === 'groups') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
+        <div className="t-divider" style={{ height: 44, padding: '0 16px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span className="sidebar-section-label">Groups</span>
           {/* FAB with popover */}
           <div style={{ position: 'relative' }}>
             <button
@@ -209,24 +200,24 @@ export default function DashboardPage() {
               <>
                 {/* backdrop */}
                 <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setFabOpen(false)} />
-                <div style={{ position: 'absolute', top: 30, right: 0, zIndex: 999, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                <div style={{ position: 'absolute', top: 30, right: 0, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
                   <button
                     onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'background 0.1s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'background 0.1s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.35)' }}>
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'var(--text-3)' }}>
                       <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
                     </svg>
                     New folder
                   </button>
-                  <div style={{ height: 1, background: '#1c1c1c' }} />
+                  <div style={{ height: 1, background: 'var(--border-color)' }} />
                   <button
                     onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'background 0.1s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif', transition: 'background 0.1s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'rgba(255,255,255,0.35)' }}>
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'var(--text-3)' }}>
                       <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
                     </svg>
                     Create or join group
@@ -243,8 +234,8 @@ export default function DashboardPage() {
     );
     if (activeNav === 'dms') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Messages</span>
+        <div className="t-divider" style={{ height: 44, padding: '0 16px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <span className="sidebar-section-label">Messages</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
@@ -253,8 +244,8 @@ export default function DashboardPage() {
     );
     if (activeNav === 'search') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</span>
+        <div className="t-divider" style={{ height: 44, padding: '0 16px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <span className="sidebar-section-label">Search</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <SearchSidebar groups={groups} searchState={searchState} onNavigate={handleSearchNavigate} />
@@ -263,8 +254,8 @@ export default function DashboardPage() {
     );
     if (activeNav === 'notifications') return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Notifications</span>
+        <div className="t-divider" style={{ height: 44, padding: '0 16px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <span className="sidebar-section-label">Notifications</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <NotificationBell inline onNavigate={handleNotificationNavigate} />
@@ -286,14 +277,14 @@ export default function DashboardPage() {
     if (activeNav === 'settings') return <SettingsPanel activeSection={settingsSection} />;
 
     if (!activeGroup) return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.25) 0%, rgba(76,29,149,0.1) 35%, transparent 65%)', pointerEvents: 'none' }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.15) 0%, rgba(37,99,235,0.06) 35%, transparent 65%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px' }}>
-          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.35)', margin: '0 auto 16px', display: 'block' }}>
+          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(124,58,237,0.4)', margin: '0 auto 16px', display: 'block' }}>
             <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
           </svg>
-          <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.4)', margin: '0 0 8px' }}>Select a group</p>
-          <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.6 }}>Choose a group from the sidebar or create a new one.</p>
+          <p style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-2)', margin: '0 0 8px' }}>Select a group</p>
+          <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>Choose a group from the sidebar or create a new one.</p>
         </div>
       </div>
     );
@@ -320,11 +311,11 @@ export default function DashboardPage() {
       groups={groups}
     >
       {/* ── Desktop layout ── */}
-      <div className="hidden sm:flex" style={{ height: '100dvh', background: '#000000', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+      <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--bg-void)' }}>
         {/* Icon rail */}
-        <div style={{ width: 56, flexShrink: 0, borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 0, paddingBottom: 12, gap: 4, background: '#000000' }}>
+        <div className="dash-rail" style={{ width: 56, flexShrink: 0, borderRightWidth: 1, borderRightStyle: 'solid', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 12, gap: 4 }}>
           {/* Logo */}
-          <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 0 10px', borderBottom: '1px solid #1c1c1c', marginBottom: 8, flexShrink: 0 }}>
+          <div className="t-divider" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 0 10px', borderBottomWidth: 1, borderBottomStyle: 'solid', marginBottom: 8, flexShrink: 0 }}>
             <img src={logo} alt="logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
           </div>
           {/* Main nav — centered */}
@@ -335,47 +326,49 @@ export default function DashboardPage() {
           <RailIcon id="settings" active={activeNav === 'settings'} onClick={() => setActiveNav('settings')} />
         </div>
         {/* Sidebar */}
-        <div style={{ width: 240, flexShrink: 0, borderRight: '1px solid #1c1c1c', display: 'flex', flexDirection: 'column', background: '#000000', overflow: 'hidden' }}>
+        <div className="dash-sidebar" style={{ width: 240, flexShrink: 0, borderRightWidth: 1, borderRightStyle: 'solid', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {renderSidebar()}
         </div>
         {/* Main */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#080808', overflow: 'hidden' }}>
+        <div className="dash-main" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {renderMain()}
         </div>
       </div>
 
       {/* ── Mobile layout ── */}
-      <div className="flex sm:hidden" style={{ height: '100dvh', flexDirection: 'column', background: '#000000', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+      <div className="flex sm:hidden" style={{ height: '100dvh', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--bg-void)' }}>
         {/* Top bar — logo + app name */}
-        <div style={{ flexShrink: 0, borderBottom: '1px solid #1c1c1c', background: '#000000', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
+        <div className="dash-topbar t-divider" style={{ flexShrink: 0, borderBottomWidth: 1, borderBottomStyle: 'solid', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
           <img src={logo} alt="logo" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
-          <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.88)', letterSpacing: '-0.01em' }}>Studi+</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Studi+</span>
         </div>
         {/* Content area */}
         <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
 
-          {/* List panel — shown when mobileView === 'list' */}
+          {/* List panel */}
           <div style={{
             position: 'absolute', inset: 0,
             transform: mobileView === 'list' ? 'translateX(0)' : 'translateX(-100%)',
             transition: 'transform 0.25s ease',
-            display: 'flex', flexDirection: 'column', background: '#000000', overflow: 'hidden',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            backgroundColor: 'var(--bg-void)',
           }}>
             <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
               {renderSidebar()}
             </div>
           </div>
 
-          {/* Detail panel — shown when mobileView === 'detail' */}
+          {/* Detail panel */}
           <div style={{
             position: 'absolute', inset: 0,
             transform: mobileView === 'detail' ? 'translateX(0)' : 'translateX(100%)',
             transition: 'transform 0.25s ease',
-            display: 'flex', flexDirection: 'column', background: '#080808', overflow: 'hidden',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            backgroundColor: 'var(--bg-page)',
           }}>
             {/* Back button row */}
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid #1c1c1c', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, background: '#000000' }}>
-              <button onClick={() => setMobileView('list')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(167,139,250,0.8)', padding: '4px 0', fontSize: 13, fontWeight: 400 }}>
+            <div className="dash-topbar t-divider" style={{ padding: '10px 12px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={() => setMobileView('list')} className="back-btn">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
                 </svg>
@@ -395,8 +388,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom tab bar */}
-        <div style={{
-          flexShrink: 0, borderTop: '1px solid #1c1c1c', background: '#000000',
+        <div className="dash-tabbar t-divider" style={{
+          flexShrink: 0, borderTopWidth: 1, borderTopStyle: 'solid',
           display: 'flex', alignItems: 'stretch',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}>
