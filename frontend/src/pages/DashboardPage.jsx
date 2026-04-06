@@ -83,13 +83,14 @@ export default function DashboardPage() {
   const { socket } = useSocket();
 
   const [activeNav, setActiveNav]   = useState('groups');
+  const [settingsOpen, setSettingsOpen] = useState(false); // desktop settings overlay
   const [groups, setGroups]         = useState([]);
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [activeGroup, setActiveGroup] = useState(null);
   const [activeTab, setActiveTab]   = useState('Overview');
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [activeConvo, setActiveConvo] = useState(null);
-  const [settingsSection, setSettingsSection] = useState(null);
+  const [settingsSection, setSettingsSection] = useState(null); void setSettingsSection;
   const [fabOpen, setFabOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
@@ -162,7 +163,15 @@ export default function DashboardPage() {
 
   const handleFileRef = useCallback((fileId) => { setActiveTab('Files'); setHighlightFileId(fileId); }, []);
 
-  const wrappedHandleNavChange = (id) => { setActiveNav(id); setMobileView('list'); };
+  const wrappedHandleNavChange = (id) => {
+    if (id === 'settings') {
+      setMobileDetailNav('settings');
+      setMobileView('detail');
+    } else {
+      setActiveNav(id);
+      setMobileView('list');
+    }
+  };
 
   // ── Sidebar panel content (below nav) ─────────────────
   const renderSideContent = () => {
@@ -188,23 +197,16 @@ export default function DashboardPage() {
         <NotificationBell inline onNavigate={handleNotificationNavigate} />
       </div>
     );
-    if (activeNav === 'settings') return (
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <SettingsSidebar activeSection={settingsSection}
-          onSection={(s) => { setSettingsSection(s); setMobileDetailNav('settings'); setMobileView('detail'); }}
-          onViewProfile={setProfileUserId} />
-      </div>
-    );
     return null;
   };
 
   // ── Main content ───────────────────────────────────────
   const renderMain = () => {
+    if (settingsOpen) return <SettingsPanel activeSection={settingsSection} />;
     if (activeNav === 'dms') return (
       <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
         onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileView('detail'); } }} />
     );
-    if (activeNav === 'settings') return <SettingsPanel activeSection={settingsSection} />;
     if (!activeGroup) return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(124,58,237,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
@@ -255,11 +257,11 @@ export default function DashboardPage() {
               onNavigate={handleNotificationNavigate}
               onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
             />
-            <button onClick={() => { setActiveNav('settings'); setPanelOpen(true); }}
+            <button onClick={() => setSettingsOpen(v => !v)}
               title="Settings"
-              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: activeNav === 'settings' ? 'rgba(124,58,237,0.12)' : 'none', color: activeNav === 'settings' ? '#7c3aed' : 'var(--text-3)', transition: 'all 0.15s' }}
+              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(124,58,237,0.12)' : 'none', color: settingsOpen ? '#7c3aed' : 'var(--text-3)', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; e.currentTarget.style.color = '#7c3aed'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = activeNav === 'settings' ? 'rgba(124,58,237,0.12)' : 'none'; e.currentTarget.style.color = activeNav === 'settings' ? '#7c3aed' : 'var(--text-3)'; }}>
+              onMouseLeave={e => { e.currentTarget.style.background = settingsOpen ? 'rgba(124,58,237,0.12)' : 'none'; e.currentTarget.style.color = settingsOpen ? '#7c3aed' : 'var(--text-3)'; }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_META.settings.icon}/></svg>
             </button>
             <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
@@ -296,9 +298,9 @@ export default function DashboardPage() {
 
           {/* Sliding panel */}
           <div className="dash-sidebar" style={{
-            width: panelOpen && activeNav !== 'settings' ? 220 : 0,
+            width: panelOpen ? 220 : 0,
             flexShrink: 0, overflow: 'hidden',
-            borderRightWidth: panelOpen && activeNav !== 'settings' ? 1 : 0,
+            borderRightWidth: panelOpen ? 1 : 0,
             borderRightStyle: 'solid',
             transition: 'width 0.22s ease, border-width 0.22s ease',
             display: 'flex', flexDirection: 'column',
