@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
 import { NotificationProvider } from '../context/NotificationContext';
+import { useNotifications } from '../context/NotificationContext';
 
 import logo from '../assets/logo.png';
 import GroupList from '../components/GroupList';
@@ -75,6 +76,19 @@ function TabBtn({ id, active, onClick, badge }) {
         </span>
       )}
     </button>
+  );
+}
+
+// ── Mobile tab bar with live notification badge ────────
+function MobileTabBar({ activeNav, onNav }) {
+  const { notifications, dmUnreads } = useNotifications();
+  const notifCount = notifications.length;
+  const dmCount = dmUnreads?.size || 0;
+  const badges = { notifications: notifCount, dms: dmCount };
+  return (
+    <div className="dash-tabbar t-divider" style={{ flexShrink: 0, borderTopWidth: 1, borderTopStyle: 'solid', display: 'flex', alignItems: 'stretch', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      {NAV_ALL.map(id => <TabBtn key={id} id={id} active={activeNav === id} badge={badges[id] || 0} onClick={() => onNav(id)} />)}
+    </div>
   );
 }
 
@@ -205,10 +219,28 @@ export default function DashboardPage() {
       </div>
     );
     if (activeNav === 'groups') return (
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={handleSelectGroup}
-          onOpenModal={() => setShowGroupModal(true)} loading={groupsLoading}
-          openNewFolder={newFolderOpen} onNewFolderHandled={() => setNewFolderOpen(false)} />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Mobile FAB header */}
+        {isMobile && (
+          <div className="t-divider" style={{ height: 44, padding: '0 12px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Groups</span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => setNewFolderOpen(true)}
+                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'none', color: 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                + Folder
+              </button>
+              <button onClick={() => setShowGroupModal(true)}
+                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.08)', color: '#7c3aed', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                + Group
+              </button>
+            </div>
+          </div>
+        )}
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <GroupList groups={groups} activeGroupId={activeGroup?.id} onSelect={handleSelectGroup}
+            onOpenModal={() => setShowGroupModal(true)} loading={groupsLoading}
+            openNewFolder={newFolderOpen} onNewFolderHandled={() => setNewFolderOpen(false)} />
+        </div>
       </div>
     );
     if (activeNav === 'dms') return (
@@ -259,8 +291,8 @@ export default function DashboardPage() {
 
   return (
     <NotificationProvider
-      activeGroupId={activeNav === 'groups' ? activeGroup?.id : null}
-      activeConvoId={activeNav === 'dms' ? activeConvo?.id : null}
+      activeGroupId={activeGroup?.id}
+      activeConvoId={activeConvo?.id}
       activeTab={activeTab}
       groups={groups}
     >
@@ -427,9 +459,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom tab bar */}
-        <div className="dash-tabbar t-divider" style={{ flexShrink: 0, borderTopWidth: 1, borderTopStyle: 'solid', display: 'flex', alignItems: 'stretch', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          {NAV_ALL.map(id => <TabBtn key={id} id={id} active={activeNav === id} onClick={() => wrappedHandleNavChange(id)} />)}
-        </div>
+        <MobileTabBar activeNav={activeNav} onNav={wrappedHandleNavChange} />
       </div>
 
       {/* ── Modals ── */}
