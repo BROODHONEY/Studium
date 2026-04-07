@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
@@ -35,11 +35,11 @@ const NAV_META = {
   archive:       { label: 'Archive',       icon: 'M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z' },
 };
 
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
+const AVATAR_COLORS = ['#4f46e5','#0d9488','#C0C1FF','#db2777','#d97706','#16a34a'];
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
-// ── Desktop icon rail button ───────────────────────────
+// -- Desktop icon rail button ---------------------------
 function RailBtn({ id, active, onClick, badge }) {
   const { icon } = NAV_META[id];
   return (
@@ -48,16 +48,16 @@ function RailBtn({ id, active, onClick, badge }) {
         width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s', position: 'relative',
-        background: active ? 'rgba(91,95,239,0.15)' : 'none',
-        color: active ? '#7B7FF5' : '#55556A',
+        background: active ? 'rgba(192,193,255,0.14)' : 'none',
+        color: active ? '#C0C1FF' : '#555555',
       }}
-      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(91,95,239,0.08)'; e.currentTarget.style.color = '#9898B0'; } }}
-      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#55556A'; } }}
+      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#9E9E9E'; } }}
+      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; } }}
     >
-      {active && <div style={{ position: 'absolute', left: 0, top: '22%', bottom: '22%', width: 3, borderRadius: '0 3px 3px 0', background: '#5B5FEF' }}/>}
+      {active && <div style={{ position: 'absolute', left: 0, top: '22%', bottom: '22%', width: 3, borderRadius: '0 3px 3px 0', background: '#C0C1FF' }}/>}
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={icon}/></svg>
       {badge > 0 && (
-        <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+        <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#FFB38E', color: '#131313', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
           {badge > 99 ? '99+' : badge}
         </span>
       )}
@@ -65,7 +65,7 @@ function RailBtn({ id, active, onClick, badge }) {
   );
 }
 
-// ── Mobile bottom-tab button ───────────────────────────
+// -- Mobile bottom-tab button ---------------------------
 function TabBtn({ id, active, onClick, badge }) {
   return (
     <button onClick={onClick} className={`tab-nav-btn${active ? ' active' : ''}`}>
@@ -80,7 +80,7 @@ function TabBtn({ id, active, onClick, badge }) {
   );
 }
 
-// ── Mobile tab bar with live notification badge ────────
+// -- Mobile tab bar with live notification badge --------
 function MobileTabBar({ activeNav, onNav }) {
   const { notifications, dmUnreads } = useNotifications();
   const notifCount = notifications.length;
@@ -190,7 +190,7 @@ export default function DashboardPage() {
     }
   };
 
-  // ── Sidebar panel content (below nav) ─────────────────
+  // -- Sidebar panel content (below nav) -----------------
   const renderSideContent = (isMobile = false) => {
     // Mobile settings: show SettingsSidebar in the list panel
     if (isMobile && mobileDetailNav === 'settings') return (
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 + Folder
               </button>
               <button onClick={() => setShowGroupModal(true)}
-                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#6366F1', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(192,193,255,0.28)', background: 'rgba(192,193,255,0.08)', color: '#C0C1FF', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 + Group
               </button>
             </div>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
     return null;
   };
 
-  // ── Main content ───────────────────────────────────────
+  // -- Main content ---------------------------------------
   const renderMain = () => {
     if (supportOpen) return <SupportPanel />;
     if (settingsOpen) return <SettingsPanel activeSection={settingsSection} />;
@@ -269,7 +269,7 @@ export default function DashboardPage() {
     );
     if (!activeGroup) return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(99,102,241,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(192,193,255,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px' }}>
           <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(99,102,241,0.4)', margin: '0 auto 16px', display: 'block' }}>
             <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
@@ -301,130 +301,126 @@ export default function DashboardPage() {
       groups={groups}
     >
       {/* ── Desktop layout ── */}
-      <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--bg-void)', flexDirection: 'column' }}>
+      <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--void)', flexDirection: 'row' }}>
 
-        {/* ── Full-width top header bar ── */}
-        <div style={{ height: 52, flexShrink: 0, borderBottom: '1px solid #1A1A24', display: 'flex', alignItems: 'center', paddingRight: 20, background: '#0D0D10' }}>
-          {/* Logo area — aligns with icon rail */}
-          <div style={{ width: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src={logo} alt="logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+        {/* ── Icon rail — full height, no top header ── */}
+        <div style={{ width: 56, flexShrink: 0, borderRight: '1px solid #2A2A3A', background: '#131313', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 10, paddingBottom: 12, gap: 4 }}>
+
+          {/* Logo at top */}
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(192,193,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, flexShrink: 0 }}>
+            <img src={logo} alt="logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           </div>
-          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em', marginRight: 16 }}>Studi+</span>
+
+          {/* Nav buttons */}
+          {NAV_MAIN.map(id => (
+            <RailBtn key={id} id={id} active={activeNav === id && panelOpen}
+              onClick={() => {
+                if (activeNav === id) { setPanelOpen(v => !v); }
+                else { setActiveNav(id); setPanelOpen(true); }
+              }} />
+          ))}
+
+          {/* Bottom: support + settings + notifications + avatar */}
           <div style={{ flex: 1 }} />
-          {/* Right: notifications + settings + avatar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <NotificationBell
-              onNavigate={handleNotificationNavigate}
-              onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
-            />
-            <button onClick={() => { setSettingsOpen(v => { const next = !v; if (next) { setPanelOpen(true); setSupportOpen(false); } return next; }); }}
-              title="Settings"
-              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(99,102,241,0.12)' : 'none', color: settingsOpen ? '#6366F1' : 'var(--text-3)', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.color = '#6366F1'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = settingsOpen ? 'rgba(99,102,241,0.12)' : 'none'; e.currentTarget.style.color = settingsOpen ? '#6366F1' : 'var(--text-3)'; }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_META.settings.icon}/></svg>
-            </button>
-            <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
-              style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
-              {ini(user?.name)}
-            </button>
-          </div>
+
+          <NotificationBell
+            onNavigate={handleNotificationNavigate}
+            onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
+          />
+
+          <button title="Support"
+            onClick={() => { setSupportOpen(v => !v); setSettingsOpen(false); setPanelOpen(true); }}
+            style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: '#555555', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#9E9E9E'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+            </svg>
+          </button>
+
+          <button onClick={() => { setSettingsOpen(v => { const next = !v; if (next) { setPanelOpen(true); setSupportOpen(false); } return next; }); }}
+            title="Settings"
+            style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(192,193,255,0.12)' : 'none', color: settingsOpen ? '#C0C1FF' : '#555555', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#D4D5FF'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = settingsOpen ? 'rgba(192,193,255,0.12)' : 'none'; e.currentTarget.style.color = settingsOpen ? '#C0C1FF' : '#555555'; }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_META.settings.icon}/></svg>
+          </button>
+
+          {/* User avatar */}
+          <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
+            style={{ width: 34, height: 34, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}>
+            {ini(user?.name)}
+          </button>
         </div>
 
-        {/* ── Body: icon rail + sliding panel + main ── */}
+        {/* ── Body: sliding panel + main ── */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
-
-          {/* Icon rail (56px) */}
-          <div style={{ width: 56, flexShrink: 0, borderRight: '1px solid #1A1A24', background: '#0D0D10', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 8, paddingBottom: 12, gap: 4 }}>
-            {NAV_MAIN.map(id => (
-              <RailBtn key={id} id={id} active={activeNav === id && panelOpen}
-                onClick={() => {
-                  if (activeNav === id) { setPanelOpen(v => !v); }
-                  else { setActiveNav(id); setPanelOpen(true); }
-                }} />
-            ))}
-            {/* Support at bottom */}
-            <div style={{ flex: 1 }} />
-            <button title="Support"
-              onClick={() => { setSupportOpen(v => !v); setSettingsOpen(false); setPanelOpen(true); }}
-              style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: '#55556A', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.08)'; e.currentTarget.style.color = '#9898B0'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#55556A'; }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Sliding panel */}
           <div style={{
             width: panelOpen ? 220 : 0,
             flexShrink: 0, overflow: 'hidden',
-            borderRight: panelOpen ? '1px solid #1A1A24' : 'none',
+            borderRight: panelOpen ? '1px solid #2A2A3A' : 'none',
             transition: 'width 0.22s ease, border-width 0.22s ease',
             display: 'flex', flexDirection: 'column',
-            background: '#13131A',
+            background: '#1E1E1E',
           }}>
             <div style={{ width: 220, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-              {/* Panel header */}
-              <div style={{ height: 44, padding: '0 14px', borderBottom: '1px solid #1A1A24', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#13131A' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                  {settingsOpen ? 'Settings' : NAV_META[activeNav]?.label}
-                </span>
-                {/* FAB for groups */}
-                {activeNav === 'groups' && !settingsOpen && (
-                  <div style={{ position: 'relative' }}>
-                    <button onClick={() => setFabOpen(v => !v)}
-                      style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: fabOpen ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.08)', color: '#6366F1', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
-                    </button>
-                    {fabOpen && (
-                      <>
-                        <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setFabOpen(false)} />
-                        <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
-                          <button onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
-                              <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
-                            </svg>
-                            New folder
-                          </button>
-                          <div style={{ height: 1, background: 'var(--border-color)' }} />
-                          <button onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
-                              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
-                            </svg>
-                            Create or join group
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
               {/* Panel content */}
               <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                {/* Panel title — big white heading with FAB for groups */}
+                <div style={{ padding: '20px 16px 0', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <h2 style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', margin: 0, fontFamily: "'Manrope', 'Inter', sans-serif", letterSpacing: '-0.01em' }}>
+                    {settingsOpen ? 'Settings' : NAV_META[activeNav]?.label}
+                  </h2>
+                  {activeNav === 'groups' && !settingsOpen && (
+                    <div style={{ position: 'relative' }}>
+                      <button onClick={() => setFabOpen(v => !v)}
+                        style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid rgba(192,193,255,0.28)', background: fabOpen ? 'rgba(192,193,255,0.18)' : 'rgba(192,193,255,0.08)', color: '#C0C1FF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+                      </button>
+                      {fabOpen && (
+                        <>
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setFabOpen(false)} />
+                          <div style={{ position: 'absolute', top: 32, right: 0, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+                            <button onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
+                              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
+                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(192,193,255,0.08)'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
+                                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+                              </svg>
+                              New folder
+                            </button>
+                            <div style={{ height: 1, background: 'var(--border-color)' }} />
+                            <button onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
+                              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
+                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(192,193,255,0.08)'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
+                                <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+                              </svg>
+                              Create or join group
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {renderSideContent(false)}
               </div>
             </div>
           </div>
 
           {/* ── Main area ── */}
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'var(--void)' }}>
             {renderMain()}
           </div>
         </div>
       </div>
 
-      {/* ── Mobile layout ── */}
+      {/* -- Mobile layout -- */}
       <div className="flex sm:hidden" style={{ height: '100dvh', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--bg-void)' }}>
         {/* Top bar */}
         <div className="dash-topbar t-divider" style={{ flexShrink: 0, borderBottomWidth: 1, borderBottomStyle: 'solid', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
@@ -469,7 +465,7 @@ export default function DashboardPage() {
         <MobileTabBar activeNav={activeNav} onNav={wrappedHandleNavChange} />
       </div>
 
-      {/* ── Modals ── */}
+      {/* -- Modals -- */}
       {showGroupModal && <GroupModal onClose={() => setShowGroupModal(false)} onSuccess={handleGroupCreated} />}
       {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
       <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />

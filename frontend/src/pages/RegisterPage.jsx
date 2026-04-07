@@ -1,4 +1,4 @@
-ï»¿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -55,7 +55,7 @@ export default function RegisterPage() {
   return (
     <div className="h-dvh flex font-['Inter',sans-serif] overflow-hidden" style={{ backgroundColor: 'var(--bg-void)', color: 'var(--text-1)' }}>
 
-      {/* Left panel â€” always dark purple gradient */}
+      {/* Left panel — always dark purple gradient */}
       <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-between p-10 flex-shrink-0"
         style={{ background: 'radial-gradient(ellipse at 60% 20%, #6366F1 0%, #4338ca 35%, #1e1b4b 65%, #0A0A0B 100%)' }}>
         <div className="flex items-center gap-3">
@@ -70,10 +70,10 @@ export default function RegisterPage() {
             Complete these easy steps to register your account.
           </p>
         </div>
-        <p className="text-white/20 text-xs font-light">Â© 2026 Studi+</p>
+        <p className="text-white/20 text-xs font-light">© 2026 Studi+</p>
       </div>
 
-      {/* Right panel â€” scrollable */}
+      {/* Right panel — scrollable */}
       <div className="flex-1 h-full overflow-y-auto" style={{ backgroundColor: 'var(--bg-void)' }}>
         <div className="flex flex-col items-center px-6 py-10">
 
@@ -187,7 +187,7 @@ export default function RegisterPage() {
               </div>
 
               <button type="submit" disabled={loading} className="btn-primary mt-1">
-                {loading ? 'Creating accountâ€¦' : 'Sign Up'}
+                {loading ? 'Creating account…' : 'Sign Up'}
               </button>
             </form>
 

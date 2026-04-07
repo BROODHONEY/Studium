@@ -1,10 +1,10 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { profileAPI } from '../services/api';
 
-// ── Shared styles ──────────────────────────────────────
+// -- Shared styles --------------------------------------
 const DEPARTMENTS = [
   'B. Tech Artificial Intelligence and Machine Learning',
   'B. Tech Artificial Intelligence and Data Science',
@@ -33,7 +33,7 @@ function InfoRow({ label, value }) {
   return (
     <div style={rowStyle}>
       <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-3)' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)' }}>{value || '—'}</span>
+      <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)' }}>{value || '�'}</span>
     </div>
   );
 }
@@ -53,7 +53,7 @@ function Toggle({ on, onToggle, label, sub }) {
   );
 }
 
-// ── Section: Account ──────────────────────────────────
+// -- Section: Account ----------------------------------
 function AccountSection({ user, login, token, addToast }) {
   const [profile, setProfile] = useState({ name: user?.name || '', department: user?.department || '', year: user?.year || '' });
   const [edited, setEdited] = useState(false);
@@ -108,7 +108,7 @@ function AccountSection({ user, login, token, addToast }) {
           )}
           <button type="submit" disabled={saving || !edited}
             style={{ padding: '10px', borderRadius: 10, background: edited && !saving ? '#6366F1' : 'var(--bg-raised)', border: '1px solid', borderColor: edited && !saving ? '#6366F1' : 'var(--border-color)', color: edited && !saving ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: edited && !saving ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
-            {saving ? 'Saving…' : 'Save changes'}
+            {saving ? 'Saving�' : 'Save changes'}
           </button>
         </form>
       </div>
@@ -125,7 +125,7 @@ function AccountSection({ user, login, token, addToast }) {
   );
 }
 
-// ── Section: Security ─────────────────────────────────
+// -- Section: Security ---------------------------------
 function SecuritySection({ addToast }) {
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [showPw, setShowPw] = useState({ current: false, next: false, confirm: false });
@@ -172,14 +172,14 @@ function SecuritySection({ addToast }) {
         {error && <p style={{ fontSize: 12, color: 'rgba(239,68,68,0.8)', margin: 0 }}>{error}</p>}
         <button type="submit" disabled={saving || !pwForm.current || !pwForm.next || !pwForm.confirm}
           style={{ padding: '10px', borderRadius: 10, background: pwForm.current && pwForm.next && pwForm.confirm ? '#6366F1' : 'var(--bg-raised)', border: '1px solid', borderColor: pwForm.current && pwForm.next && pwForm.confirm ? '#6366F1' : 'var(--border-color)', color: pwForm.current && pwForm.next && pwForm.confirm ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}>
-          {saving ? 'Updating…' : 'Update password'}
+          {saving ? 'Updating�' : 'Update password'}
         </button>
       </form>
     </div>
   );
 }
 
-// ── Section: Personalise ──────────────────────────────
+// -- Section: Personalise ------------------------------
 function PersonaliseSection() {
   const { dark, toggle } = useTheme();
   const [notifSound, setNotifSound]     = useState(() => localStorage.getItem('notif_sound') !== 'off');
@@ -216,7 +216,7 @@ function PersonaliseSection() {
   );
 }
 
-// ── Sidebar nav ───────────────────────────────────────
+// -- Sidebar nav ---------------------------------------
 export function SettingsSidebar({ activeSection, onSection, onViewProfile }) {
   const { user } = useAuth();
   const NAV = [
@@ -286,7 +286,7 @@ function SignOutButton() {
   return (
     <button onClick={() => setConfirm(true)}
       style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'none', color: 'rgba(239,68,68,0.6)', transition: 'all 0.15s' }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = 'rgba(239,68,68,0.9)'; }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.10)'; e.currentTarget.style.color = 'rgba(239,68,68,0.9)'; }}
       onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(239,68,68,0.6)'; }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
@@ -296,7 +296,7 @@ function SignOutButton() {
   );
 }
 
-// ── Main panel content ────────────────────────────────
+// -- Main panel content --------------------------------
 export default function SettingsPanel({ activeSection }) {
   const { user, login, token } = useAuth();
   const { addToast } = useToast();

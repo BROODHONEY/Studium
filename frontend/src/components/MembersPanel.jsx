@@ -203,9 +203,9 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
           {/* Error */}
           {error && (
-            <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               {error}
-              <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.5)', fontSize: 14, lineHeight: 1 }}>×</button>
+              <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.5)', fontSize: 14, lineHeight: 1 }}>�</button>
             </div>
           )}
 
@@ -252,12 +252,12 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                     </div>
                     <div>
                       <label className="form-label">Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
-                      <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a description…" className="form-input" style={{ resize: 'none' }}/>
+                      <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a description�" className="form-input" style={{ resize: 'none' }}/>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button onClick={handleSaveDescription} disabled={savingDesc || !editForm.name.trim() || !editForm.subject.trim()}
                         style={{ padding: '6px 14px', borderRadius: 8, background: '#6366F1', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer', opacity: savingDesc ? 0.6 : 1 }}>
-                        {savingDesc ? 'Saving…' : 'Save'}
+                        {savingDesc ? 'Saving�' : 'Save'}
                       </button>
                       <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
                         style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
@@ -316,7 +316,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleLeave} disabled={leaving}
                       style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.8)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
-                      {leaving ? 'Leaving…' : 'Yes, leave'}
+                      {leaving ? 'Leaving�' : 'Yes, leave'}
                     </button>
                     <button onClick={() => setConfirmLeave(false)}
                       style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
@@ -345,7 +345,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleDeleteGroup} disabled={deleting}
                       style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.8)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
-                      {deleting ? 'Deleting…' : 'Yes, delete'}
+                      {deleting ? 'Deleting�' : 'Yes, delete'}
                     </button>
                     <button onClick={() => setConfirmDelete(false)}
                       style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>

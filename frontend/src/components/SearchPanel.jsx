@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { searchAPI } from '../services/api';
 
 const TYPE_COLORS = { pdf: '#ef4444', ppt: '#f97316', doc: '#3b82f6', img: '#10b981' };
@@ -16,7 +16,7 @@ const TAG_COLORS = {
 };
 
 
-// ── Shared search state via a simple hook ──────────────
+// -- Shared search state via a simple hook --------------
 export function useSearch() {
   const [query, setQuery]     = useState('');
   const [groupId, setGroupId] = useState('');
@@ -52,12 +52,12 @@ export function useSearch() {
   return { query, groupId, results, loading, error, handleQuery, handleGroup, clear };
 }
 
-// ── Sidebar section helper (outside component) ────────
+// -- Sidebar section helper (outside component) --------
 function SideSection({ title, items, renderItem }) {
   if (!items?.length) return null;
   return (
     <div style={{ marginBottom: 14 }}>
-      <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px', padding: '0 2px' }}>{title} · {items.length}</p>
+      <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px', padding: '0 2px' }}>{title} � {items.length}</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {items.map(renderItem)}
       </div>
@@ -65,7 +65,7 @@ function SideSection({ title, items, renderItem }) {
   );
 }
 
-// ── Sidebar: input + group filter + inline results ────
+// -- Sidebar: input + group filter + inline results ----
 export function SearchSidebar({ groups, searchState, onNavigate }) {
   const { query, groupId, loading, results, error, handleQuery, handleGroup, clear } = searchState;
   const inputRef = useRef(null);
@@ -81,7 +81,7 @@ export function SearchSidebar({ groups, searchState, onNavigate }) {
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(99,102,241,0.6)', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
-          <input ref={inputRef} value={query} onChange={e => handleQuery(e.target.value)} placeholder="Search…"
+          <input ref={inputRef} value={query} onChange={e => handleQuery(e.target.value)} placeholder="Search�"
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', fontFamily: 'Inter, sans-serif', minWidth: 0 }}/>
           {loading && (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(99,102,241,0.6)', animation: 'spin 0.7s linear infinite', flexShrink: 0 }}>
@@ -107,7 +107,7 @@ export function SearchSidebar({ groups, searchState, onNavigate }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px 16px' }}>
         {!results && !error && (
           <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', textAlign: 'center', padding: '20px 8px', lineHeight: 1.6 }}>
-            {query.length === 0 ? 'Search messages, files and announcements' : query.length < 2 ? 'Type at least 2 characters…' : ''}
+            {query.length === 0 ? 'Search messages, files and announcements' : query.length < 2 ? 'Type at least 2 characters�' : ''}
           </p>
         )}
         {error && <p style={{ fontSize: 12, color: 'rgba(239,68,68,0.7)', padding: '8px 4px' }}>{error}</p>}
@@ -162,7 +162,7 @@ export function SearchSidebar({ groups, searchState, onNavigate }) {
 }
 
 
-// ── Main panel: description ───────────────────────────
+// -- Main panel: description ---------------------------
 function SearchResults() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>

@@ -4,37 +4,63 @@
   theme: {
     extend: {
       colors: {
-        // ── Palette from login page ──────────────────
-        void:    '#000000',
-        page:    '#080808',
+        // ── Core palette ─────────────────────────────
+        primary: {
+          DEFAULT: '#6366F1',
+          hi:      '#8B8EF8',
+          lo:      'rgba(99,102,241,0.12)',
+          50:  '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366F1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
+        },
+        secondary: {
+          DEFAULT: '#7072A2',
+          hi:      '#9092C0',
+          lo:      'rgba(112,114,162,0.12)',
+        },
+        tertiary: {
+          DEFAULT: '#BD5F00',
+          hi:      '#E07B20',
+          lo:      'rgba(189,95,0,0.12)',
+        },
+        neutral: {
+          DEFAULT: '#1A1A1A',
+          50:  '#F4F4F8',
+          100: '#EBEBF2',
+          200: '#DCDCE8',
+          300: '#C0C0D0',
+          400: '#9090B0',
+          500: '#55556E',
+          600: '#3A3A50',
+          700: '#2A2A36',
+          800: '#1F1F28',
+          900: '#18181F',
+          950: '#111116',
+        },
+        // ── Surface aliases (legacy compat) ──────────
         surface: {
-          DEFAULT: '#000000',
-          raised:  '#111111',
-          border:  '#1c1c1c',
-          subtle:  '#2a2a2a',
-          // legacy aliases used by older components
-          1: '#080808',
-          2: '#0d0d0d',
-          3: '#111111',
-          4: '#1a1a1a',
+          DEFAULT: '#18181F',
+          raised:  '#1F1F28',
+          border:  '#2A2A36',
+          subtle:  '#222230',
+          1: '#111116',
+          2: '#14141C',
+          3: '#1F1F28',
+          4: '#2A2A36',
         },
-        // ── Purple accent ────────────────────────────
-        accent: {
-          deep:   '#1a0e2e',
-          bg:     '#2d1a4a',
-          low:    '#3d1f6b',
-          mid:    '#581c87',
-          DEFAULT:'#6366F1',
-          bright: '#818cf8',
-          text:   '#a5b4fc',
-          pale:   '#e0e7ff',
-        },
-        // ── Keep brand alias for existing components ─
+        // ── Brand alias ───────────────────────────────
         brand: {
-          50:  '#e0e7ff',
-          100: '#c7d2fe',
-          200: '#a5b4fc',
-          300: '#818cf8',
+          50:  '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
           400: '#818cf8',
           500: '#6366F1',
           600: '#4f46e5',
@@ -43,22 +69,15 @@
           900: '#312e81',
           950: '#1e1b4b',
         },
-        // ── Semantic ─────────────────────────────────
-        neon: {
-          purple: '#6366F1',
-          cyan:   '#32d9fa',
-          green:  '#30d158',
-          yellow: '#ffd60a',
-          pink:   '#ff375f',
-        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'accent': '0 0 0 1px rgba(124,58,237,0.3)',
-        'neon-purple': '0 0 16px rgba(124,58,237,0.2)',
-      }
+        'primary': '0 0 0 1px rgba(99,102,241,0.3)',
+        'primary-glow': '0 4px 24px rgba(99,102,241,0.18)',
+        'modal': '0 32px 80px rgba(0,0,0,0.85)',
+      },
     },
   },
   plugins: [],

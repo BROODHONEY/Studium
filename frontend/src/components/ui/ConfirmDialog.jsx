@@ -1,4 +1,4 @@
-﻿export default function ConfirmDialog({
+export default function ConfirmDialog({
   open,
   title,
   description,
@@ -27,18 +27,18 @@
       <div
         style={{
           width: '100%', maxWidth: 380,
-          background: '#1A1A1F', borderRadius: 18,
+          background: '#16161E', borderRadius: 18,
           padding: 28,
-          boxShadow: '0 32px 80px rgba(0,0,0,0.9)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.85)',
           fontFamily: 'Inter, sans-serif',
         }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#EEEEF5', margin: '0 0 10px' }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#EEEEF8', margin: '0 0 10px' }}>
           {title}
         </h3>
         {description && (
-          <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', lineHeight: 1.6, margin: '0 0 24px' }}>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9090B0', lineHeight: 1.6, margin: '0 0 24px' }}>
             {description}
           </p>
         )}
@@ -51,8 +51,8 @@
             style={{
               width: '100%', padding: '14px',
               background: danger
-                ? 'linear-gradient(135deg, #ef4444, #b91c1c)'
-                : 'linear-gradient(135deg, #5B5FEF, #4338CA)',
+                ? 'linear-gradient(135deg,#ef4444,#b91c1c)'
+                : '#6366F1',
               border: 'none', borderRadius: 12,
               color: '#fff', fontSize: 13, fontWeight: 700,
               letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -71,13 +71,13 @@
             style={{
               width: '100%', padding: '12px',
               background: 'none', border: 'none',
-              color: '#55556A', fontSize: 13, fontWeight: 400,
+              color: '#55556E', fontSize: 13, fontWeight: 400,
               cursor: disabled ? 'not-allowed' : 'pointer',
               fontFamily: 'Inter, sans-serif',
               transition: 'color 0.15s',
             }}
-            onMouseEnter={e => { if (!disabled) e.currentTarget.style.color = '#9898B0'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#55556A'; }}
+            onMouseEnter={e => { if (!disabled) e.currentTarget.style.color = '#9090B0'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#55556E'; }}
           >
             {cancelText}
           </button>

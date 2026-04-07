@@ -5,23 +5,24 @@ import { filesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { formatDate as formatDateIST } from '../utils/time';
 
-// -- Design tokens -------------------------------------
+// ── Design tokens — palette ────────────────────────────
 const C = {
-  bg:        '#0D0D10',
-  surface:   '#13131A',
-  raised:    '#1A1A24',
-  border:    '#22222E',
-  borderHi:  '#2E2E3E',
-  primary:   '#5B5FEF',
-  primaryHi: '#7B7FF5',
-  primaryLo: 'rgba(91,95,239,0.12)',
-  tertiary:  '#E07B20',
-  tertiaryLo:'rgba(224,123,32,0.12)',
-  text1:     '#EEEEF5',
-  text2:     '#9898B0',
-  text3:     '#55556A',
-  danger:    'rgba(239,68,68,0.75)',
-  dangerLo:  'rgba(239,68,68,0.08)',
+  bg:        '#111116',
+  surface:   '#16161E',
+  raised:    '#1C1C26',
+  border:    '#2A2A3A',
+  borderHi:  '#363650',
+  primary:   '#6366F1',
+  primaryHi: '#8B8EF8',
+  primaryLo: 'rgba(99,102,241,0.14)',
+  secondary: '#7072A2',
+  tertiary:  '#BD5F00',
+  tertiaryLo:'rgba(189,95,0,0.14)',
+  text1:     '#EEEEF8',
+  text2:     '#9090B0',
+  text3:     '#55556E',
+  danger:    '#EF4444',
+  dangerLo:  'rgba(239,68,68,0.10)',
 };
 
 const FILE_ICONS = {

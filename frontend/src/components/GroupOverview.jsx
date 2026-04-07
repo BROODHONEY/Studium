@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
@@ -8,7 +8,7 @@ import { formatDateTime, toISTDateInput, toISTTimeInput } from '../utils/time';
 import FilePickerPopover from './ui/FilePickerPopover';
 import MessageContent from './ui/MessageContent';
 
-// ── Announcement tag config ────────────────────────────
+// -- Announcement tag config ----------------------------
 const TagIcon = ({ type }) => {
   const icons = {
     general:    <path d="M13.5 3a.5.5 0 0 1 .5.5V11H2V3.5a.5.5 0 0 1 .5-.5h11zm-11-1A1.5 1.5 0 0 0 1 3.5V12h14V3.5A1.5 1.5 0 0 0 13.5 2h-11zm-2 13a.5.5 0 0 1 .5-.5h15a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5zM3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>,
@@ -25,11 +25,11 @@ const TagIcon = ({ type }) => {
 };
 
 export const ANNOUNCEMENT_TAGS = {
-  general:    { label: 'General',    border: 'border-l-gray-400',   badge: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
-  urgent:     { label: 'Urgent',     border: 'border-l-red-500',    badge: 'bg-red-500/10 text-red-400 border-red-500/20' },
-  exam:       { label: 'Exam',       border: 'border-l-purple-500', badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
-  assignment: { label: 'Assignment', border: 'border-l-amber-500',  badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-  event:      { label: 'Event',      border: 'border-l-teal-500',   badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
+  general:    { label: 'General',    border: 'border-l-[#9E9E9E]',  badge: 'bg-[rgba(158,158,158,0.12)] text-[#BDBDBD] border-[rgba(158,158,158,0.25)]' },
+  urgent:     { label: 'Urgent',     border: 'border-l-[#FFB38E]',  badge: 'bg-[rgba(255,179,142,0.14)] text-[#FFB38E] border-[rgba(255,179,142,0.30)]' },
+  exam:       { label: 'Exam',       border: 'border-l-[#C0C1FF]',  badge: 'bg-[rgba(192,193,255,0.12)] text-[#C0C1FF] border-[rgba(192,193,255,0.25)]' },
+  assignment: { label: 'Assignment', border: 'border-l-[#FFB38E]',  badge: 'bg-[rgba(255,179,142,0.10)] text-[#FFC9A8] border-[rgba(255,179,142,0.22)]' },
+  event:      { label: 'Event',      border: 'border-l-[#22C55E]',  badge: 'bg-[rgba(34,197,94,0.10)] text-[#22C55E] border-[rgba(34,197,94,0.22)]' },
 };
 
 const formatDate = (d) => formatDateTime(d);
@@ -93,22 +93,22 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const minDate = toISTDateInput(Date.now() + 60_000);
   const isOpen  = open || !!editing;
 
-  const lbl = { fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 6 };
-  const inp = { width: '100%', background: '#111116', border: '1px solid #2A2A38', borderRadius: 10, padding: '12px 16px', fontSize: 14, color: '#EEEEF5', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s' };
+  const lbl = { fontSize: 10, fontWeight: 700, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 6 };
+  const inp = { width: '100%', background: '#252525', border: '1px solid #2A2A36', borderRadius: 10, padding: '12px 16px', fontSize: 14, color: '#F0F0F0', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s' };
 
   const TAG_STYLES = {
-    general:    { background: 'rgba(148,163,184,0.15)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.3)' },
-    urgent:     { background: 'rgba(239,68,68,0.12)',   color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' },
-    exam:       { background: 'rgba(168,85,247,0.12)',  color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' },
-    assignment: { background: 'rgba(251,191,36,0.12)',  color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)' },
-    event:      { background: 'rgba(20,184,166,0.12)',  color: '#2dd4bf', border: '1px solid rgba(20,184,166,0.3)' },
+    general:    { background: 'rgba(158,158,158,0.12)', color: '#BDBDBD', border: '1px solid rgba(158,158,158,0.25)' },
+    urgent:     { background: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: '1px solid rgba(255,179,142,0.30)' },
+    exam:       { background: 'rgba(192,193,255,0.12)', color: '#C0C1FF', border: '1px solid rgba(192,193,255,0.25)' },
+    assignment: { background: 'rgba(255,179,142,0.10)', color: '#FFC9A8', border: '1px solid rgba(255,179,142,0.22)' },
+    event:      { background: 'rgba(34,197,94,0.10)',   color: '#22C55E', border: '1px solid rgba(34,197,94,0.22)' },
   };
 
   if (!isOpen) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(91,95,239,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.12)'; e.currentTarget.style.color = '#EEEEF5'; }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.12)'; e.currentTarget.style.color = '#F0F0F0'; }}
         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
@@ -121,14 +121,14 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: 16 }}
       onClick={handleCancel}>
-      <div style={{ width: '100%', maxWidth: 500, background: '#1A1A1F', borderRadius: 20, boxShadow: '0 32px 80px rgba(0,0,0,0.9)', fontFamily: 'Inter, sans-serif', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
+      <div style={{ width: '100%', maxWidth: 500, background: '#1E1E1E', borderRadius: 20, boxShadow: '0 32px 80px rgba(0,0,0,0.85)', fontFamily: 'Inter, sans-serif', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ padding: '28px 28px 24px' }}>
 
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#EEEEF5', margin: '0 0 8px' }}>
+          <p style={{ fontSize: 24, fontWeight: 700, color: '#F0F0F0', margin: '0 0 8px' }}>
             {editing ? 'Edit Announcement' : 'New Announcement'}
           </p>
-          <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', margin: '0 0 24px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: '0 0 24px', lineHeight: 1.5 }}>
             {editing ? 'Update your announcement for the group.' : 'Post an update visible to all group members.'}
           </p>
 
@@ -143,7 +143,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                   return (
                     <button key={key} type="button"
                       onClick={() => setForm(p => ({ ...p, tag: key }))}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'Inter, sans-serif', ...(isActive ? TAG_STYLES[key] : { background: '#111116', color: '#55556A', border: '1px solid #2A2A38' }) }}>
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'Inter, sans-serif', ...(isActive ? TAG_STYLES[key] : { background: '#252525', color: '#555555', border: '1px solid #2A2A36' }) }}>
                       <TagIcon type={key} />{t.label}
                     </button>
                   );
@@ -156,8 +156,8 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <label style={lbl}>Title</label>
               <input style={inp} placeholder="Announcement title" required
                 value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = '#5B5FEF'}
-                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                onBlur={e => e.target.style.borderColor = '#333333'} />
             </div>
 
             {/* Content */}
@@ -165,15 +165,15 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <label style={lbl}>Message</label>
               <textarea ref={contentRef}
                 style={{ ...inp, resize: 'none', lineHeight: 1.6, minHeight: 100 }}
-                rows={4} placeholder="Write your announcement…" required
+                rows={4} placeholder="Write your announcement�" required
                 value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = '#5B5FEF'}
-                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                onBlur={e => e.target.style.borderColor = '#333333'} />
               <button ref={fileButtonRef} type="button" title="Attach file reference"
                 onClick={() => setShowFilePicker(v => !v)}
-                style={{ position: 'absolute', bottom: 10, right: 10, width: 28, height: 28, borderRadius: 7, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: showFilePicker ? '#5B5FEF' : 'rgba(255,255,255,0.06)', color: showFilePicker ? '#fff' : '#55556A' }}
-                onMouseEnter={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#9898B0'; } }}
-                onMouseLeave={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#55556A'; } }}>
+                style={{ position: 'absolute', bottom: 10, right: 10, width: 28, height: 28, borderRadius: 7, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: showFilePicker ? '#C0C1FF' : 'rgba(255,255,255,0.06)', color: showFilePicker ? '#fff' : '#555555' }}
+                onMouseEnter={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#9E9E9E'; } }}
+                onMouseLeave={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#555555'; } }}>
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
                 </svg>
@@ -193,10 +193,10 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             {/* Schedule toggle */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button type="button" onClick={() => setScheduled(v => !v)}
-                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s', background: scheduled ? '#5B5FEF' : '#2A2A38', padding: 0 }}>
+                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s', background: scheduled ? '#C0C1FF' : '#333333', padding: 0 }}>
                 <span style={{ position: 'absolute', top: 2, left: scheduled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}/>
               </button>
-              <span style={{ fontSize: 13, fontWeight: 300, color: '#9898B0' }}>Schedule for later</span>
+              <span style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E' }}>Schedule for later</span>
             </div>
 
             {scheduled && (
@@ -205,15 +205,15 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                   <label style={lbl}>Date</label>
                   <input type="date" style={inp} required min={minDate}
                     value={schedDate} onChange={e => setSchedDate(e.target.value)}
-                    onFocus={e => e.target.style.borderColor = '#5B5FEF'}
-                    onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                    onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                    onBlur={e => e.target.style.borderColor = '#333333'} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={lbl}>Time</label>
                   <input type="time" style={inp}
                     value={schedTime} onChange={e => setSchedTime(e.target.value)}
-                    onFocus={e => e.target.style.borderColor = '#5B5FEF'}
-                    onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                    onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                    onBlur={e => e.target.style.borderColor = '#333333'} />
                 </div>
               </div>
             )}
@@ -221,23 +221,23 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
-                style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #5B5FEF, #4338CA)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
-                {loading ? 'Saving…' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
+                style={{ width: '100%', padding: '14px', background: '#C0C1FF', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
+                {loading ? 'Saving�' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
               </button>
               <button type="button" onClick={handleCancel}
-                style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#55556A', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
-                onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+                style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#555555', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#9E9E9E'}
+                onMouseLeave={e => e.currentTarget.style.color = '#555555'}>
                 Cancel
               </button>
             </div>
 
             {/* Info footer */}
-            <div style={{ borderLeft: '3px solid #2A2A38', background: '#111116', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556A" style={{ flexShrink: 0, marginTop: 1 }}>
+            <div style={{ borderLeft: '3px solid #2A2A36', background: '#252525', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556E" style={{ flexShrink: 0, marginTop: 1 }}>
                 <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
               </svg>
-              <span style={{ fontSize: 12, fontWeight: 300, color: '#55556A', lineHeight: 1.5 }}>
+              <span style={{ fontSize: 12, fontWeight: 300, color: '#555555', lineHeight: 1.5 }}>
                 Announcements are visible to all group members immediately after posting.
               </span>
             </div>
@@ -337,18 +337,24 @@ export default function GroupOverview({ group, onFileRef }) {
     } finally { setConfirmingDelete(false); }
   };
 
-  // ── Palette ────────────────────────────────────────────
+  // -- Palette --------------------------------------------
   const P = {
-    bg:        '#0A0A0B',
-    surface:   '#111114',
-    card:      '#16161A',
-    border:    '#1E1E24',
-    primary:   '#6366F1',
-    secondary: '#7072AC',
-    tertiary:  '#B95F00',
-    text1:     '#F0F0F5',
-    text2:     '#9090A8',
-    text3:     '#55556A',
+    bg:        '#181818',
+    surface:   '#1E1E1E',
+    card:      '#252525',
+    border:    '#333333',
+    primary:   '#C0C1FF',   /* lavender */
+    primaryHi: '#D4D5FF',
+    primaryLo: 'rgba(192,193,255,0.12)',
+    secondary: '#FFB38E',   /* peach */
+    secondaryHi:'#FFC9A8',
+    secondaryLo:'rgba(255,179,142,0.12)',
+    tertiary:  '#9E9E9E',   /* grey */
+    tertiaryHi:'#BDBDBD',
+    tertiaryLo:'rgba(158,158,158,0.12)',
+    text1:     '#F0F0F0',
+    text2:     '#9E9E9E',
+    text3:     '#555555',
   };
 
   const greeting = () => {
@@ -361,7 +367,8 @@ export default function GroupOverview({ group, onFileRef }) {
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: P.bg, fontFamily: 'Inter, sans-serif', position: 'relative' }}>
       {/* Subtle top-right glow */}
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 400, height: 400, background: `radial-gradient(ellipse at top right, ${P.primary}18 0%, transparent 65%)`, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 28px 60px', position: 'relative' }}>
         <ConfirmDialog
@@ -374,27 +381,27 @@ export default function GroupOverview({ group, onFileRef }) {
         />
 
         {/* ── Greeting + group info ── */}
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 13, fontWeight: 400, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 6px' }}>
+        <div style={{ marginBottom: 36 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>
             {group.subject}
           </p>
-          <h1 style={{ fontSize: 36, fontWeight: 700, color: P.text1, margin: '0 0 4px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: 38, fontWeight: 800, color: P.text1, margin: '0 0 4px', lineHeight: 1.12, letterSpacing: '-0.03em', fontFamily: "'Manrope', 'Inter', sans-serif" }}>
             {greeting()}, {user?.name?.split(' ')[0]}.
           </h1>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: P.text3, margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 400, color: P.text3, margin: 0, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
             Welcome to {group.name}.
           </h2>
 
           {/* Meta strip */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 16, flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, color: P.primary, background: `${P.primary}18`, border: `1px solid ${P.primary}40`, borderRadius: 6, padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, color: P.primary, background: P.primaryLo, border: `1px solid rgba(192,193,255,0.25)`, borderRadius: 6, padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
               {myRole}
             </span>
             {isTeacher && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 400, color: P.text3 }}>
                 Invite code:
-                <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: P.secondary, letterSpacing: '0.08em' }}>{group.invite_code}</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: P.secondary, letterSpacing: '0.1em' }}>{group.invite_code}</span>
               </span>
             )}
             {group.description && (
@@ -403,18 +410,18 @@ export default function GroupOverview({ group, onFileRef }) {
           </div>
         </div>
 
-        {/* ── Two-column layout ── */}
+        {/* -- Two-column layout -- */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
 
-          {/* ── Left column ── */}
+          {/* -- Left column -- */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
             {/* Announcements section */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Announcements</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: P.text1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Announcements</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 11, color: P.text3 }}>{announcements.length} total</span>
+                  <span style={{ fontSize: 11, color: P.secondary }}>{announcements.length} total</span>
                   {isTeacher && (
                     <AnnouncementForm groupId={group.id}
                       onCreated={editingAnnouncement
@@ -447,13 +454,13 @@ export default function GroupOverview({ group, onFileRef }) {
                       reactionMap[r.emoji].push(r.user_id);
                     });
                     const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-                    const avatarColors = ['#6366F1','#7072AC','#B95F00','#0d9488','#db2777'];
+                    const avatarColors = ['#C0C1FF','#7072AC','#B95F00','#0d9488','#db2777'];
                     const avatarBg = (n) => avatarColors[(n?.charCodeAt(0) || 0) % avatarColors.length];
                     return (
                       <div key={a.id}
                         onClick={() => setSelectedAnnouncement(a)}
                         style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: '16px 18px', cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = `${P.primary}50`; e.currentTarget.style.background = P.surface; }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = P.primary; e.currentTarget.style.background = P.surface; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = P.card; }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                           {/* Avatar */}
@@ -507,7 +514,7 @@ export default function GroupOverview({ group, onFileRef }) {
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }} onClick={e => e.stopPropagation()}>
                                 {Object.entries(reactionMap).map(([emoji, userIds]) => (
                                   <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ${P.primary}60` : `1px solid ${P.border}`, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
+                                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ` : `1px solid `, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
                                     <span>{emoji}</span><span>{userIds.length}</span>
                                   </button>
                                 ))}
@@ -522,12 +529,12 @@ export default function GroupOverview({ group, onFileRef }) {
               )}
             </div>
 
-            {/* Scheduled — teachers only */}
+            {/* Scheduled � teachers only */}
             {isTeacher && scheduled.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scheduled</span>
-                  <span style={{ fontSize: 11, color: P.text3 }}>{scheduled.length} pending</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: P.text1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Scheduled</span>
+                  <span style={{ fontSize: 11, color: P.secondary }}>{scheduled.length} pending</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {scheduled.map(a => {
@@ -541,7 +548,7 @@ export default function GroupOverview({ group, onFileRef }) {
                               <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 5, background: `${P.secondary}25`, color: P.secondary, border: `1px solid ${P.secondary}40`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tag.label}</span>
                               <span style={{ fontSize: 10, color: P.text3, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
-                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })} · {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })} � {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                               </span>
                             </div>
                             <p style={{ fontSize: 13, fontWeight: 500, color: P.text1, margin: '0 0 2px' }}>{a.title}</p>
@@ -564,12 +571,12 @@ export default function GroupOverview({ group, onFileRef }) {
             )}
           </div>
 
-          {/* ── Right column ── */}
+          {/* -- Right column -- */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Group info card */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>
-              <p style={{ fontSize: 10, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Group Info</p>
+            <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: P.text1, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Group Info</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div>
                   <p style={{ fontSize: 11, color: P.text3, margin: '0 0 2px', fontWeight: 400 }}>Subject</p>
@@ -603,7 +610,7 @@ export default function GroupOverview({ group, onFileRef }) {
                 .filter(d => d.due_date && new Date(d.due_date) >= todayStart)
                 .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
                 .slice(0, 5);
-              const BAR_COLORS = ['#F87171', '#818CF8', '#FB923C', '#34D399', '#A78BFA'];
+              const BAR_COLORS = [P.secondary, P.primary, P.tertiaryHi, '#22C55E', P.primaryHi];
               const fmtDeadline = (iso) => {
                 const d = new Date(iso);
                 const today = new Date(); today.setHours(0,0,0,0);
@@ -615,8 +622,8 @@ export default function GroupOverview({ group, onFileRef }) {
                 return { label: `${d.toLocaleDateString([], { weekday: 'long' })}, ${timeStr}`, urgent: false };
               };
               return (
-                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column' }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>Upcoming Deadlines</p>
+                <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: P.text1, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Upcoming Deadlines</p>
                   {upcoming.length === 0 ? (
                     <p style={{ fontSize: 12, color: P.text3, fontWeight: 300, fontStyle: 'italic', margin: 0 }}>No upcoming deadlines</p>
                   ) : (
@@ -629,7 +636,7 @@ export default function GroupOverview({ group, onFileRef }) {
                             <div style={{ width: 4, borderRadius: 4, background: color, alignSelf: 'stretch', flexShrink: 0, minHeight: 36 }} />
                             <div style={{ minWidth: 0 }}>
                               <p style={{ fontSize: 13, fontWeight: 600, color: P.text1, margin: '0 0 3px', lineHeight: 1.3 }}>{d.title}</p>
-                              <p style={{ fontSize: 11, fontWeight: 400, color: urgent ? '#F87171' : P.text3, margin: 0 }}>{label}</p>
+                              <p style={{ fontSize: 11, fontWeight: 400, color: urgent ? P.secondary : P.text3, margin: 0 }}>{label}</p>
                             </div>
                           </div>
                         );
@@ -637,9 +644,9 @@ export default function GroupOverview({ group, onFileRef }) {
                     </div>
                   )}
                   <button
-                    style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px', borderRadius: 8, background: 'none', border: 'none', color: P.text3, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.color = P.text2}
-                    onMouseLeave={e => e.currentTarget.style.color = P.text3}
+                    style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px', borderRadius: 8, background: 'none', border: 'none', color: P.secondary, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.color = P.secondaryHi}
+                    onMouseLeave={e => e.currentTarget.style.color = P.secondary}
                     onClick={() => {}}>
                     Open Calendar
                     <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 1 0v4a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/><path d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/></svg>
@@ -649,8 +656,8 @@ export default function GroupOverview({ group, onFileRef }) {
             })()}
 
             {/* Quick actions */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>
-              <p style={{ fontSize: 10, fontWeight: 600, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Quick Access</p>
+            <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: P.text1, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 12px' }}>Quick Access</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
                   { label: 'Chat', icon: 'M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2z', color: P.primary },
@@ -697,7 +704,7 @@ export default function GroupOverview({ group, onFileRef }) {
                     <TagIcon type={a.tag || 'general'} />{tag.label}
                   </span>
                   <p style={{ fontSize: 16, fontWeight: 600, color: P.text1, margin: 0, lineHeight: 1.4 }}>{a.title}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name} · {formatDate(a.created_at)}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name} � {formatDate(a.created_at)}</p>
                 </div>
                 <button onClick={() => setSelectedAnnouncement(null)}
                   style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 2, lineHeight: 0 }}>
@@ -711,7 +718,7 @@ export default function GroupOverview({ group, onFileRef }) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
                   {Object.entries(reactionMap).map(([emoji, userIds]) => (
                     <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ${P.primary}60` : `1px solid ${P.border}`, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ` : `1px solid `, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
                       <span>{emoji}</span><span>{userIds.length}</span>
                     </button>
                   ))}
@@ -724,7 +731,7 @@ export default function GroupOverview({ group, onFileRef }) {
                     Edit
                   </button>
                   <button onClick={() => { setDeleteConfirm({ type: 'announcement', id: a.id }); setSelectedAnnouncement(null); }}
-                    style={{ flex: 1, padding: '9px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                    style={{ flex: 1, padding: '9px', borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                     Delete
                   </button>
                 </div>
