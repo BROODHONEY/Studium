@@ -8,7 +8,28 @@ import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
 import { formatTime, getDateLabel } from '../utils/time';
 
-const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+const EMOJI_OPTIONS = ['??', '??', '??', '??', '??', '??'];
+
+// -- Design tokens (from palette) ----------------------
+const C = {
+  bg:        '#0D0D10',
+  surface:   '#13131A',
+  raised:    '#1A1A24',
+  border:    '#22222E',
+  borderHi:  '#2E2E3E',
+  primary:   '#5B5FEF',
+  primaryHi: '#7B7FF5',
+  primaryLo: 'rgba(91,95,239,0.12)',
+  secondary: '#8B8FC8',
+  tertiary:  '#E07B20',
+  tertiaryLo:'rgba(224,123,32,0.12)',
+  text1:     '#EEEEF5',
+  text2:     '#9898B0',
+  text3:     '#55556A',
+  text4:     '#2E2E3E',
+  danger:    'rgba(239,68,68,0.75)',
+  dangerLo:  'rgba(239,68,68,0.08)',
+};
 
 export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMessageId, onHighlightClear }) {
   const { user }   = useAuth();
@@ -16,35 +37,28 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   const [messages, setMessages]     = useState([]);
   const [text, setText]             = useState('');
-  const mentionsRef = useRef({}); // { '@Name': '@[Name](id)' } — populated on mention insert
+  const mentionsRef = useRef({});
   const [loading, setLoading]       = useState(true);
   const [adminsOnly, setAdminsOnly] = useState(false);
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
-  const [showPinned, setShowPinned] = useState(false);
+  const [showPinned, setShowPinned] = useState(false); void showPinned; void setShowPinned;
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch]   = useState(false);
-  const [typingUsers, setTypingUsers] = useState({}); // { userId: { name, timer } }
+  const [showSearch, setShowSearch]   = useState(false); void showSearch; void setShowSearch;
+  const [typingUsers, setTypingUsers] = useState({});
 
-  // ── @mention state ──────────────────────────────────
   const [members, setMembers]           = useState([]);
-  const [mentionQuery, setMentionQuery] = useState(null); // null = closed, string = filter
+  const [mentionQuery, setMentionQuery] = useState(null);
   const [mentionIndex, setMentionIndex] = useState(0);
-  const mentionStartRef                 = useRef(null); // caret position where @ was typed
+  const mentionStartRef                 = useRef(null);
   const mentionListRef                  = useRef(null);
 
-  // ── File reference state ─────────────────────────────
-  const [fileRefs, setFileRefs] = useState([]); // [{ id, filename, file_url, file_type }]
+  const [fileRefs, setFileRefs] = useState([]);
 
-  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null); void highlightedMessageId;
   const highlightTimeoutRef = useRef(null);
-  const messageRefs = useRef(new Map()); // messageId -> HTMLElement
+  const messageRefs = useRef(new Map());
 
-  const [pinTimeModal, setPinTimeModal] = useState({
-    open: false,
-    messageId: null,
-    pin_ttl_minutes: '',
-    content: ''
-  });
+  const [pinTimeModal, setPinTimeModal] = useState({ open: false, messageId: null, pin_ttl_minutes: '', content: '' });
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
@@ -54,13 +68,10 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   const handleScroll = () => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    setShowScrollBtn(distFromBottom > 200);
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 200);
   };
 
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const bottomRef        = useRef(null);
   const textareaRef      = useRef(null);
@@ -70,33 +81,29 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   const typingTimersRef  = useRef({});
   const isTypingRef      = useRef(false);
 
-  const myRole  = group?.my_role;
-  const canSend = adminsOnly ? myRole === 'admin' : true;
+  const myRole    = group?.my_role;
+  const isTeacher = myRole === 'admin' || myRole === 'teacher';
+  const canSend   = adminsOnly ? myRole === 'admin' : true;
 
-  // Build timeline from messages — system messages are already in the same array
   const timeline = messages
     .map(m => ({ ...m, _kind: m.type === 'system' ? 'system' : 'message' }))
     .filter(m => {
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
-      return m.content?.toLowerCase().includes(q) ||
-        (m.users || m.sender)?.name?.toLowerCase().includes(q);
+      return m.content?.toLowerCase().includes(q) || (m.users || m.sender)?.name?.toLowerCase().includes(q);
     });
 
   const [editingId, setEditingId]         = useState(null);
   const [editText, setEditText]           = useState('');
-  const [openMenuId, setOpenMenuId]       = useState(null); // three-dot menu
+  const [openMenuId, setOpenMenuId]       = useState(null);
   const [menuRect, setMenuRect]           = useState(null);
-  // reply_to: { id, content, senderName, senderId }
   const [replyTo, setReplyTo]             = useState(null);
-  const [privateReply, setPrivateReply]   = useState(null); // same shape, but sends as DM
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // messageId to delete
+  const [privateReply, setPrivateReply]   = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // Leave old room when switching groups
   useEffect(() => {
     const prevId = previousGroupRef.current;
     previousGroupRef.current = group?.id;
-
     return () => {
       if (prevId && socket && prevId !== group?.id) {
         socket.emit('leave_group', prevId);
@@ -107,143 +114,78 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   useEffect(() => {
     if (!group) return;
-    setMessages([]);
-    setLoading(true);
-    messagesAPI.list(group.id)
-      .then(res => setMessages(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-    messagesAPI.pinned(group.id)
-      .then(res => setPinnedMsgs(res.data))
-      .catch(console.error);
-    groupsAPI.get(group.id)
-      .then(res => { setAdminsOnly(res.data.admins_only || false); setMembers(res.data.members || []); })
-      .catch(console.error);
+    setMessages([]); setLoading(true);
+    messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error).finally(() => setLoading(false));
+    messagesAPI.pinned(group.id).then(res => setPinnedMsgs(res.data)).catch(console.error);
+    groupsAPI.get(group.id).then(res => { setAdminsOnly(res.data.admins_only || false); setMembers(res.data.members || []); }).catch(console.error);
   }, [group?.id]);
 
   useEffect(() => {
     if (!group || !socket) return;
-
-    // Join socket room only once per group per session
-    if (!joinedRoomsRef.current.has(group.id)) {
-      socket.emit('join_group', group.id);
-      joinedRoomsRef.current.add(group.id);
-    }
-
-    // Clear stale listeners before registering fresh ones
-    socket.off('new_message');
-    socket.off('system_message');
-    socket.off('admins_only_changed');
-    socket.off('message_deleted');
-    socket.off('message_pinned');
-    socket.off('message_unpinned');
-    socket.off('user_typing');
-    socket.off('user_stopped_typing');
-    socket.off('message_edited');
-    socket.off('message_reaction');
+    if (!joinedRoomsRef.current.has(group.id)) { socket.emit('join_group', group.id); joinedRoomsRef.current.add(group.id); }
+    socket.off('new_message'); socket.off('system_message'); socket.off('admins_only_changed');
+    socket.off('message_deleted'); socket.off('message_pinned'); socket.off('message_unpinned');
+    socket.off('user_typing'); socket.off('user_stopped_typing'); socket.off('message_edited'); socket.off('message_reaction');
 
     socket.on('new_message', (msg) => {
       setMessages(prev => {
-        // Replace optimistic temp message if content matches, otherwise deduplicate by id
         const tempIdx = prev.findIndex(m => m.id?.startsWith('temp-') && m.content === msg.content && m.group_id === msg.group_id);
-        if (tempIdx >= 0) {
-          const next = [...prev];
-          next[tempIdx] = msg;
-          return next;
-        }
+        if (tempIdx >= 0) { const next = [...prev]; next[tempIdx] = msg; return next; }
         if (prev.find(m => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
     });
-
     socket.on('system_message', (event) => {
       setMessages(prev => {
         if (prev.find(m => m.id === event.id)) return prev;
-        return [...prev, {
-          id: event.id,
-          content: event.text,
-          type: 'system',
-          subtype: event.subtype,
-          created_at: event.timestamp
-        }];
+        return [...prev, { id: event.id, content: event.text, type: 'system', subtype: event.subtype, created_at: event.timestamp }];
       });
     });
-
-    socket.on('admins_only_changed', ({ enabled }) => {
-      setAdminsOnly(enabled);
-    });
-
-    socket.on('message_deleted', ({ messageId }) => {
-      setMessages(prev => prev.filter(m => m.id !== messageId));
-    });
-
+    socket.on('admins_only_changed', ({ enabled }) => setAdminsOnly(enabled));
+    socket.on('message_deleted', ({ messageId }) => setMessages(prev => prev.filter(m => m.id !== messageId)));
     socket.on('message_pinned', ({ messageId, content, pin_time }) => {
       setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: true, pin_time } : m));
       setPinnedMsgs(prev => {
         const exists = prev.find(m => m.id === messageId);
         const next = { id: messageId, content, pin_time: pin_time ?? null };
-
-        if (exists) {
-          return prev.map(m => m.id === messageId ? { ...m, content: content ?? m.content, pin_time: pin_time ?? null } : m);
-        }
-
+        if (exists) return prev.map(m => m.id === messageId ? { ...m, content: content ?? m.content, pin_time: pin_time ?? null } : m);
         return [next, ...prev];
       });
     });
-
     socket.on('message_unpinned', ({ messageId }) => {
       setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: false, pin_time: null } : m));
       setPinnedMsgs(prev => prev.filter(m => m.id !== messageId));
     });
-
     socket.on('user_typing', ({ userId, userName }) => {
-      // Clear any existing auto-stop timer for this user
       if (typingTimersRef.current[userId]) clearTimeout(typingTimersRef.current[userId]);
       setTypingUsers(prev => ({ ...prev, [userId]: userName || 'Someone' }));
-      // Auto-clear after 3s in case stop event is missed
       typingTimersRef.current[userId] = setTimeout(() => {
         setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n; });
         delete typingTimersRef.current[userId];
       }, 3000);
     });
-
     socket.on('user_stopped_typing', ({ userId }) => {
       if (typingTimersRef.current[userId]) clearTimeout(typingTimersRef.current[userId]);
       delete typingTimersRef.current[userId];
       setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n; });
     });
-
-    socket.on('message_edited', ({ messageId, content }) => {
-      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content, edited: true } : m));
-    });
-
-    socket.on('message_reaction', ({ messageId, reactions }) => {
-      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, message_reactions: reactions } : m));
-    });
+    socket.on('message_edited', ({ messageId, content }) => setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content, edited: true } : m)));
+    socket.on('message_reaction', ({ messageId, reactions }) => setMessages(prev => prev.map(m => m.id === messageId ? { ...m, message_reactions: reactions } : m)));
 
     return () => {
-      socket.off('new_message');
-      socket.off('system_message');
-      socket.off('admins_only_changed');
-      socket.off('message_deleted');
-      socket.off('message_pinned');
-      socket.off('message_unpinned');
-      socket.off('user_typing');
-      socket.off('user_stopped_typing');
-      socket.off('message_edited');
-      socket.off('message_reaction');
+      socket.off('new_message'); socket.off('system_message'); socket.off('admins_only_changed');
+      socket.off('message_deleted'); socket.off('message_pinned'); socket.off('message_unpinned');
+      socket.off('user_typing'); socket.off('user_stopped_typing'); socket.off('message_edited'); socket.off('message_reaction');
     };
   }, [group?.id, socket]);
 
-  // Close menu on outside click
   useEffect(() => {
     if (!openMenuId) return;
-    const handler = () => { setOpenMenuId(null); };
+    const handler = () => setOpenMenuId(null);
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   }, [openMenuId]);
 
-  // Auto-scroll to a specific message when navigated from search
   useEffect(() => {
     if (!highlightMessageId || loading) return;
     const attempt = (tries) => {
@@ -253,36 +195,26 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedMessageId(highlightMessageId);
       if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
-      highlightTimeoutRef.current = setTimeout(() => {
-        setHighlightedMessageId(null);
-        onHighlightClear?.();
-      }, 2000);
+      highlightTimeoutRef.current = setTimeout(() => { setHighlightedMessageId(null); onHighlightClear?.(); }, 2000);
     };
     attempt(8);
   }, [highlightMessageId, loading]);
 
-  // Auto scroll to bottom on new messages
   useEffect(() => {
-    if (highlightMessageId) return; // don't override search navigation
+    if (highlightMessageId) return;
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [timeline.length]);
 
   const scrollToMessage = (messageId) => {
     if (!messageId) return;
-
-    const attempt = (remainingAttempts) => {
+    const attempt = (n) => {
       const el = messageRefs.current.get(messageId) || document.getElementById(`message-${messageId}`);
-      if (!el) {
-        if (remainingAttempts > 0) setTimeout(() => attempt(remainingAttempts - 1), 250);
-        return;
-      }
-
+      if (!el) { if (n > 0) setTimeout(() => attempt(n - 1), 250); return; }
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedMessageId(messageId);
       if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
       highlightTimeoutRef.current = setTimeout(() => setHighlightedMessageId(null), 1800);
     };
-
     attempt(2);
   };
 
@@ -291,31 +223,12 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     const fileTokens = fileRefs.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
     const encoded = encodeForSend(text.trim());
     const content = [encoded, fileTokens].filter(Boolean).join(' ');
-
-    // Optimistic update — add message immediately
     const tempId = `temp-${Date.now()}`;
-    const optimistic = {
-      id: tempId,
-      content,
-      type: 'text',
-      created_at: new Date().toISOString(),
-      group_id: group.id,
-      users: user,
-      sender: user,
-      ...(replyTo ? { replied_message: { id: replyTo.id, content: replyTo.content, users: { name: replyTo.senderName } } } : {}),
-    };
+    const optimistic = { id: tempId, content, type: 'text', created_at: new Date().toISOString(), group_id: group.id, users: user, sender: user, ...(replyTo ? { replied_message: { id: replyTo.id, content: replyTo.content, users: { name: replyTo.senderName } } } : {}) };
     setMessages(prev => [...prev, optimistic]);
-
-    socket.emit('send_message', {
-      groupId: group.id,
-      content,
-      type: 'text',
-      ...(replyTo ? { replyTo: replyTo.id } : {})
-    });
-    setText(''); mentionsRef.current = {}; setFileRefs([]);
-    setReplyTo(null);
-    clearTimeout(typingTimeoutRef.current);
-    isTypingRef.current = false;
+    socket.emit('send_message', { groupId: group.id, content, type: 'text', ...(replyTo ? { replyTo: replyTo.id } : {}) });
+    setText(''); mentionsRef.current = {}; setFileRefs([]); setReplyTo(null);
+    clearTimeout(typingTimeoutRef.current); isTypingRef.current = false;
     socket.emit('typing_stop', { groupId: group.id });
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
@@ -326,59 +239,32 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
       const fileTokens = fileRefs.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
       const encoded = encodeForSend(text.trim());
       const content = [encoded, fileTokens].filter(Boolean).join(' ');
-      await messagesAPI.replyPrivate({
-        targetUserId: privateReply.senderId,
-        content,
-        quotedContent: privateReply.content,
-        quotedSenderName: privateReply.senderName,
-        groupId: group?.id,
-        groupName: group?.name,
-      });
-      setText(''); mentionsRef.current = {}; setFileRefs([]);
-      setPrivateReply(null);
-    } catch (err) {
-      console.error(err);
-    }
+      await messagesAPI.replyPrivate({ targetUserId: privateReply.senderId, content, quotedContent: privateReply.content, quotedSenderName: privateReply.senderName, groupId: group?.id, groupName: group?.name });
+      setText(''); mentionsRef.current = {}; setFileRefs([]); setPrivateReply(null);
+    } catch (err) { console.error(err); }
   };
 
-  const handleDeleteMessage = (messageId) => {
-    setDeleteConfirm(messageId);
-  };
+  const handleDeleteMessage = (messageId) => setDeleteConfirm(messageId);
 
   const confirmDelete = async () => {
     const messageId = deleteConfirm;
     setDeleteConfirm(null);
     setMessages(prev => prev.filter(m => m.id !== messageId));
-    try {
-      await messagesAPI.delete(messageId);
-    } catch {
-      messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
-    }
+    try { await messagesAPI.delete(messageId); }
+    catch { messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error); }
   };
 
   const handleEditMessage = async (messageId) => {
     if (!editText.trim()) return;
-    // Optimistic update
     setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: editText.trim(), edited: true } : m));
-    setEditingId(null);
-    setEditText('');
-    try {
-      await messagesAPI.edit(messageId, editText.trim());
-    } catch (err) {
-      console.error(err);
-      // Revert on failure by re-fetching
-      messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
-    }
+    setEditingId(null); setEditText('');
+    try { await messagesAPI.edit(messageId, editText.trim()); }
+    catch (err) { console.error(err); messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error); }
   };
 
   const handleReact = async (messageId, emoji) => {
     setOpenMenuId(null);
-    try {
-      await messagesAPI.react(messageId, emoji);
-      // socket event will update state
-    } catch (err) {
-      console.error(err);
-    }
+    try { await messagesAPI.react(messageId, emoji); } catch (err) { console.error(err); }
   };
 
   const handleUnpinMessage = async (messageId) => {
@@ -386,9 +272,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
       await messagesAPI.unpin(messageId);
       setMessages(prev => prev.map(m => m.id === messageId ? { ...m, pinned: false, pin_time: null } : m));
       setPinnedMsgs(prev => prev.filter(m => m.id !== messageId));
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handlePinWithTime = async (messageId, pinTtlMinutes, content) => {
@@ -400,246 +284,128 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
       setPinnedMsgs(prev => {
         const exists = prev.find(m => m.id === messageId);
         const next = { id: messageId, content, pin_time: serverPinTime };
-        if (exists) {
-          return prev.map(m => m.id === messageId ? { ...m, content: content ?? m.content, pin_time: serverPinTime } : m);
-        }
+        if (exists) return prev.map(m => m.id === messageId ? { ...m, content: content ?? m.content, pin_time: serverPinTime } : m);
         return [next, ...prev];
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  const getPinExpiry = (pinTime) => {
-    if (!pinTime) return null;
-    const d = new Date(pinTime);
-    return isNaN(d.getTime()) ? null : d;
-  };
-
-  const getRemainingMinutes = (pinTime) => {
-    const d = getPinExpiry(pinTime);
-    if (!d) return null;
-    const diffMs = d.getTime() - Date.now();
-    if (diffMs <= 0) return 0;
-    return Math.ceil(diffMs / 60000);
-  };
-
-  const formatPinLabel = (pinTime) => {
-    const remaining = getRemainingMinutes(pinTime);
-    if (remaining === null) return null;
-    if (remaining === 0) return 'Auto-unpin now';
-    if (remaining < 60) return `Auto-unpin in ${remaining}m`;
-    const hours = Math.ceil(remaining / 60);
-    return `Auto-unpin in ${hours}h`;
-  };
+  const getPinExpiry = (pinTime) => { if (!pinTime) return null; const d = new Date(pinTime); return isNaN(d.getTime()) ? null : d; };
+  const getRemainingMinutes = (pinTime) => { const d = getPinExpiry(pinTime); if (!d) return null; const diff = d.getTime() - Date.now(); return diff <= 0 ? 0 : Math.ceil(diff / 60000); };
+  const formatPinLabel = (pinTime) => { const r = getRemainingMinutes(pinTime); if (r === null) return null; if (r === 0) return 'Unpinning soon'; if (r < 60) return `${r}m left`; return `${Math.ceil(r/60)}h left`; };
 
   const handleKeyDown = (e) => {
-    // Navigate mention popover
     if (mentionQuery !== null && filteredMembers.length > 0) {
       if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIndex(i => (i + 1) % filteredMembers.length); return; }
       if (e.key === 'ArrowUp')   { e.preventDefault(); setMentionIndex(i => (i - 1 + filteredMembers.length) % filteredMembers.length); return; }
       if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); insertMention(filteredMembers[mentionIndex]); return; }
       if (e.key === 'Escape') { setMentionQuery(null); return; }
     }
-
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (privateReply) handlePrivateReply();
-      else sendMessage();
-    }
-    if (e.key === 'Escape') {
-      setReplyTo(null);
-      setPrivateReply(null);
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (privateReply) handlePrivateReply(); else sendMessage(); }
+    if (e.key === 'Escape') { setReplyTo(null); setPrivateReply(null); }
   };
 
   const handleTextChange = (e) => {
     const val = e.target.value;
     setText(val);
-    // If text is cleared, reset mentions map
     if (!val) mentionsRef.current = {};
-
-    // Detect @mention trigger
     const pos = e.target.selectionStart;
     const textUpToCaret = val.slice(0, pos);
     const mentionMatch = textUpToCaret.match(/@(\w*)$/);
-    if (mentionMatch) {
-      mentionStartRef.current = pos - mentionMatch[0].length;
-      setMentionQuery(mentionMatch[1].toLowerCase());
-      setMentionIndex(0);
-    } else {
-      setMentionQuery(null);
-    }
-
+    if (mentionMatch) { mentionStartRef.current = pos - mentionMatch[0].length; setMentionQuery(mentionMatch[1].toLowerCase()); setMentionIndex(0); }
+    else setMentionQuery(null);
     if (!socket || !group || !connected) return;
-    if (!isTypingRef.current) {
-      isTypingRef.current = true;
-      socket.emit('typing_start', { groupId: group.id });
-    }
+    if (!isTypingRef.current) { isTypingRef.current = true; socket.emit('typing_start', { groupId: group.id }); }
     clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      isTypingRef.current = false;
-      socket.emit('typing_stop', { groupId: group.id });
-    }, 2000);
+    typingTimeoutRef.current = setTimeout(() => { isTypingRef.current = false; socket.emit('typing_stop', { groupId: group.id }); }, 2000);
   };
 
   const filteredMembers = mentionQuery !== null
-    ? members
-        .map(m => m.users)
-        .filter(u => u && u.id !== user?.id && u.name?.toLowerCase().includes(mentionQuery))
-        .slice(0, 6)
+    ? members.map(m => m.users).filter(u => u && u.id !== user?.id && u.name?.toLowerCase().includes(mentionQuery)).slice(0, 6)
     : [];
 
-  // Replace @Name display tokens with @[Name](id) for storage
-  const encodeForSend = (t) => {
-    let out = t;
-    for (const [display, encoded] of Object.entries(mentionsRef.current)) {
-      out = out.split(display).join(encoded);
-    }
-    return out;
-  };
+  const encodeForSend = (t) => { let out = t; for (const [display, encoded] of Object.entries(mentionsRef.current)) out = out.split(display).join(encoded); return out; };
 
   const insertMention = (member) => {
     const caretPos = textareaRef.current?.selectionStart ?? mentionStartRef.current;
     const before = text.slice(0, mentionStartRef.current);
     const after  = text.slice(caretPos);
     const displayToken = `@${member.name}`;
-    const encodedToken = `@[${member.name}](${member.id})`;
-    mentionsRef.current[displayToken] = encodedToken;
-
+    mentionsRef.current[displayToken] = `@[${member.name}](${member.id})`;
     const newText = before + displayToken + ' ' + after;
-    setText(newText);
-    setMentionQuery(null);
-
-    setTimeout(() => {
-      if (textareaRef.current) {
-        const pos = before.length + displayToken.length + 1;
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(pos, pos);
-      }
-    }, 0);
+    setText(newText); setMentionQuery(null);
+    setTimeout(() => { if (textareaRef.current) { const pos = before.length + displayToken.length + 1; textareaRef.current.focus(); textareaRef.current.setSelectionRange(pos, pos); } }, 0);
   };
 
-  // formatTime imported from utils/time
-
-  const initials = (name) =>
-    name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-
-  const avatarColors = [
-    'bg-indigo-600', 'bg-teal-600', 'bg-purple-600',
-    'bg-pink-600',   'bg-amber-600', 'bg-green-600'
-  ];
-  const avatarColor = (name) =>
-    avatarColors[(name?.charCodeAt(0) || 0) % avatarColors.length];
+  const initials = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const AVATAR_PALETTE = ['#5B5FEF','#7C3AED','#0EA5E9','#10B981','#E07B20','#EC4899'];
+  const avatarBg = (name) => AVATAR_PALETTE[(name?.charCodeAt(0) || 0) % AVATAR_PALETTE.length];
 
   if (!group) return (
-    <div className="flex-1 flex items-center justify-center dark:bg-surface bg-gray-50">
-      <p className="dark:text-gray-600 text-gray-400 text-sm">Select a group to start chatting</p>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: 'Inter, sans-serif' }}>
+      <p style={{ color: C.text3, fontSize: 13, fontWeight: 300 }}>Select a group to start chatting</p>
     </div>
   );
 
-  // ── Inline file preview helper ──────────────────────
+  // -- Inline file preview ------------------------------
   const FilePreview = ({ file }) => {
     if (!file) return null;
     const isImage = file.file_type?.startsWith('image/');
     const isPdf   = file.file_type === 'application/pdf';
-    const sizeStr = file.size_bytes
-      ? file.size_bytes < 1024 * 1024
-        ? `${(file.size_bytes / 1024).toFixed(1)} KB`
-        : `${(file.size_bytes / (1024 * 1024)).toFixed(1)} MB`
-      : '';
-
-    if (isImage) {
-      return (
-        <a href={file.file_url} target="_blank" rel="noreferrer" className="block mt-1.5">
-          <img src={file.file_url} alt={file.filename}
-            className="max-w-xs rounded-xl border dark:border-surface-3 border-gray-200 hover:opacity-90 transition cursor-pointer"
-            style={{ maxHeight: 200, objectFit: 'cover' }}/>
-        </a>
-      );
-    }
+    const sizeStr = file.size_bytes ? file.size_bytes < 1048576 ? `${(file.size_bytes/1024).toFixed(1)} KB` : `${(file.size_bytes/1048576).toFixed(1)} MB` : '';
+    if (isImage) return (
+      <a href={file.file_url} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: 8 }}>
+        <img src={file.file_url} alt={file.filename} style={{ maxWidth: 280, maxHeight: 200, borderRadius: 10, border: `1px solid ${C.border}`, objectFit: 'cover', display: 'block' }}/>
+      </a>
+    );
     return (
       <a href={file.file_url} target="_blank" rel="noreferrer"
-        className="mt-1.5 flex items-center gap-2.5 px-3 py-2.5 dark:bg-surface-4/50 bg-gray-200/50 dark:border-surface-4/50 border-gray-300/50 border rounded-xl dark:hover:bg-surface-4 hover:bg-gray-200 transition max-w-xs">
-        <span className="text-xl flex-shrink-0">{isPdf ? '📄' : '📎'}</span>
-        <div className="min-w-0">
-          <p className="text-xs text-white font-medium truncate">{file.filename}</p>
-          {sizeStr && <p className="text-xs text-gray-400 mt-0.5">{sizeStr}</p>}
+        style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, textDecoration: 'none', maxWidth: 280, transition: 'border-color 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
+        <span style={{ fontSize: 20 }}>{isPdf ? '??' : '??'}</span>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12, color: C.text1, fontWeight: 400, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.filename}</p>
+          {sizeStr && <p style={{ fontSize: 11, color: C.text3, margin: '2px 0 0' }}>{sizeStr}</p>}
         </div>
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="#6b7280" className="flex-shrink-0 ml-auto">
-          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-        </svg>
       </a>
     );
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative' }}>
-      {/* Subtle purple accent — top-right corner */}
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: C.bg, fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}>
 
-      {/* Delete confirmation */}
-      <ConfirmDialog
-        open={!!deleteConfirm}
-        title="Delete message"
-        description="This message will be permanently deleted."
-        confirmText="Delete"
-        cancelText="Cancel"
-        danger
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteConfirm(null)}
-      />
+      {/* -- Modals -- */}
+      <ConfirmDialog open={!!deleteConfirm} title="Delete message" description="This message will be permanently deleted." confirmText="Delete" cancelText="Cancel" danger onConfirm={confirmDelete} onCancel={() => setDeleteConfirm(null)} />
 
-      {/* Edit message modal */}
+      {/* Edit modal */}
       {editingId && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '16px' }}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', padding: 16 }}
           onClick={() => { setEditingId(null); setEditText(''); }}>
-          <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative' }}
+          <div style={{ width: '100%', maxWidth: 500, background: C.surface, border: `1px solid ${C.borderHi}`, borderRadius: 18, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.8)' }}
             onClick={e => e.stopPropagation()}>
-            {/* Subtle top glow */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}>Edit message</span>
-              <button onClick={() => { setEditingId(null); setEditText(''); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.text1 }}>Edit message</span>
+              <button onClick={() => { setEditingId(null); setEditText(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, padding: 4 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
               </button>
             </div>
-
-            {/* Unified input pill — same as chat input */}
-            <div style={{ margin: '14px 20px', background: 'var(--bg-raised)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 14, overflow: 'hidden' }}>
-              {/* Format toolbar */}
-              <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ margin: '14px 20px', background: C.raised, border: `1px solid ${C.primary}50`, borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: '8px 12px 0', borderBottom: `1px solid ${C.border}` }}>
                 <FormatToolbar textareaRef={editTextareaRef} setText={setEditText} />
               </div>
-              <textarea
-                ref={editTextareaRef}
-                autoFocus
-                value={editText}
-                onChange={e => setEditText(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditMessage(editingId); }
-                  if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
-                }}
-                rows={3}
-                style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', resize: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', lineHeight: 1.6, maxHeight: 200, overflowY: 'auto' }}
-                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'; }}
-              />
+              <textarea ref={editTextareaRef} autoFocus value={editText} onChange={e => setEditText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditMessage(editingId); } if (e.key === 'Escape') { setEditingId(null); setEditText(''); } }}
+                rows={3} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontSize: 13, fontWeight: 300, color: C.text1, resize: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', lineHeight: 1.6, maxHeight: 200, overflowY: 'auto' }}
+                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'; }} />
             </div>
-
-            {/* Actions */}
             <div style={{ display: 'flex', gap: 10, padding: '0 20px 20px' }}>
               <button onClick={() => handleEditMessage(editingId)} disabled={!editText.trim()}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: editText.trim() ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', border: '1px solid', borderColor: editText.trim() ? '#6366F1' : 'var(--border-color)', color: editText.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                style={{ flex: 1, padding: '10px', borderRadius: 10, background: editText.trim() ? C.primary : C.raised, border: `1px solid ${editText.trim() ? C.primary : C.border}`, color: editText.trim() ? '#fff' : C.text3, fontSize: 13, fontWeight: 500, cursor: editText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
                 Save changes
               </button>
               <button onClick={() => { setEditingId(null); setEditText(''); }}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '10px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, color: C.text2, fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
                 Cancel
               </button>
             </div>
@@ -647,79 +413,46 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
       )}
 
-      {/* Pin time modal (teacher only) */}
+      {/* Pin time modal */}
       {pinTimeModal.open && (() => {
-        const PRESETS = [
-          { label: '1 hour',    value: '60' },
-          { label: '8 hours',   value: '480' },
-          { label: '24 hours',  value: '1440' },
-          { label: 'Until removed', value: '' },
-        ];
+        const PRESETS = [{ label: '1 hour', value: '60' }, { label: '8 hours', value: '480' }, { label: '24 hours', value: '1440' }, { label: 'Until removed', value: '' }];
         const isCustom = !PRESETS.some(p => p.value === pinTimeModal.pin_ttl_minutes);
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', padding: 16 }}
             onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}>
-          <div className="card w-full max-w-xs mx-4 p-5 shadow-2xl"
+            <div style={{ width: '100%', maxWidth: 320, background: C.surface, border: `1px solid ${C.borderHi}`, borderRadius: 16, padding: 20, boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}
               onClick={e => e.stopPropagation()}>
-              <p className="text-sm font-semibold dark:text-white text-gray-900 mb-1">Pin message</p>
-              <p className="text-xs dark:text-gray-500 text-gray-500 mb-4">How long should this stay pinned?</p>
-
-              <div className="space-y-2">
+              <p style={{ fontSize: 14, fontWeight: 600, color: C.text1, margin: '0 0 4px' }}>Pin message</p>
+              <p style={{ fontSize: 12, color: C.text3, margin: '0 0 16px' }}>How long should this stay pinned?</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {PRESETS.map(p => (
-                  <button key={p.label}
-                    onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: p.value }))}
-                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
-                      ${pinTimeModal.pin_ttl_minutes === p.value && !isCustom
-                        ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
-                        : 'dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/50 border-gray-200 dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-200 dark:hover:border-surface-4 hover:border-gray-300'}`}>
-                    {p.label}
-                    {p.value && <span className="text-gray-500 text-xs ml-1.5">({Number(p.value) >= 60 ? `${Number(p.value)/60}h` : `${p.value}m`})</span>}
+                  <button key={p.label} onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: p.value }))}
+                    style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 10, fontSize: 13, border: `1px solid ${pinTimeModal.pin_ttl_minutes === p.value && !isCustom ? C.primary : C.border}`, background: pinTimeModal.pin_ttl_minutes === p.value && !isCustom ? C.primaryLo : C.raised, color: pinTimeModal.pin_ttl_minutes === p.value && !isCustom ? C.primaryHi : C.text2, cursor: 'pointer', transition: 'all 0.15s' }}>
+                    {p.label}{p.value && <span style={{ color: C.text3, fontSize: 11, marginLeft: 8 }}>({Number(p.value) >= 60 ? `${Number(p.value)/60}h` : `${p.value}m`})</span>}
                   </button>
                 ))}
-
-                {/* Custom option */}
-                  <button
-                  onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: isCustom ? s.pin_ttl_minutes : '30' }))}
-                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition border
-                    ${isCustom
-                      ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
-                      : 'dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/50 border-gray-200 dark:text-gray-300 text-gray-700 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
+                <button onClick={() => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: isCustom ? s.pin_ttl_minutes : '30' }))}
+                  style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 10, fontSize: 13, border: `1px solid ${isCustom ? C.primary : C.border}`, background: isCustom ? C.primaryLo : C.raised, color: isCustom ? C.primaryHi : C.text2, cursor: 'pointer', transition: 'all 0.15s' }}>
                   Custom time
                 </button>
-
                 {isCustom && (
-                  <div className="flex items-center gap-2 px-1">
-                    <input
-                      autoFocus
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={pinTimeModal.pin_ttl_minutes}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input autoFocus type="number" min="1" step="1" value={pinTimeModal.pin_ttl_minutes}
                       onChange={e => setPinTimeModal(s => ({ ...s, pin_ttl_minutes: e.target.value }))}
-                      className="flex-1 dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-300 border rounded-lg px-3 py-2
-                        text-sm dark:text-white text-gray-900 focus:outline-none focus:border-indigo-500"
-                      placeholder="Minutes"
-                    />
-                    <span className="text-xs dark:text-gray-500 text-gray-400 flex-shrink-0">minutes</span>
+                      style={{ flex: 1, background: C.raised, border: `1px solid ${C.borderHi}`, borderRadius: 8, padding: '8px 12px', fontSize: 13, color: C.text1, outline: 'none', fontFamily: 'Inter, sans-serif' }}
+                      placeholder="Minutes" />
+                    <span style={{ fontSize: 12, color: C.text3 }}>min</span>
                   </div>
                 )}
               </div>
-
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}
-                  className="flex-1 py-2 rounded-xl dark:bg-surface-3 bg-gray-100 dark:hover:bg-surface-4 hover:bg-gray-200 dark:text-gray-300 text-gray-700 text-sm transition">
+              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                <button onClick={() => setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' })}
+                  style={{ flex: 1, padding: '10px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, color: C.text2, fontSize: 13, cursor: 'pointer' }}>
                   Cancel
                 </button>
-                <button
-                  onClick={async () => {
-                    const { messageId, pin_ttl_minutes, content } = pinTimeModal;
-                    setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' });
-                    await handlePinWithTime(messageId, pin_ttl_minutes, content);
-                    scrollToMessage(messageId);
-                  }}
-                  className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition"
-                  disabled={!pinTimeModal.messageId}>
+                <button onClick={async () => { const { messageId, pin_ttl_minutes, content } = pinTimeModal; setPinTimeModal({ open: false, messageId: null, pin_ttl_minutes: '', content: '' }); await handlePinWithTime(messageId, pin_ttl_minutes, content); scrollToMessage(messageId); }}
+                  disabled={!pinTimeModal.messageId}
+                  style={{ flex: 1, padding: '10px', borderRadius: 10, background: C.primary, border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
                   Pin
                 </button>
               </div>
@@ -728,508 +461,391 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         );
       })()}
 
-      {/* Admins only banner */}
+      {/* -- Admins-only banner -- */}
       {adminsOnly && (
-        <div style={{ margin: '10px 16px 0', padding: '8px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(165,180,252,0.7)', flexShrink: 0 }}>
-            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-          </svg>
-          <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(165,180,252,0.8)' }}>Admins only — only admins can send messages</span>
+        <div style={{ margin: '10px 16px 0', padding: '8px 14px', borderRadius: 8, background: C.primaryLo, border: `1px solid ${C.primary}30`, display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill={C.primaryHi}><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+          <span style={{ fontSize: 12, fontWeight: 300, color: C.primaryHi }}>Admins only � only admins can send messages</span>
         </div>
       )}
 
-      {/* Connection status */}
+      {/* -- Reconnecting banner -- */}
       {socket && !connected && (
-        <div className="mx-4 mt-2 px-4 py-2 dark:bg-surface-3/60 bg-gray-100 dark:border-surface-4/60 border-gray-200 border rounded-lg dark:text-gray-300 text-gray-600 text-xs text-center flex-shrink-0">
-          Reconnecting... messages may be delayed
+        <div style={{ margin: '8px 16px 0', padding: '8px 14px', borderRadius: 8, background: C.raised, border: `1px solid ${C.border}`, color: C.text3, fontSize: 12, textAlign: 'center', flexShrink: 0 }}>
+          Reconnecting� messages may be delayed
         </div>
       )}
 
-      {/* Pinned messages banner */}
-      {pinnedMsgs.length > 0 && (
-        <div className="mx-4 mt-2 flex-shrink-0">
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => scrollToMessage(pinnedMsgs[0]?.id)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') scrollToMessage(pinnedMsgs[0]?.id);
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 dark:bg-surface-2/60 bg-gray-100 dark:border-surface-3/70 border-gray-200 border rounded-lg text-indigo-400 text-xs dark:hover:bg-surface-2/80 hover:bg-gray-200 transition cursor-pointer"
-          >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
-            </svg>
-            <span className="flex-1 min-w-0 text-left">
-              <span className="block truncate">
-                {pinnedMsgs[0]?.content}
-              </span>
-              {pinnedMsgs[0]?.pin_time && (
-                <span className="block text-[11px] dark:text-gray-400 text-gray-500 mt-0.5">
-                  {formatPinLabel(pinnedMsgs[0]?.pin_time)}
-                </span>
-              )}
-            </span>
-            <span className="text-indigo-400/60 flex-shrink-0">{pinnedMsgs.length} pinned</span>
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowPinned(v => !v); }}
-              className="p-1 rounded dark:hover:bg-surface-3/60 hover:bg-gray-200/60 transition flex-shrink-0"
-              title={showPinned ? 'Hide pinned' : 'Show pinned'}
-            >
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"
-                className={`transition-transform ${showPinned ? 'rotate-180' : ''}`}>
-                <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-              </svg>
-            </button>
-          </div>
-          {showPinned && (
-            <div className="mt-1 dark:bg-surface-2 bg-white dark:border-surface-3 border-gray-200 border rounded-lg divide-y dark:divide-surface-3 divide-gray-100 overflow-hidden">
-              {pinnedMsgs.map(pm => (
-                <div
-                  key={pm.id}
-                  className="px-3 py-2 text-xs dark:text-gray-300 text-gray-700 flex items-start gap-2 dark:hover:bg-surface-3/20 hover:bg-gray-50 transition cursor-pointer"
-                  onClick={() => scrollToMessage(pm.id)}
-                >
-                  <span className="flex-1 min-w-0 leading-relaxed">
-                    <span className="block truncate">{pm.content}</span>
-                    {pm.pin_time && (
-                      <span className="block text-[11px] dark:text-gray-500 text-gray-400 mt-0.5">
-                        {formatPinLabel(pm.pin_time)}
-                      </span>
-                    )}
-                  </span>
-                  {myRole === 'admin' && (
-                    <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => {
-                          const remaining = getRemainingMinutes(pm.pin_time);
-                          setPinTimeModal({ open: true, messageId: pm.id, pin_ttl_minutes: remaining === null ? '' : String(remaining), content: pm.content });
-                        }}
-                        className="dark:text-gray-300 text-gray-700 dark:hover:text-white hover:text-gray-900 transition text-[11px] px-2 py-1 rounded dark:bg-surface-3/50 bg-gray-100 dark:border-surface-4 border-gray-200 border"
-                        title="Set expiry duration">
-                        Set
-                      </button>
-                      <button
-                        onClick={() => handleUnpinMessage(pm.id)}
-                        className="dark:text-gray-600 text-gray-400 hover:text-red-400 transition flex-shrink-0 mt-0.5"
-                        title="Unpin">
-                        ✕
-                      </button>
+      {/* ── Outer row: [left col] [right sidebar] — both span full height ── */}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+
+        {/* ── Left column: timeline + input ── */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* Message timeline */}
+          <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div ref={scrollContainerRef} onScroll={handleScroll}
+              style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+              {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '8px 0' }}>
+                  {[1,2,3].map(i => (
+                    <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 12, background: C.raised, flexShrink: 0 }}/>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
+                        <div style={{ height: 10, background: C.raised, borderRadius: 6, width: 90 }}/>
+                        <div style={{ height: 38, background: C.raised, borderRadius: 10, width: '55%' }}/>
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Search bar */}
-      {showSearch && (
-        <div className="mx-4 mt-2 flex-shrink-0">
-          <div className="flex items-center gap-2 dark:bg-surface-2 bg-white dark:border-surface-3 border-gray-200 border rounded-lg px-3 py-2">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="#6b7280">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
-            </svg>
-            <input
-              autoFocus
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search messages..."
-              className="flex-1 bg-transparent text-sm dark:text-white text-gray-900 dark:placeholder-gray-500 placeholder-gray-400 outline-none"
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')}
-                className="dark:text-gray-600 text-gray-400 dark:hover:text-gray-400 hover:text-gray-600 transition text-xs">✕</button>
-            )}
-            <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-              className="dark:text-gray-600 text-gray-400 dark:hover:text-gray-400 hover:text-gray-600 transition text-xs ml-1">Close</button>
-          </div>
-          {searchQuery && (
-            <p className="text-xs dark:text-gray-600 text-gray-400 mt-1 px-1">
-              {timeline.filter(m => m._kind !== 'system').length} result{timeline.filter(m => m._kind !== 'system').length !== 1 ? 's' : ''}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Timeline + scroll button */}
-      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-        <div ref={scrollContainerRef} onScroll={handleScroll} className="overflow-y-auto px-4 py-3 space-y-2" style={{ background: 'transparent', height: '100%' }}>
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="flex gap-3 items-start">
-                <div className="w-7 h-7 rounded-full dark:bg-surface-3 bg-gray-200 animate-pulse flex-shrink-0"/>
-                <div className="space-y-2 flex-1">
-                  <div className="h-3 dark:bg-surface-3 bg-gray-200 rounded animate-pulse w-20"/>
-                  <div className="h-10 dark:bg-surface-3 bg-gray-200 rounded-xl animate-pulse w-48"/>
+              ) : timeline.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                  <p style={{ color: C.text3, fontSize: 13, fontWeight: 300 }}>No messages yet. Say hello!</p>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : timeline.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="dark:text-gray-600 text-gray-400 text-sm">No messages yet. Say hello!</p>
-          </div>
-        ) : (
-          timeline.flatMap((item, i) => {
-            const label = item.created_at ? getDateLabel(item.created_at) : null;
-            const prevLabel = i > 0 && timeline[i-1].created_at ? getDateLabel(timeline[i-1].created_at) : null;
-            const showSep = label && label !== prevLabel;
-            const els = [];
-            if (showSep) els.push(
-              <div key={`sep-${item.id}`} className="flex items-center gap-3 py-2">
-                <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
-                <span className="chat-system-msg text-xs dark:text-gray-500 text-gray-400 dark:bg-surface-1 bg-white px-3 py-1 rounded-full dark:border-surface-3/40 border-gray-200 border select-none flex-shrink-0">
-                  {label}
-                </span>
-                <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
-              </div>
-            );
+              ) : (
+                timeline.flatMap((item, i) => {
+                  const label = item.created_at ? getDateLabel(item.created_at) : null;
+                  const prevLabel = i > 0 && timeline[i-1].created_at ? getDateLabel(timeline[i-1].created_at) : null;
+                  const showSep = label && label !== prevLabel;
+                  const els = [];
 
-            // ── System message ──────────────────────────────
-            if (item._kind === 'system') {
-              els.push(
-                <div key={item.id} className="flex items-center gap-3 py-1">
-                  <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
-                  <span className={`chat-system-msg text-xs px-3 py-1 rounded-full flex-shrink-0 select-none
-                    ${item.subtype === 'kick'
-                      ? 'text-red-400/70 bg-red-500/5 border border-red-500/10'
-                      : item.subtype === 'leave'
-                      ? 'text-orange-400/70 bg-orange-500/5 border border-orange-500/10'
-                      : 'dark:text-gray-600 text-gray-400 dark:bg-surface-3/50 bg-gray-100 dark:border-surface-4/30 border-gray-200 border'}`}>
-                    {item.content}
-                  </span>
-                  <div className="flex-1 h-px dark:bg-surface-3 bg-gray-200"/>
-                </div>
-              );
-              return els;
-            }
+                  if (showSep) els.push(
+                    <div key={`sep-${item.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0' }}>
+                      <div style={{ flex: 1, height: 1, background: C.border }}/>
+                      <span style={{ fontSize: 11, color: C.text3, background: C.bg, padding: '3px 14px', borderRadius: 20, border: `1px solid ${C.border}`, flexShrink: 0, fontWeight: 400, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{label}</span>
+                      <div style={{ flex: 1, height: 1, background: C.border }}/>
+                    </div>
+                  );
 
-            // ── Regular message ─────────────────────────────
-            const sender  = item.users || item.sender;
-            const isOwn   = sender?.id === user?.id;
-            const roll    = sender?.roll_no;
-            const rollSuffix = roll ? ` · ${String(roll).slice(-3)}` : '';
-            const senderName = sender?.name
-              ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}`
-              : 'Unknown';
-            const canDelete = isOwn || myRole === 'admin';
-            const canEdit   = isOwn && item.type !== 'system';
+                  if (item._kind === 'system') {
+                    els.push(
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0' }}>
+                        <div style={{ flex: 1, height: 1, background: C.border }}/>
+                        <span style={{ fontSize: 11, color: item.subtype === 'kick' ? C.danger : item.subtype === 'leave' ? C.tertiary : C.text3, background: C.bg, padding: '2px 12px', borderRadius: 20, border: `1px solid ${item.subtype === 'kick' ? C.dangerLo : item.subtype === 'leave' ? C.tertiaryLo : C.border}`, flexShrink: 0 }}>
+                          {item.content}
+                        </span>
+                        <div style={{ flex: 1, height: 1, background: C.border }}/>
+                      </div>
+                    );
+                    return els;
+                  }
 
-            // Role-based name color
-            const nameColor = sender?.role === 'admin'
-              ? 'text-neon-yellow'
-              : sender?.role === 'teacher'
-              ? 'text-neon-cyan'
-              : isOwn
-              ? 'text-indigo-400'
-              : 'text-green-400';
+                  const sender  = item.users || item.sender;
+                  const isOwn   = sender?.id === user?.id;
+                  const roll    = sender?.roll_no;
+                  const rollSuffix = roll ? ` · ${String(roll).slice(-3)}` : '';
+                  const senderName = sender?.name ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}` : 'Unknown';
+                  const canDelete = isOwn || myRole === 'admin';
+                  const canEdit   = isOwn && item.type !== 'system';
+                  const reactionMap = {};
+                  (item.message_reactions || []).forEach(r => { if (!reactionMap[r.emoji]) reactionMap[r.emoji] = []; reactionMap[r.emoji].push(r.user_id); });
+                  const prevItem   = i > 0 ? timeline[i - 1] : null;
+                  const prevSender = prevItem?._kind !== 'system' ? (prevItem?.users || prevItem?.sender) : null;
+                  const showSenderName = !prevSender || prevSender.id !== sender?.id;
+                  const nameColor = sender?.role === 'admin' ? C.tertiary : sender?.role === 'teacher' ? C.primaryHi : isOwn ? C.secondary : C.text2;
 
-            // Group reactions: { emoji -> [userIds] }
-            const reactionMap = {};
-            (item.message_reactions || []).forEach(r => {
-              if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
-              reactionMap[r.emoji].push(r.user_id);
-            });
+                  els.push(
+                    <div key={item.id} id={`message-${item.id}`}
+                      ref={(el) => { if (el) messageRefs.current.set(item.id, el); else messageRefs.current.delete(item.id); }}
+                      className="group/msg"
+                      style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '5px 8px', borderRadius: 10, transition: 'background 0.12s', marginLeft: -8, marginRight: -8 }}
+                      onMouseEnter={e => e.currentTarget.style.background = `${C.primary}08`}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-            // Show sender name only when sender changes
-            const prevItem = i > 0 ? timeline[i - 1] : null;
-            const prevSender = prevItem?._kind !== 'system' ? (prevItem?.users || prevItem?.sender) : null;
-            const showSenderName = !prevSender || prevSender.id !== sender?.id;
+                      <div style={{ flexShrink: 0, width: 38, paddingTop: 2 }}>
+                        {showSenderName ? (
+                          <button onClick={() => onViewProfile?.(sender?.id)}
+                            style={{ width: 38, height: 38, borderRadius: 12, background: avatarBg(sender?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0, letterSpacing: '0.02em' }}>
+                            {initials(sender?.name)}
+                          </button>
+                        ) : <div style={{ width: 38 }} />}
+                      </div>
 
-            els.push(
-              <div
-                key={item.id}
-                id={`message-${item.id}`}
-                ref={(el) => {
-                  if (el) messageRefs.current.set(item.id, el);
-                  else messageRefs.current.delete(item.id);
-                }}
-                className={`flex gap-2.5 items-start group/msg ${isOwn ? 'flex-row-reverse' : ''}`}
-                style={{ maxWidth: '100%' }}
-              >
-                {/* Avatar */}
-                <div className="flex-shrink-0 w-8 mt-0.5">
-                  {showSenderName ? (
-                    <button
-                      onClick={() => onViewProfile?.(sender?.id)}
-                      className={`chat-avatar w-8 h-8 rounded-full flex items-center justify-center
-                        text-xs font-semibold text-white
-                        ${avatarColor(sender?.name)} hover:ring-2 hover:ring-white/20 transition`}>
-                      {initials(sender?.name)}
-                    </button>
-                  ) : null}
-                </div>
+                      <div style={{ flex: 1, minWidth: 0, maxWidth: 620 }}>
+                        {showSenderName && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }} className="group/header">
+                            <span style={{ fontSize: 13, fontWeight: 600, color: nameColor }}>{senderName}</span>
+                            {sender?.role === 'teacher' && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: C.primaryLo, color: C.primaryHi, textTransform: 'uppercase', letterSpacing: '0.07em', border: `1px solid ${C.primary}30` }}>INSTRUCTOR</span>}
+                            {sender?.role === 'admin' && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: C.tertiaryLo, color: C.tertiary, textTransform: 'uppercase', letterSpacing: '0.07em', border: `1px solid ${C.tertiary}30` }}>ADMIN</span>}
+                            <span style={{ fontSize: 11, color: C.text3, fontWeight: 300 }}>{formatTime(item.created_at)}</span>
+                            {editingId !== item.id && (
+                              <div className="opacity-0 group-hover/msg:opacity-100 transition" style={{ marginLeft: 2, position: 'relative' }}>
+                                <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
+                                  style={{ padding: '3px 6px', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, transition: 'all 0.1s', display: 'flex', alignItems: 'center' }}
+                                  onMouseEnter={e => { e.currentTarget.style.background = C.raised; e.currentTarget.style.color = C.text1; }}
+                                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text3; }}>
+                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                                </button>
+                                {openMenuId === item.id && menuRect && (
+                                  <MessageMenu anchorRect={menuRect} isOwn={isOwn} onClose={() => setOpenMenuId(null)}
+                                    onReact={(e) => handleReact(item.id, e)}
+                                    onReply={(!adminsOnly || myRole === 'admin') ? () => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); } : undefined}
+                                    onPrivateReply={(!adminsOnly || myRole === 'admin') && !isOwn ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); } : undefined}
+                                    onPin={() => { if (pinnedMsgs.find(p => p.id === item.id)) handleUnpinMessage(item.id); else setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '', content: item.content }); }}
+                                    pinned={!!pinnedMsgs.find(p => p.id === item.id)} pinDisabled={false}
+                                    onEdit={(!adminsOnly || myRole === 'admin') && canEdit ? () => { setEditingId(item.id); setEditText(item.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1') ?? ''); } : undefined}
+                                    onDelete={(!adminsOnly || myRole === 'admin') && canDelete ? () => handleDeleteMessage(item.id) : undefined}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                {/* Bubble group */}
-                <div className={`flex flex-col min-w-0 ${isOwn ? 'items-end' : 'items-start'}`} style={{ maxWidth: 'min(65%, 480px)', flex: '1 1 0', minWidth: 0 }}>
-
-                  {/* Sender name — only for others, only on first of a run */}
-                  {!isOwn && showSenderName && (
-                    <span className={`chat-sender-name text-xs font-semibold mb-1 ${nameColor}`}>
-                      {senderName}
-                    </span>
-                  )}
-
-                  {/* Bubble + actions */}
-                  <div className={`flex items-end gap-1.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                    {(
-                      <div className={`chat-bubble px-3 py-2 rounded-xl text-sm leading-relaxed break-words
-                        ${isOwn
-                          ? 'bg-gradient-to-br from-indigo-600 to-brand-700 text-white'
-                          : 'dark:bg-surface-3 bg-gray-200 dark:text-gray-100 text-gray-900'}
-                        ${highlightedMessageId === item.id ? 'ring-2 ring-indigo-400/70 shadow-[0_0_0_3px_rgba(168,85,247,0.15)]' : ''}`}>
-                        {/* Replied-to preview */}
                         {item.replied_message && (
-                          <button
-                            onClick={() => scrollToMessage(item.replied_message.id)}
-                            className={`block w-full text-left mb-2 px-2 py-1.5 rounded-lg border-l-2 text-xs
-                              ${isOwn
-                                ? 'bg-brand-700/50 border-indigo-300/50 text-brand-200'
-                                : 'dark:bg-surface-4/60 bg-gray-200/60 dark:border-gray-500 border-gray-300 dark:text-gray-300 text-gray-600'}`}>
-                            <span className="font-medium block truncate">
-                              {item.replied_message.users?.name || 'Unknown'}
-                            </span>
-                            <span className="opacity-70 truncate block">
-                              {item.replied_message.content?.slice(0, 80)}{item.replied_message.content?.length > 80 ? '…' : ''}
-                            </span>
+                          <button onClick={() => scrollToMessage(item.replied_message.id)}
+                            style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 6, padding: '6px 10px', borderRadius: 8, borderLeft: `3px solid ${C.primary}`, background: C.primaryLo, border: 'none', cursor: 'pointer' }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: C.primaryHi, display: 'block' }}>{item.replied_message.users?.name || 'Unknown'}</span>
+                            <span style={{ fontSize: 11, color: C.text3, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.replied_message.content?.slice(0, 80)}</span>
                           </button>
                         )}
-                        <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
-                        {item.edited && <span className="text-xs opacity-40 ml-1">(edited)</span>}
-                        {item.files && <FilePreview file={item.files} />}
-                        {/* Timestamp row — always on its own line, right-aligned */}
-                        <div className={`flex justify-end mt-0.5 -mb-0.5
-                          ${isOwn ? 'text-brand-200/70' : 'dark:text-gray-500 text-gray-400'}`}>
-                          <span className="chat-timestamp text-[10px] leading-none select-none">
-                            {formatTime(item.created_at)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Three-dot menu */}
-                    {editingId !== item.id && (
-                      <div className="relative opacity-0 group-hover/msg:opacity-100 transition flex-shrink-0">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
-                          className="p-1.5 rounded-lg dark:text-gray-600 text-gray-400 dark:hover:text-gray-300 hover:text-gray-600 dark:hover:bg-surface-3 hover:bg-gray-200 transition"
-                          title="Message actions">
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                          </svg>
-                        </button>
-                        {openMenuId === item.id && menuRect && (
-                          <MessageMenu
-                            anchorRect={menuRect}
-                            isOwn={isOwn}
-                            onClose={() => setOpenMenuId(null)}
-                            onReact={(e) => handleReact(item.id, e)}
-                            onReply={(!adminsOnly || myRole === 'admin')
-                              ? () => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); }
-                              : undefined}
-                            onPrivateReply={(!adminsOnly || myRole === 'admin') && !isOwn
-                              ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); }
-                              : undefined}
-                            onEdit={(!adminsOnly || myRole === 'admin') && canEdit
-                              ? () => { setEditingId(item.id); setEditText(item.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1') ?? ''); }
-                              : undefined}
-                            onDelete={(!adminsOnly || myRole === 'admin') && canDelete
-                              ? () => handleDeleteMessage(item.id)
-                              : undefined}
-                          />
+                        <div style={{ fontSize: 13, fontWeight: 300, color: C.text1, lineHeight: 1.65, wordBreak: 'break-words', maxWidth: 560 }}>
+                          <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
+                          {item.edited && <span style={{ fontSize: 10, color: C.text3, marginLeft: 6 }}>(edited)</span>}
+                        </div>
+
+                        {item.files && <FilePreview file={item.files} />}
+
+                        {Object.keys(reactionMap).length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
+                            {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                              <button key={emoji} onClick={() => handleReact(item.id, emoji)}
+                                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 12, border: `1px solid ${userIds.includes(user?.id) ? C.primary + '60' : C.border}`, background: userIds.includes(user?.id) ? C.primaryLo : C.raised, color: userIds.includes(user?.id) ? C.primaryHi : C.text2, cursor: 'pointer', transition: 'all 0.1s' }}>
+                                <span>{emoji}</span><span style={{ fontSize: 11 }}>{userIds.length}</span>
+                              </button>
+                            ))}
+                          </div>
                         )}
+                      </div>
+                    </div>
+                  );
+                  return els;
+                })
+              )}
+              <div ref={bottomRef}/>
+            </div>
+
+            {showScrollBtn && (
+              <button onClick={scrollToBottom}
+                style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 10, width: 34, height: 34, borderRadius: '50%', background: C.surface, border: `1px solid ${C.borderHi}`, color: C.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = C.raised}
+                onMouseLeave={e => e.currentTarget.style.background = C.surface}>
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>
+              </button>
+            )}
+          </div>
+          {/* end timeline */}
+
+          {/* ── Input area ── */}
+          <div style={{ padding: '12px 16px 16px', borderTop: `1px solid ${C.border}`, flexShrink: 0, background: C.bg }}>
+
+            {(replyTo || privateReply) && (() => {
+              const r = replyTo || privateReply;
+              const isPrivate = !!privateReply;
+              const displayContent = (r.content || '').replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1').slice(0, 60);
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 12px', borderRadius: 9, borderLeft: `3px solid ${C.primary}`, background: C.surface }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: C.primaryHi }}>{isPrivate ? '↩ Private reply to ' : '↩ Replying to '}</span>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: C.text2 }}>{r.senderName}</span>
+                    <p style={{ fontSize: 11, color: C.text3, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? '…' : ''}</p>
+                  </div>
+                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
+                </div>
+              );
+            })()}
+
+            {fileRefs.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                {fileRefs.map(f => (
+                  <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: C.raised, border: `1px solid ${C.border}`, fontSize: 11, color: C.text2 }}>
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill={C.text3}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
+                    <span style={{ maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.filename}</span>
+                    <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 1, padding: 0 }}
+                      onMouseEnter={e => e.currentTarget.style.color = C.danger}
+                      onMouseLeave={e => e.currentTarget.style.color = C.text3}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {canSend ? (
+              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'visible', transition: 'border-color 0.15s', position: 'relative' }}
+                onFocusCapture={e => e.currentTarget.style.borderColor = `${C.primary}70`}
+                onBlurCapture={e => e.currentTarget.style.borderColor = C.border}>
+
+                {showToolbar && (
+                  <div style={{ padding: '8px 12px 0', borderBottom: `1px solid ${C.border}` }}>
+                    <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id}
+                      onFilePick={file => setFileRefs(prev => prev.find(f => f.id === file.id) ? prev : [...prev, file])} />
+                  </div>
+                )}
+
+                {mentionQuery !== null && filteredMembers.length > 0 && (
+                  <div ref={mentionListRef}
+                    style={{ position: 'absolute', bottom: '100%', left: 0, width: 240, zIndex: 50, background: C.surface, border: `1px solid ${C.borderHi}`, borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.7)', marginBottom: 6 }}>
+                    {filteredMembers.map((m, i) => (
+                      <button key={m.id} onMouseDown={e => { e.preventDefault(); insertMention(m); }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: i === mentionIndex ? C.primaryLo : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}>
+                        <span style={{ width: 26, height: 26, borderRadius: 8, background: avatarBg(m.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{initials(m.name)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 400, color: C.text1, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+                        <span style={{ fontSize: 10, color: C.text3, textTransform: 'capitalize', flexShrink: 0 }}>{m.role}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <button onClick={() => setShowToolbar(v => !v)} title="Attach / Format"
+                    style={{ flexShrink: 0, width: 44, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? C.primary : C.text3, transition: 'color 0.15s' }}
+                    onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = C.text2; }}
+                    onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = C.text3; }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+                  </button>
+                  <textarea ref={textareaRef} value={text} onChange={handleTextChange} onKeyDown={handleKeyDown} rows={1}
+                    placeholder={connected ? 'Share your thoughts… use @ to mention' : 'Reconnecting…'}
+                    style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: C.text1, resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }}
+                    onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
+                    disabled={!connected} />
+                  <button style={{ flexShrink: 0, width: 36, alignSelf: 'stretch', border: 'none', background: 'none', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, opacity: 0.4 }}>😊</button>
+                  <div style={{ padding: '8px 8px 8px 0', flexShrink: 0, display: 'flex', alignItems: 'flex-end' }}>
+                    <button onClick={privateReply ? handlePrivateReply : sendMessage}
+                      disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
+                      style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (text.trim() || fileRefs.length > 0) ? C.primary : C.raised, color: '#fff', transition: 'all 0.15s', flexShrink: 0 }}
+                      onMouseEnter={e => { if (text.trim() || fileRefs.length > 0) e.currentTarget.style.background = C.primaryHi; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = (text.trim() || fileRefs.length > 0) ? C.primary : C.raised; }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '12px', fontSize: 12, fontWeight: 300, color: C.text3, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                Only admins can send messages in this group right now
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 6, paddingLeft: 4 }}>
+              {Object.keys(typingUsers).length > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ display: 'flex', gap: 3 }}>
+                    {[0,150,300].map(d => <span key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: C.primary, display: 'inline-block', animation: 'bounce 1s infinite', animationDelay: `${d}ms` }}/>)}
+                  </div>
+                  <span style={{ fontSize: 11, color: C.text3 }}>{Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} typing</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 14 }}>
+                  <span style={{ fontSize: 10, color: C.text3 }}>↵ Return to send</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>⇧↵ New line</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>@ Mention</span>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* end input */}
+
+        </div>
+        {/* end left column */}
+
+        {/* ── Right sidebar — full height ── */}
+        <div style={{ width: 210, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: C.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* PINNED NOTES */}
+          <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill={C.primary}><path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/></svg>
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Pinned Notes</span>
+            </div>
+            {pinnedMsgs.length === 0 ? (
+              <p style={{ fontSize: 12, color: C.text3, margin: 0, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.5 }}>No pinned messages</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 200, overflowY: 'auto' }}>
+                {pinnedMsgs.map(pm => (
+                  <div key={pm.id} onClick={() => scrollToMessage(pm.id)}
+                    style={{ padding: '10px 12px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.primary}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.borderLeftColor = C.primary; }}>
+                    <p style={{ fontSize: 12, color: C.text1, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4, fontWeight: 300, fontStyle: 'italic' }}>
+                      "{pm.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').slice(0, 60)}"
+                    </p>
+                    {pm.pin_time && <p style={{ fontSize: 10, color: C.tertiary, margin: '4px 0 0', fontWeight: 400 }}>{formatPinLabel(pm.pin_time)}</p>}
+                    {myRole === 'admin' && (
+                      <div style={{ display: 'flex', gap: 5, marginTop: 7 }} onClick={e => e.stopPropagation()}>
+                        <button onClick={() => { const r = getRemainingMinutes(pm.pin_time); setPinTimeModal({ open: true, messageId: pm.id, pin_ttl_minutes: r === null ? '' : String(r), content: pm.content }); }}
+                          style={{ fontSize: 10, padding: '2px 8px', borderRadius: 5, background: C.primaryLo, border: `1px solid ${C.primary}30`, color: C.primaryHi, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Expiry</button>
+                        <button onClick={() => handleUnpinMessage(pm.id)}
+                          style={{ fontSize: 10, padding: '2px 8px', borderRadius: 5, background: C.dangerLo, border: `1px solid ${C.danger}30`, color: C.danger, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Unpin</button>
                       </div>
                     )}
                   </div>
-
-                  {/* Reactions */}
-                  {Object.keys(reactionMap).length > 0 && (
-                    <div className={`flex flex-wrap gap-1 mt-1 ${isOwn ? 'justify-end' : ''}`}>
-                      {Object.entries(reactionMap).map(([emoji, userIds]) => (
-                        <button key={emoji}
-                          onClick={() => handleReact(item.id, emoji)}
-                          className={`chat-reaction flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition
-                            ${userIds.includes(user?.id)
-                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                              : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-600 dark:hover:border-surface-4 hover:border-gray-300'}`}>
-                          <span>{emoji}</span>
-                          <span>{userIds.length}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-            return els;
-          })
-        )}
-        <div ref={bottomRef}/>
-        </div>
-
-        {showScrollBtn && (
-          <button
-            onClick={scrollToBottom}
-            style={{
-              position: 'absolute', bottom: 16, right: 16, zIndex: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-              background: 'var(--bg-raised)', border: '1px solid var(--border-color)',
-              color: 'var(--text-1)', cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'background 0.15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-raised)'}
-            title="Scroll to bottom"
-          >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-            </svg>
-          </button>
-        )}
-      </div>
-
-      {/* Typing indicator */}
-      {Object.keys(typingUsers).length > 0 && (
-        <div className="px-5 pb-1 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-0.5">
-              <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
-              <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
-              <span className="w-1.5 h-1.5 dark:bg-gray-500 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
-            </div>
-            <span className="text-xs dark:text-gray-500 text-gray-400">
-              {Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} typing
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Input area */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', flexShrink: 0, background: 'var(--bg-void)' }}>
-
-        {/* Reply / private reply banner */}
-        {(replyTo || privateReply) && (() => {
-          const r = replyTo || privateReply;
-          const isPrivate = !!privateReply;
-          const displayContent = (r.content || '')
-            .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
-            .replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1')
-            .slice(0, 60);
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(99,102,241,0.5)', background: isPrivate ? 'rgba(99,102,241,0.08)' : 'var(--bg-raised)' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(99,102,241,0.8)' }}>{isPrivate ? 'Private reply to ' : '↩ Replying to '}</span>
-                <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)' }}>{r.senderName}</span>
-                <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? '…' : ''}</span>
-              </div>
-              <button onClick={() => { setReplyTo(null); setPrivateReply(null); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
-            </div>
-          );
-        })()}
-
-        {/* Attached file pills */}
-        {fileRefs.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-            {fileRefs.map(f => (
-              <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', fontSize: 11, fontWeight: 300, color: 'var(--text-2)' }}>
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
-                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
-                </svg>
-                <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.filename}</span>
-                <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 1, padding: 0, marginLeft: 2 }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>×</button>
-              </span>
-            ))}
-          </div>
-        )}
-
-        {canSend ? (
-          <div style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.15s' }}
-            onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'}
-            onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
-
-            {/* Format toolbar — toggled */}
-            {showToolbar && (
-              <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <FormatToolbar textareaRef={textareaRef} setText={setText} groupId={group?.id}
-                  onFilePick={file => setFileRefs(prev => prev.find(f => f.id === file.id) ? prev : [...prev, file])} />
+                ))}
               </div>
             )}
+          </div>
 
-            {/* Mention popover */}
-            <div style={{ position: 'relative' }}>
-              {mentionQuery !== null && filteredMembers.length > 0 && (
-                <div ref={mentionListRef}
-                  style={{ position: 'absolute', bottom: '100%', left: 0, width: 220, zIndex: 50, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', marginBottom: 4 }}>
-                  {filteredMembers.map((m, i) => (
-                    <button key={m.id} onMouseDown={e => { e.preventDefault(); insertMention(m); }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: i === mentionIndex ? 'rgba(99,102,241,0.15)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                      <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
-                        {m.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
-                      </span>
-                      <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-1)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
-                      <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)', textTransform: 'capitalize', flexShrink: 0 }}>{m.role}</span>
-                    </button>
-                  ))}
-                </div>
+          {/* SEARCH IN GROUP */}
+          <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill={C.primary}><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg>
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Search</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.raised, border: `1px solid ${C.border}`, borderRadius: 9, padding: '7px 10px', transition: 'border-color 0.15s' }}
+              onFocusCapture={e => e.currentTarget.style.borderColor = `${C.primary}60`}
+              onBlurCapture={e => e.currentTarget.style.borderColor = C.border}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill={C.text3} style={{ flexShrink: 0 }}><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg>
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search messages…"
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, fontWeight: 300, color: C.text1, fontFamily: 'Inter, sans-serif', minWidth: 0 }}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, padding: 0, flexShrink: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.text1}
+                  onMouseLeave={e => e.currentTarget.style.color = C.text3}>
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
+                </button>
               )}
+            </div>
+            {searchQuery.trim() && (
+              <p style={{ fontSize: 11, color: C.text3, margin: '8px 0 0', fontWeight: 300 }}>
+                {timeline.filter(m => m._kind !== 'system').length} result{timeline.filter(m => m._kind !== 'system').length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
 
-              {/* Single row: toggle | textarea | send */}
-              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                {/* Toolbar toggle */}
-                <button
-                  onClick={() => setShowToolbar(v => !v)}
-                  title="Formatting"
-                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: showToolbar ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.25)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
-                  onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-2)'; }}
-                  onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-3)'; }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M10.121 2.879A3 3 0 0 0 5 5v.585l-2.122 2.122A1 1 0 0 0 3 8.5V10a1 1 0 0 0 1 1h1v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h1a1 1 0 0 0 1-1V8.5a1 1 0 0 0-.293-.707L9 5.585V5a3 3 0 0 0-.879-2.121zM6.5 5a1.5 1.5 0 1 1 3 0v.5H6.5V5z"/>
-                  </svg>
-                </button>
+          {/* SPACER — pushes invite code to bottom */}
+          <div style={{ flex: 1 }} />
 
-                {/* Textarea */}
-                <textarea
-                  ref={textareaRef}
-                  value={text}
-                  onChange={handleTextChange}
-                  onKeyDown={handleKeyDown}
-                  rows={1}
-                  placeholder={connected ? 'Type a message… use @ to mention' : 'Reconnecting…'}
-                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '11px 12px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 44, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
-                  onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
-                  disabled={!connected}
-                />
-
-                {/* Send button */}
-                <button
-                  onClick={privateReply ? handlePrivateReply : sendMessage}
-                  disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
-                  style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: 'none', color: (text.trim() || fileRefs.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)' }}
-                  onMouseEnter={e => { if (text.trim() || fileRefs.length > 0) e.currentTarget.style.color = '#fff'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || fileRefs.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)'; }}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
-                  </svg>
-                </button>
+          {/* INVITE CODE — pinned to bottom */}
+          {isTeacher && group.invite_code && (
+            <div style={{ padding: '14px 16px', borderTop: `1px solid ${C.border}` }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 10px' }}>Invite Code</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 700, color: C.primary, letterSpacing: '0.2em' }}>{group.invite_code}</span>
+                <button onClick={() => navigator.clipboard.writeText(group.invite_code)}
+                  style={{ padding: '5px 12px', borderRadius: 7, background: C.raised, border: `1px solid ${C.borderHi}`, color: C.primaryHi, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.borderHi}
+                  onMouseLeave={e => e.currentTarget.style.background = C.raised}>Copy</button>
               </div>
             </div>
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '10px', fontSize: 12, fontWeight: 300, color: 'var(--text-3)' }}>
-            Only admins can send messages in this group right now
-          </div>
-        )}
+          )}
+          {adminsOnly && (
+            <div style={{ margin: '0 16px 14px', padding: '9px 12px', borderRadius: 9, background: C.tertiaryLo, border: `1px solid ${C.tertiary}30` }}>
+              <p style={{ fontSize: 11, color: C.tertiary, margin: 0, fontWeight: 600 }}>Admins only mode</p>
+              <p style={{ fontSize: 10, color: `${C.tertiary}80`, margin: '2px 0 0', fontWeight: 300 }}>Only admins can send messages</p>
+            </div>
+          )}
+
+        </div>
+        {/* end right sidebar */}
+
       </div>
+      {/* end outer row */}
 
     </div>
   );

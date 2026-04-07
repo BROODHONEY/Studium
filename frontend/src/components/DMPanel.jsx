@@ -207,7 +207,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
       {/* Header */}
-      <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--bg-void)' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #1E1E24', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#0A0A0B' }}>
         <button onClick={() => onViewProfile?.(other?.id)} style={{ position: 'relative', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(other?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff' }}>
             {ini(other?.name)}
@@ -294,95 +294,103 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
               return (
                 <div key={msg.id}>
                   {label && label !== prevLabel && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0' }}>
-                      <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}/>
-                      <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)', padding: '2px 10px', border: '1px solid var(--border-color)', borderRadius: 20 }}>{label}</span>
-                      <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}/>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
+                      <div style={{ flex: 1, height: 1, background: '#1E1E24' }}/>
+                      <span style={{ fontSize: 11, color: '#55556A', background: '#111114', padding: '2px 10px', borderRadius: 20, border: '1px solid #1E1E24' }}>{label}</span>
+                      <div style={{ flex: 1, height: 1, background: '#1E1E24' }}/>
                     </div>
                   )}
                   <div ref={el => { if (el) messageRefs.current[msg.id] = el; }}
-                    style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flexDirection: isOwn ? 'row-reverse' : 'row' }}
-                    className="group/msg">
+                    style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '3px 0', borderRadius: 8, transition: 'background 0.1s' }}
+                    className="group/msg"
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     {/* Avatar */}
-                    <div style={{ width: 28, flexShrink: 0, marginTop: 2 }}>
+                    <div style={{ width: 36, flexShrink: 0, paddingTop: 2 }}>
                       {showAvatar ? (
                         <button onClick={() => onViewProfile?.(isOwn ? user?.id : other?.id)}
-                          style={{ width: 28, height: 28, borderRadius: '50%', background: avatarBg(isOwn ? user?.name : other?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 500, color: '#fff', border: 'none', cursor: 'pointer' }}>
+                          style={{ width: 36, height: 36, borderRadius: 10, background: avatarBg(isOwn ? user?.name : other?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#fff', border: 'none', cursor: 'pointer' }}>
                           {ini(isOwn ? user?.name : other?.name)}
                         </button>
-                      ) : null}
+                      ) : <div style={{ width: 36 }} />}
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 'min(65%, 360px)', flex: '1 1 0', alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, flexDirection: isOwn ? 'row-reverse' : 'row' }}>
-                        {(
-                          <div style={{ padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 300, lineHeight: 1.5, wordBreak: 'break-words', background: isOwn ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', color: isOwn ? 'rgba(255,255,255,0.9)' : 'var(--text-1)' }}>
-                            {(() => {
-                              const pr = parsePrivateReply(msg.content);
-                              if (pr) return (
-                                <>
-                                  <button onClick={() => pr.groupId && onNavigateToGroup?.(pr.groupId)}
-                                    style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, borderRadius: 8, overflow: 'hidden', borderLeft: '3px solid rgba(99,102,241,0.5)', background: isOwn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)', padding: '6px 10px', cursor: 'pointer', border: 'none' }}>
-                                    <p style={{ fontSize: 11, fontWeight: 400, color: isOwn ? 'rgba(199,210,254,0.9)' : 'rgba(99,102,241,0.9)', margin: '0 0 2px' }}>{pr.senderName}{pr.groupName && ` · ${pr.groupName}`}</p>
-                                    <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pr.quoted}</p>
-                                  </button>
-                                  <MessageContent content={pr.message} isOwn={isOwn} />
-                                </>
-                              );
-                              return (
-                                <>
-                                  {msg.replied_message && (
-                                    <button onClick={() => { const el = messageRefs.current[msg.replied_message.id]; el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
-                                      style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(99,102,241,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                      <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(99,102,241,0.8)', display: 'block' }}>{msg.replied_message.sender?.name}</span>
-                                      <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: 200 }}>{msg.replied_message.content}</span>
-                                    </button>
-                                  )}
-                                  <MessageContent content={msg.content} isOwn={isOwn} />
-                                </>
-                              );
-                            })()}
-                            {msg.edited && <span style={{ fontSize: 10, opacity: 0.4, marginLeft: 4 }}>(edited)</span>}
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-                              <span style={{ fontSize: 10, color: isOwn ? 'rgba(199,210,254,0.5)' : 'rgba(255,255,255,0.2)', fontWeight: 300 }}>
-                                {formatTime(msg.created_at)}{isOwn && msg.read && ' · seen'}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        {/* Three-dot menu */}
-                        {!isTemp && (
-                          <div style={{ position: 'relative', flexShrink: 0 }} className="opacity-0 group-hover/msg:opacity-100 transition">
-                            <button onClick={e => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
-                              style={{ padding: 6, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0 }}>
-                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-                            </button>
-                            {openMenuId === msg.id && menuRect && (
-                              <MessageMenu anchorRect={menuRect} isOwn={isOwn} onClose={() => setOpenMenuId(null)}
-                                onReact={e => handleReact(msg.id, e)}
-                                onReply={() => setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.name })}
-                                onEdit={isOwn ? () => { setEditingId(msg.id); setEditText(msg.content); } : undefined}
-                                onPin={() => togglePin(msg.id)}
-                                pinned={pinnedIds.includes(msg.id)}
-                                pinDisabled={!pinnedIds.includes(msg.id) && pinnedIds.length >= PIN_MAX}
-                                onDelete={() => setConfirmDeleteId(msg.id)}/>
-                            )}
-                          </div>
-                        )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* Header */}
+                      {showAvatar && (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 3 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: isOwn ? '#7072AC' : '#9090A8' }}>
+                            {isOwn ? user?.name : other?.name}
+                          </span>
+                          <span style={{ fontSize: 11, color: '#55556A', fontWeight: 300 }}>{formatTime(msg.created_at)}</span>
+                          {isOwn && msg.read && <span style={{ fontSize: 10, color: '#6366F1' }}>· seen</span>}
+                        </div>
+                      )}
+
+                      {/* Message content */}
+                      <div style={{ fontSize: 13, fontWeight: 300, color: '#F0F0F5', lineHeight: 1.6, wordBreak: 'break-words' }}>
+                        {(() => {
+                          const pr = parsePrivateReply(msg.content);
+                          if (pr) return (
+                            <>
+                              <button onClick={() => pr.groupId && onNavigateToGroup?.(pr.groupId)}
+                                style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 6, borderRadius: 6, borderLeft: '3px solid #6366F1', background: 'rgba(99,102,241,0.08)', padding: '6px 10px', cursor: 'pointer', border: 'none' }}>
+                                <p style={{ fontSize: 11, fontWeight: 600, color: '#818cf8', margin: '0 0 2px' }}>{pr.senderName}{pr.groupName && ` · ${pr.groupName}`}</p>
+                                <p style={{ fontSize: 11, color: '#55556A', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pr.quoted}</p>
+                              </button>
+                              <MessageContent content={pr.message} isOwn={isOwn} />
+                            </>
+                          );
+                          return (
+                            <>
+                              {msg.replied_message && (
+                                <button onClick={() => { const el = messageRefs.current[msg.replied_message.id]; el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                                  style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 6, padding: '5px 10px', borderLeft: '3px solid #6366F1', background: 'rgba(99,102,241,0.08)', borderRadius: 6, border: 'none', cursor: 'pointer' }}>
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: '#818cf8', display: 'block' }}>{msg.replied_message.sender?.name}</span>
+                                  <span style={{ fontSize: 11, color: '#55556A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: 240 }}>{msg.replied_message.content}</span>
+                                </button>
+                              )}
+                              <MessageContent content={msg.content} isOwn={isOwn} />
+                            </>
+                          );
+                        })()}
+                        {msg.edited && <span style={{ fontSize: 10, color: '#55556A', marginLeft: 6 }}>(edited)</span>}
                       </div>
 
                       {/* Reactions */}
                       {Object.keys(reactionMap).length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4, justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
                           {Object.entries(reactionMap).map(([emoji, userIds]) => (
                             <button key={emoji} onClick={() => handleReact(msg.id, emoji)}
-                              style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 20, fontSize: 11, fontWeight: 300, border: userIds.includes(user?.id) ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.08)', background: userIds.includes(user?.id) ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.04)', color: userIds.includes(user?.id) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }}>
-                              <span>{emoji}</span><span>{userIds.length}</span>
+                              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 12, border: userIds.includes(user?.id) ? '1px solid rgba(99,102,241,0.5)' : '1px solid #1E1E24', background: userIds.includes(user?.id) ? 'rgba(99,102,241,0.15)' : '#16161A', color: userIds.includes(user?.id) ? '#818cf8' : '#9090A8', cursor: 'pointer' }}>
+                              <span>{emoji}</span><span style={{ fontSize: 11 }}>{userIds.length}</span>
                             </button>
                           ))}
                         </div>
                       )}
                     </div>
+
+                    {/* Three-dot menu */}
+                    {!isTemp && (
+                      <div style={{ position: 'relative', flexShrink: 0, paddingTop: 2 }} className="opacity-0 group-hover/msg:opacity-100 transition">
+                        <button onClick={e => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === msg.id ? null : msg.id); }}
+                          style={{ padding: '4px 6px', borderRadius: 6, background: '#16161A', border: '1px solid #1E1E24', cursor: 'pointer', color: '#9090A8', lineHeight: 0 }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#1E1E24'; e.currentTarget.style.color = '#F0F0F5'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#16161A'; e.currentTarget.style.color = '#9090A8'; }}>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                        </button>
+                        {openMenuId === msg.id && menuRect && (
+                          <MessageMenu anchorRect={menuRect} isOwn={isOwn} onClose={() => setOpenMenuId(null)}
+                            onReact={e => handleReact(msg.id, e)}
+                            onReply={() => setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.name })}
+                            onEdit={isOwn ? () => { setEditingId(msg.id); setEditText(msg.content); } : undefined}
+                            onPin={() => togglePin(msg.id)}
+                            pinned={pinnedIds.includes(msg.id)}
+                            pinDisabled={!pinnedIds.includes(msg.id) && pinnedIds.length >= PIN_MAX}
+                            onDelete={() => setConfirmDeleteId(msg.id)}/>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -416,84 +424,60 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       </div>
 
       {/* Input */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', flexShrink: 0, background: 'var(--bg-void)' }}>
+      <div style={{ padding: '12px 16px 16px', borderTop: '1px solid #1E1E24', flexShrink: 0, background: '#0A0A0B' }}>
         {/* Reply banner */}
         {replyTo && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 12px', borderRadius: 8, borderLeft: '2px solid rgba(99,102,241,0.5)', background: 'var(--bg-raised)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '7px 12px', borderRadius: 8, borderLeft: '3px solid #6366F1', background: '#111114' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(99,102,241,0.8)' }}>↩ Replying to </span>
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)' }}>{replyTo.senderName}</span>
-              <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyTo.content?.slice(0, 60)}</p>
+              <span style={{ fontSize: 11, fontWeight: 500, color: '#818cf8' }}>↩ Replying to </span>
+              <span style={{ fontSize: 11, fontWeight: 500, color: '#9090A8' }}>{replyTo.senderName}</span>
+              <p style={{ fontSize: 11, color: '#55556A', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyTo.content?.slice(0, 60)}</p>
             </div>
-            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
+            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#55556A', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
           </div>
         )}
-
         {/* Attached file pills */}
         {attachedFiles.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
             {attachedFiles.map(f => (
-              <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', fontSize: 11, fontWeight: 300, color: 'var(--text-2)' }}>
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
-                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
-                </svg>
+              <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#16161A', border: '1px solid #1E1E24', fontSize: 11, color: '#9090A8' }}>
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#55556A', flexShrink: 0 }}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
                 <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-                <button onMouseDown={e => { e.preventDefault(); setAttachedFiles(prev => prev.filter(r => r.id !== f.id)); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 1, padding: 0, marginLeft: 2 }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>×</button>
+                <button onMouseDown={e => { e.preventDefault(); setAttachedFiles(prev => prev.filter(r => r.id !== f.id)); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#55556A', lineHeight: 1, padding: 0 }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'} onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>×</button>
               </span>
             ))}
           </div>
         )}
-
-        {/* Unified pill input */}
-        <div style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.15s' }}
-          onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'}
-          onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
+        {/* Input pill */}
+        <div style={{ background: '#111114', border: '1px solid #1E1E24', borderRadius: 14, overflow: 'visible', transition: 'border-color 0.15s', position: 'relative' }} onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'} onBlurCapture={e => e.currentTarget.style.borderColor = '#1E1E24'}>
           {showToolbar && (
-            <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ padding: '8px 12px 0', borderBottom: '1px solid #1E1E24', display: 'flex', alignItems: 'center', gap: 4 }}>
               <FormatToolbar textareaRef={textareaRef} setText={setText} />
-              <button type="button" title="Upload file" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: uploading ? 'rgba(99,102,241,0.6)' : 'rgba(255,255,255,0.3)', transition: 'color 0.15s' }}
-                onMouseEnter={e => { if (!uploading) e.currentTarget.style.color = 'var(--text-1)'; }}
-                onMouseLeave={e => { if (!uploading) e.currentTarget.style.color = 'var(--text-3)'; }}>
-                {uploading
-                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 0.7s linear infinite' }}><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-                  : <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
-                }
+              <button type="button" title="Upload file" onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: uploading ? '#6366F1' : '#55556A' }}>
+                {uploading ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 0.7s linear infinite' }}><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg> : <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>}
               </button>
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={() => setShowToolbar(v => !v)} title="Formatting"
-              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderRight: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.25)', transition: 'color 0.15s' }}
-              onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-2)'; }}
-              onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = 'var(--text-3)'; }}>
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M10.121 2.879A3 3 0 0 0 5 5v.585l-2.122 2.122A1 1 0 0 0 3 8.5V10a1 1 0 0 0 1 1h1v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h1a1 1 0 0 0 1-1V8.5a1 1 0 0 0-.293-.707L9 5.585V5a3 3 0 0 0-.879-2.121zM6.5 5a1.5 1.5 0 1 1 3 0v.5H6.5V5z"/>
-              </svg>
+            <button onClick={() => setShowToolbar(v => !v)} title="Attach / Format" style={{ flexShrink: 0, width: 44, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? '#6366F1' : '#55556A', transition: 'color 0.15s' }} onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = '#9090A8'; }} onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = '#55556A'; }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
             </button>
-            <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown}
-              rows={1} placeholder={`Message ${other?.name}…`}
-              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '11px 12px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 44, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box' }}
-              onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
-            <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0}
-              style={{ flexShrink: 0, width: 40, alignSelf: 'stretch', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.05)', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: (text.trim() || attachedFiles.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)', transition: 'color 0.15s' }}
-              onMouseEnter={e => { if (text.trim() || attachedFiles.length > 0) e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = (text.trim() || attachedFiles.length > 0) ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.15)'; }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
-              </svg>
-            </button>
+            <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown} rows={1} placeholder={`Message ${other?.name}…`} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: '#F0F0F5', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
+            <div style={{ padding: '8px 8px 8px 4px', flexShrink: 0, display: 'flex', alignItems: 'flex-end' }}>
+              <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (text.trim() || attachedFiles.length > 0) ? '#6366F1' : '#1E1E24', color: '#fff', transition: 'all 0.15s' }} onMouseEnter={e => { if (text.trim() || attachedFiles.length > 0) e.currentTarget.style.background = '#4f46e5'; }} onMouseLeave={e => { e.currentTarget.style.background = (text.trim() || attachedFiles.length > 0) ? '#6366F1' : '#1E1E24'; }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Hidden file input */}
-        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload}
-          accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"/>
+        {isTyping && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, paddingLeft: 4 }}>
+            <div style={{ display: 'flex', gap: 3 }}>{[0,150,300].map(d => <span key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: '#6366F1', display: 'inline-block', animation: 'bounce 1s infinite', animationDelay: `${d}ms` }}/>)}</div>
+            <span style={{ fontSize: 11, color: '#55556A' }}>{other?.name} is typing</span>
+          </div>
+        )}
+        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"/>
       </div>
-
       <ConfirmDialog
         open={!!confirmDeleteId}
         danger
