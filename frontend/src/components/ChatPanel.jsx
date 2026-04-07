@@ -549,67 +549,89 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <div key={item.id} id={`message-${item.id}`}
                       ref={(el) => { if (el) messageRefs.current.set(item.id, el); else messageRefs.current.delete(item.id); }}
                       className="group/msg"
-                      style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '5px 8px', borderRadius: 10, transition: 'background 0.12s', marginLeft: -8, marginRight: -8 }}
-                      onMouseEnter={e => e.currentTarget.style.background = `${C.primary}08`}
+                      style={{ display: 'flex', flexDirection: isOwn ? 'row-reverse' : 'row', gap: 10, alignItems: 'flex-end', padding: '3px 8px', borderRadius: 10, transition: 'background 0.12s', marginLeft: -8, marginRight: -8 }}
+                      onMouseEnter={e => e.currentTarget.style.background = `${C.primary}06`}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-                      <div style={{ flexShrink: 0, width: 38, paddingTop: 2 }}>
-                        {showSenderName ? (
+                      {/* Avatar — only for others, aligned to bottom */}
+                      <div style={{ flexShrink: 0, width: 34, alignSelf: 'flex-end', paddingBottom: 2 }}>
+                        {!isOwn && showSenderName ? (
                           <button onClick={() => onViewProfile?.(sender?.id)}
-                            style={{ width: 38, height: 38, borderRadius: 12, background: avatarBg(sender?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0, letterSpacing: '0.02em' }}>
+                            style={{ width: 34, height: 34, borderRadius: 10, background: avatarBg(sender?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
                             {initials(sender?.name)}
                           </button>
-                        ) : <div style={{ width: 38 }} />}
+                        ) : <div style={{ width: 34 }} />}
                       </div>
 
-                      <div style={{ flex: 1, minWidth: 0, maxWidth: 620 }}>
-                        {showSenderName && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }} className="group/header">
-                            <span style={{ fontSize: 13, fontWeight: 600, color: nameColor }}>{senderName}</span>
+                      {/* Bubble + meta */}
+                      <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start', gap: 3 }}>
+
+                        {/* Sender name row — others only */}
+                        {!isOwn && showSenderName && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 4 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: nameColor }}>{senderName}</span>
                             {sender?.role === 'teacher' && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: C.primaryLo, color: C.primaryHi, textTransform: 'uppercase', letterSpacing: '0.07em', border: `1px solid ${C.primary}30` }}>INSTRUCTOR</span>}
                             {sender?.role === 'admin' && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: C.tertiaryLo, color: C.tertiary, textTransform: 'uppercase', letterSpacing: '0.07em', border: `1px solid ${C.tertiary}30` }}>ADMIN</span>}
-                            <span style={{ fontSize: 11, color: C.text3, fontWeight: 300 }}>{formatTime(item.created_at)}</span>
-                            {editingId !== item.id && (
-                              <div className="opacity-0 group-hover/msg:opacity-100 transition" style={{ marginLeft: 2, position: 'relative' }}>
-                                <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
-                                  style={{ padding: '3px 6px', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, transition: 'all 0.1s', display: 'flex', alignItems: 'center' }}
-                                  onMouseEnter={e => { e.currentTarget.style.background = C.raised; e.currentTarget.style.color = C.text1; }}
-                                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text3; }}>
-                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-                                </button>
-                                {openMenuId === item.id && menuRect && (
-                                  <MessageMenu anchorRect={menuRect} isOwn={isOwn} onClose={() => setOpenMenuId(null)}
-                                    onReact={(e) => handleReact(item.id, e)}
-                                    onReply={(!adminsOnly || myRole === 'admin') ? () => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); } : undefined}
-                                    onPrivateReply={(!adminsOnly || myRole === 'admin') && !isOwn ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); } : undefined}
-                                    onPin={() => { if (pinnedMsgs.find(p => p.id === item.id)) handleUnpinMessage(item.id); else setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '', content: item.content }); }}
-                                    pinned={!!pinnedMsgs.find(p => p.id === item.id)} pinDisabled={false}
-                                    onEdit={(!adminsOnly || myRole === 'admin') && canEdit ? () => { setEditingId(item.id); setEditText(item.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1') ?? ''); } : undefined}
-                                    onDelete={(!adminsOnly || myRole === 'admin') && canDelete ? () => handleDeleteMessage(item.id) : undefined}
-                                  />
-                                )}
-                              </div>
-                            )}
                           </div>
                         )}
 
+                        {/* Reply preview */}
                         {item.replied_message && (
                           <button onClick={() => scrollToMessage(item.replied_message.id)}
-                            style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 6, padding: '6px 10px', borderRadius: 8, borderLeft: `3px solid ${C.primary}`, background: C.primaryLo, border: 'none', cursor: 'pointer' }}>
+                            style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 2, padding: '5px 10px', borderRadius: 8, borderLeft: `3px solid ${C.primary}`, background: C.primaryLo, border: 'none', cursor: 'pointer' }}>
                             <span style={{ fontSize: 11, fontWeight: 600, color: C.primaryHi, display: 'block' }}>{item.replied_message.users?.name || 'Unknown'}</span>
                             <span style={{ fontSize: 11, color: C.text3, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.replied_message.content?.slice(0, 80)}</span>
                           </button>
                         )}
 
-                        <div style={{ fontSize: 13, fontWeight: 300, color: C.text1, lineHeight: 1.65, wordBreak: 'break-words', maxWidth: 560 }}>
+                        {/* Message bubble */}
+                        <div style={{
+                          padding: '9px 14px',
+                          borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                          background: isOwn ? C.primary : C.raised,
+                          border: isOwn ? 'none' : `1px solid ${C.border}`,
+                          fontSize: 13, fontWeight: 300,
+                          color: isOwn ? '#fff' : C.text1,
+                          lineHeight: 1.6, wordBreak: 'break-words',
+                          position: 'relative',
+                        }}>
                           <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
-                          {item.edited && <span style={{ fontSize: 10, color: C.text3, marginLeft: 6 }}>(edited)</span>}
+                          {item.edited && <span style={{ fontSize: 10, color: isOwn ? 'rgba(255,255,255,0.5)' : C.text3, marginLeft: 6 }}>(edited)</span>}
                         </div>
 
+                        {/* File attachment */}
                         {item.files && <FilePreview file={item.files} />}
 
+                        {/* Time + menu row */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }} className="group/msg">
+                          {/* Three-dot menu */}
+                          {editingId !== item.id && (
+                            <div className="opacity-0 group-hover/msg:opacity-100 transition" style={{ position: 'relative', order: isOwn ? 0 : 1 }}>
+                              <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
+                                style={{ padding: '2px 5px', borderRadius: 5, background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, display: 'flex', alignItems: 'center' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = C.raised; e.currentTarget.style.color = C.text1; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text3; }}>
+                                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                              </button>
+                              {openMenuId === item.id && menuRect && (
+                                <MessageMenu anchorRect={menuRect} isOwn={isOwn} onClose={() => setOpenMenuId(null)}
+                                  onReact={(e) => handleReact(item.id, e)}
+                                  onReply={(!adminsOnly || myRole === 'admin') ? () => { setReplyTo({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setPrivateReply(null); } : undefined}
+                                  onPrivateReply={(!adminsOnly || myRole === 'admin') && !isOwn ? () => { setPrivateReply({ id: item.id, content: item.content, senderName: sender?.name, senderId: sender?.id }); setReplyTo(null); } : undefined}
+                                  onPin={() => { if (pinnedMsgs.find(p => p.id === item.id)) handleUnpinMessage(item.id); else setPinTimeModal({ open: true, messageId: item.id, pin_ttl_minutes: '', content: item.content }); }}
+                                  pinned={!!pinnedMsgs.find(p => p.id === item.id)} pinDisabled={false}
+                                  onEdit={(!adminsOnly || myRole === 'admin') && canEdit ? () => { setEditingId(item.id); setEditText(item.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1') ?? ''); } : undefined}
+                                  onDelete={(!adminsOnly || myRole === 'admin') && canDelete ? () => handleDeleteMessage(item.id) : undefined}
+                                />
+                              )}
+                            </div>
+                          )}
+                          <span style={{ fontSize: 10, color: C.text3, fontWeight: 300, order: isOwn ? 1 : 0 }}>{formatTime(item.created_at)}</span>
+                        </div>
+
+                        {/* Reactions */}
                         {Object.keys(reactionMap).length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
                             {Object.entries(reactionMap).map(([emoji, userIds]) => (
                               <button key={emoji} onClick={() => handleReact(item.id, emoji)}
                                 style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 12, border: `1px solid ${userIds.includes(user?.id) ? C.primary + '60' : C.border}`, background: userIds.includes(user?.id) ? C.primaryLo : C.raised, color: userIds.includes(user?.id) ? C.primaryHi : C.text2, cursor: 'pointer', transition: 'all 0.1s' }}>

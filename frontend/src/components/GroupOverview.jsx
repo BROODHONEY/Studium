@@ -2,7 +2,7 @@
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
-import { announcementsAPI } from '../services/api';
+import { announcementsAPI, duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { formatDateTime, toISTDateInput, toISTTimeInput } from '../utils/time';
 import FilePickerPopover from './ui/FilePickerPopover';
@@ -35,14 +35,14 @@ export const ANNOUNCEMENT_TAGS = {
 const formatDate = (d) => formatDateTime(d);
 
 function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]         = useState({ title: '', content: '', tag: 'general' });
+  const [form, setForm]           = useState({ title: '', content: '', tag: 'general' });
   const [scheduled, setScheduled] = useState(false);
   const [schedDate, setSchedDate] = useState('');
   const [schedTime, setSchedTime] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [open, setOpen]         = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [open, setOpen]           = useState(false);
   const [showFilePicker, setShowFilePicker] = useState(false);
-  const contentRef = useRef(null);
+  const contentRef    = useRef(null);
   const fileButtonRef = useRef(null);
 
   useEffect(() => {
@@ -90,15 +90,26 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
     if (onCancel) onCancel();
   };
 
-  // Min datetime = now + 1 min
   const minDate = toISTDateInput(Date.now() + 60_000);
+  const isOpen  = open || !!editing;
 
-  if (!open && !editing) return (
+  const lbl = { fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 6 };
+  const inp = { width: '100%', background: '#111116', border: '1px solid #2A2A38', borderRadius: 10, padding: '12px 16px', fontSize: 14, color: '#EEEEF5', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s' };
+
+  const TAG_STYLES = {
+    general:    { background: 'rgba(148,163,184,0.15)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.3)' },
+    urgent:     { background: 'rgba(239,68,68,0.12)',   color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' },
+    exam:       { background: 'rgba(168,85,247,0.12)',  color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' },
+    assignment: { background: 'rgba(251,191,36,0.12)',  color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)' },
+    event:      { background: 'rgba(20,184,166,0.12)',  color: '#2dd4bf', border: '1px solid rgba(20,184,166,0.3)' },
+  };
+
+  if (!isOpen) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(99,102,241,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(91,95,239,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.12)'; e.currentTarget.style.color = '#EEEEF5'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
         </svg>
@@ -107,112 +118,133 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
     </div>
   );
 
-  const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      {/* Tag picker */}
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(ANNOUNCEMENT_TAGS).map(([key, t]) => (
-          <button key={key} type="button"
-            onClick={() => setForm(p => ({ ...p, tag: key }))}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition
-              ${form.tag === key ? t.badge + ' font-medium' : 'dark:bg-surface-3 bg-gray-100 dark:border-surface-4 border-gray-200 dark:text-gray-400 text-gray-500 dark:hover:bg-surface-4 hover:bg-gray-200'}`}>
-            <TagIcon type={key} />{t.label}
-          </button>
-        ))}
-      </div>
-
-      <input className="form-input" placeholder="Announcement title" required
-        value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
-      <div className="relative">
-        <textarea ref={contentRef} className="form-input resize-none" rows={3} placeholder="Write your announcement..."
-          required value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}/>
-        <button ref={fileButtonRef} type="button" title="Attach file reference"
-          onClick={() => setShowFilePicker(v => !v)}
-          className={`absolute bottom-2 right-2 p-1.5 rounded-lg transition
-            ${showFilePicker ? 'bg-indigo-600 text-white' : 'dark:text-gray-500 text-gray-400 dark:hover:bg-surface-3 hover:bg-gray-200'}`}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
-          </svg>
-        </button>
-        {showFilePicker && (
-          <FilePickerPopover
-            groupId={groupId}
-            triggerRef={fileButtonRef}
-            onPick={ref => {
-              const el = contentRef.current;
-              if (!el) { setForm(p => ({ ...p, content: p.content + ref })); }
-              else {
-                const start = el.selectionStart;
-                const next = el.value.slice(0, start) + ref + el.value.slice(start);
-                setForm(p => ({ ...p, content: next }));
-              }
-            }}
-            onClose={() => setShowFilePicker(false)}
-          />
-        )}
-      </div>
-
-      {/* Schedule toggle */}
-      <div className="flex items-center gap-2.5 pt-1">
-        <button type="button" onClick={() => setScheduled(v => !v)}
-          className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${scheduled ? 'bg-indigo-600' : 'dark:bg-surface-4 bg-gray-300'}`}>
-          <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${scheduled ? 'translate-x-4' : ''}`}/>
-        </button>
-        <span className="text-xs dark:text-gray-400 text-gray-500">Schedule for later</span>
-      </div>
-
-      {scheduled && (
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="form-label">Date</label>
-            <input type="date" className="form-input" required min={minDate}
-              value={schedDate} onChange={e => setSchedDate(e.target.value)}/>
-          </div>
-          <div className="flex-1">
-            <label className="form-label">Time</label>
-            <input type="time" className="form-input"
-              value={schedTime} onChange={e => setSchedTime(e.target.value)}/>
-          </div>
-        </div>
-      )}
-
-      <div className="flex gap-2 pt-1">
-        <button type="submit" disabled={loading}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#3730a3)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
-          {loading ? 'Saving…' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post now')}
-        </button>
-        <button type="button" onClick={handleCancel}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-
-  // Editing — centered modal
-  if (editing) return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
-      onClick={handleCancel}>
-      <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)' }}>Edit announcement</span>
-          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
-          </button>
-        </div>
-        {formContent}
-      </div>
-    </div>
-  );
-
-  // Creating — inline card
   return (
-    <div className="card p-4">
-      {formContent}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: 16 }}
+      onClick={handleCancel}>
+      <div style={{ width: '100%', maxWidth: 500, background: '#1A1A1F', borderRadius: 20, boxShadow: '0 32px 80px rgba(0,0,0,0.9)', fontFamily: 'Inter, sans-serif', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '28px 28px 24px' }}>
+
+          <p style={{ fontSize: 24, fontWeight: 700, color: '#EEEEF5', margin: '0 0 8px' }}>
+            {editing ? 'Edit Announcement' : 'New Announcement'}
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', margin: '0 0 24px', lineHeight: 1.5 }}>
+            {editing ? 'Update your announcement for the group.' : 'Post an update visible to all group members.'}
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+            {/* Category tags */}
+            <div>
+              <label style={lbl}>Category</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {Object.entries(ANNOUNCEMENT_TAGS).map(([key, t]) => {
+                  const isActive = form.tag === key;
+                  return (
+                    <button key={key} type="button"
+                      onClick={() => setForm(p => ({ ...p, tag: key }))}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'Inter, sans-serif', ...(isActive ? TAG_STYLES[key] : { background: '#111116', color: '#55556A', border: '1px solid #2A2A38' }) }}>
+                      <TagIcon type={key} />{t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Title */}
+            <div>
+              <label style={lbl}>Title</label>
+              <input style={inp} placeholder="Announcement title" required
+                value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+            </div>
+
+            {/* Content */}
+            <div style={{ position: 'relative' }}>
+              <label style={lbl}>Message</label>
+              <textarea ref={contentRef}
+                style={{ ...inp, resize: 'none', lineHeight: 1.6, minHeight: 100 }}
+                rows={4} placeholder="Write your announcement…" required
+                value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
+                onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+              <button ref={fileButtonRef} type="button" title="Attach file reference"
+                onClick={() => setShowFilePicker(v => !v)}
+                style={{ position: 'absolute', bottom: 10, right: 10, width: 28, height: 28, borderRadius: 7, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: showFilePicker ? '#5B5FEF' : 'rgba(255,255,255,0.06)', color: showFilePicker ? '#fff' : '#55556A' }}
+                onMouseEnter={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#9898B0'; } }}
+                onMouseLeave={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#55556A'; } }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+                </svg>
+              </button>
+              {showFilePicker && (
+                <FilePickerPopover groupId={groupId} triggerRef={fileButtonRef}
+                  onPick={ref => {
+                    const el = contentRef.current;
+                    if (!el) { setForm(p => ({ ...p, content: p.content + ref })); }
+                    else { const s = el.selectionStart; setForm(p => ({ ...p, content: el.value.slice(0, s) + ref + el.value.slice(s) })); }
+                    setShowFilePicker(false);
+                  }}
+                  onClose={() => setShowFilePicker(false)} />
+              )}
+            </div>
+
+            {/* Schedule toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button type="button" onClick={() => setScheduled(v => !v)}
+                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s', background: scheduled ? '#5B5FEF' : '#2A2A38', padding: 0 }}>
+                <span style={{ position: 'absolute', top: 2, left: scheduled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}/>
+              </button>
+              <span style={{ fontSize: 13, fontWeight: 300, color: '#9898B0' }}>Schedule for later</span>
+            </div>
+
+            {scheduled && (
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={lbl}>Date</label>
+                  <input type="date" style={inp} required min={minDate}
+                    value={schedDate} onChange={e => setSchedDate(e.target.value)}
+                    onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                    onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={lbl}>Time</label>
+                  <input type="time" style={inp}
+                    value={schedTime} onChange={e => setSchedTime(e.target.value)}
+                    onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                    onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+              <button type="submit" disabled={loading}
+                style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #5B5FEF, #4338CA)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
+                {loading ? 'Saving…' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
+              </button>
+              <button type="button" onClick={handleCancel}
+                style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#55556A', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
+                onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+                Cancel
+              </button>
+            </div>
+
+            {/* Info footer */}
+            <div style={{ borderLeft: '3px solid #2A2A38', background: '#111116', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556A" style={{ flexShrink: 0, marginTop: 1 }}>
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+              </svg>
+              <span style={{ fontSize: 12, fontWeight: 300, color: '#55556A', lineHeight: 1.5 }}>
+                Announcements are visible to all group members immediately after posting.
+              </span>
+            </div>
+
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
@@ -228,6 +260,7 @@ export default function GroupOverview({ group, onFileRef }) {
   const [announcements, setAnnouncements] = useState([]);
   const [scheduled, setScheduled]         = useState([]);
   const [loadingA, setLoadingA]           = useState(true);
+  const [dues, setDues]                   = useState([]);
   const [deleteConfirm, setDeleteConfirm]       = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
@@ -239,6 +272,7 @@ export default function GroupOverview({ group, onFileRef }) {
     setLoadingA(true);
     announcementsAPI.list(group.id).then(res => setAnnouncements(res.data)).catch(console.error).finally(() => setLoadingA(false));
     if (isTeacher) announcementsAPI.scheduled(group.id).then(res => setScheduled(res.data)).catch(console.error);
+    duesAPI.list(group.id).then(res => setDues(res.data || [])).catch(console.error);
   }, [group?.id]);
 
   useEffect(() => {
@@ -251,8 +285,8 @@ export default function GroupOverview({ group, onFileRef }) {
     const onUpdateAnnouncement = (a) => setAnnouncements(prev => prev.map(x => x.id === a.id ? a : x));
     const onReaction = ({ announcementId, reactions }) =>
       setAnnouncements(prev => prev.map(a => a.id === announcementId ? { ...a, announcement_reactions: reactions } : a));
-    const onNewDue    = (d) => d; // handled by DuesPanel
-    const onUpdateDue = (d) => d;
+    const onNewDue    = (d) => setDues(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+    const onUpdateDue = (d) => setDues(prev => prev.map(x => x.id === d.id ? d : x).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
 
     socket.on('new_announcement',    onNewAnnouncement);
     socket.on('update_announcement', onUpdateAnnouncement);
@@ -561,6 +595,58 @@ export default function GroupOverview({ group, onFileRef }) {
                 )}
               </div>
             </div>
+
+            {/* Upcoming Deadlines */}
+            {(() => {
+              const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+              const upcoming = dues
+                .filter(d => d.due_date && new Date(d.due_date) >= todayStart)
+                .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+                .slice(0, 5);
+              const BAR_COLORS = ['#F87171', '#818CF8', '#FB923C', '#34D399', '#A78BFA'];
+              const fmtDeadline = (iso) => {
+                const d = new Date(iso);
+                const today = new Date(); today.setHours(0,0,0,0);
+                const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+                const dDay = new Date(d); dDay.setHours(0,0,0,0);
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                if (dDay.getTime() === today.getTime()) return { label: `Today, ${timeStr}`, urgent: true };
+                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow, ${timeStr}`, urgent: false };
+                return { label: `${d.toLocaleDateString([], { weekday: 'long' })}, ${timeStr}`, urgent: false };
+              };
+              return (
+                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>Upcoming Deadlines</p>
+                  {upcoming.length === 0 ? (
+                    <p style={{ fontSize: 12, color: P.text3, fontWeight: 300, fontStyle: 'italic', margin: 0 }}>No upcoming deadlines</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {upcoming.map((d, i) => {
+                        const { label, urgent } = fmtDeadline(d.due_date);
+                        const color = BAR_COLORS[i % BAR_COLORS.length];
+                        return (
+                          <div key={d.id} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                            <div style={{ width: 4, borderRadius: 4, background: color, alignSelf: 'stretch', flexShrink: 0, minHeight: 36 }} />
+                            <div style={{ minWidth: 0 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: P.text1, margin: '0 0 3px', lineHeight: 1.3 }}>{d.title}</p>
+                              <p style={{ fontSize: 11, fontWeight: 400, color: urgent ? '#F87171' : P.text3, margin: 0 }}>{label}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <button
+                    style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px', borderRadius: 8, background: 'none', border: 'none', color: P.text3, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.color = P.text2}
+                    onMouseLeave={e => e.currentTarget.style.color = P.text3}
+                    onClick={() => {}}>
+                    Open Calendar
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 1 0v4a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/><path d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/></svg>
+                  </button>
+                </div>
+              );
+            })()}
 
             {/* Quick actions */}
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px' }}>

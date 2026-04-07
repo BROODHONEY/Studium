@@ -1,10 +1,11 @@
-﻿import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { toISTDateInput, toISTTimeInput } from '../utils/time';
+
 const daysUntil = (dateStr) => {
   const diffMs = new Date(dateStr).getTime() - Date.now();
   if (diffMs < 0) return -1;
@@ -19,10 +20,41 @@ const dueBadge = (days) => {
   return               { label: `${days}d left`,   cls: 'text-white/30 border-white/10 bg-white/5' };
 };
 
+const DS = {
+  lbl: {
+    fontSize: 10, fontWeight: 700, color: '#55556A',
+    textTransform: 'uppercase', letterSpacing: '0.1em',
+    display: 'block', marginBottom: 6,
+  },
+  inp: {
+    width: '100%', background: '#111116',
+    border: '1px solid #2A2A38', borderRadius: 10,
+    padding: '12px 16px', fontSize: 14, color: '#EEEEF5',
+    outline: 'none', fontFamily: 'Inter, sans-serif',
+    boxSizing: 'border-box', transition: 'border-color 0.15s',
+  },
+  primaryBtn: {
+    width: '100%', padding: '14px',
+    background: 'linear-gradient(135deg, #5B5FEF, #4338CA)',
+    border: 'none', borderRadius: 12,
+    color: '#fff', fontSize: 13, fontWeight: 700,
+    letterSpacing: '0.08em', textTransform: 'uppercase',
+    cursor: 'pointer', transition: 'opacity 0.15s',
+    fontFamily: 'Inter, sans-serif',
+  },
+  cancelBtn: {
+    width: '100%', padding: '12px',
+    background: 'none', border: 'none',
+    color: '#55556A', fontSize: 13, fontWeight: 400,
+    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+    transition: 'color 0.15s',
+  },
+};
+
 function DueForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]   = useState({ title: '', description: '', due_date: '', due_time: '' });
+  const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '' });
   const [loading, setLoading] = useState(false);
-  const [open, setOpen]   = useState(false);
+  const [open, setOpen]       = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -63,64 +95,14 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
     if (onCancel) onCancel();
   };
 
-  const formContent = (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <input className="form-input" placeholder="e.g. Assignment 3 submission" required
-        value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}/>
-      <input className="form-input" placeholder="Description (optional)"
-        value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}/>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <div style={{ flex: 1 }}>
-          <label className="form-label">Due date</label>
-          <input type="date" className="form-input" required value={form.due_date}
-            onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}/>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label className="form-label">Time <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
-          <input type="time" className="form-input" value={form.due_time}
-            onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}/>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-        <button type="submit" disabled={loading}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#4338ca)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}>
-          {loading ? (editing ? 'Updating…' : 'Adding…') : (editing ? 'Update' : 'Add')}
-        </button>
-        <button type="button" onClick={handleCancel}
-          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
+  const isOpen = open || !!editing;
 
-  // When editing — render as centered modal
-  if (editing) return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
-      onClick={handleCancel}>
-      <div style={{ width: '100%', maxWidth: 460, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}
-        onClick={e => e.stopPropagation()}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)' }}>Edit due date</span>
-          <button onClick={handleCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
-          </button>
-        </div>
-        {formContent}
-      </div>
-    </div>
-  );
-
-  // When creating — render inline trigger / form
-  if (!open) return (
+  if (!isOpen) return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(99,102,241,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}>
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(91,95,239,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.12)'; e.currentTarget.style.color = '#EEEEF5'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
         </svg>
@@ -130,8 +112,83 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
   );
 
   return (
-    <div className="card p-4">
-      {formContent}
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: 16 }}
+      onClick={handleCancel}
+    >
+      <div
+        style={{ width: '100%', maxWidth: 440, background: '#1A1A1F', borderRadius: 20, boxShadow: '0 32px 80px rgba(0,0,0,0.9)', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ padding: '28px 28px 24px' }}>
+          <p style={{ fontSize: 24, fontWeight: 700, color: '#EEEEF5', margin: '0 0 8px' }}>
+            {editing ? 'Edit Due Date' : 'Add Due Date'}
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', margin: '0 0 24px', lineHeight: 1.5 }}>
+            Set a deadline visible to all group members.
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label style={DS.lbl}>Title</label>
+              <input style={DS.inp} placeholder="e.g. Assignment 3 submission" required
+                value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+            </div>
+
+            <div>
+              <label style={DS.lbl}>
+                Description <span style={{ color: '#55556A', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+              </label>
+              <input style={DS.inp} placeholder="Add more context…"
+                value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <label style={DS.lbl}>Due Date</label>
+                <input type="date" style={DS.inp} required
+                  value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}
+                  onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                  onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={DS.lbl}>
+                  Time <span style={{ color: '#55556A', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                </label>
+                <input type="time" style={DS.inp}
+                  value={form.due_time} onChange={e => setForm(p => ({ ...p, due_time: e.target.value }))}
+                  onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                  onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+              <button type="submit" disabled={loading}
+                style={{ ...DS.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                {loading ? (editing ? 'Updating…' : 'Adding…') : (editing ? 'Update' : 'Add Due Date')}
+              </button>
+              <button type="button" onClick={handleCancel} style={DS.cancelBtn}
+                onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
+                onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+                Cancel
+              </button>
+            </div>
+
+            <div style={{ borderLeft: '3px solid #2A2A38', background: '#111116', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556A" style={{ flexShrink: 0, marginTop: 1 }}>
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+              </svg>
+              <span style={{ fontSize: 12, fontWeight: 300, color: '#55556A', lineHeight: 1.5 }}>
+                Due dates are visible to all group members.
+              </span>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
@@ -144,13 +201,13 @@ export default function DuesPanel({ group }) {
   const myRole    = group?.my_role;
   const isTeacher = myRole === 'admin' || myRole === 'teacher';
 
-  const [dues, setDues]           = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [editingDue, setEditingDue]           = useState(null);
-  const [deleteConfirm, setDeleteConfirm]     = useState(null);
+  const [dues, setDues]                         = useState([]);
+  const [loading, setLoading]                   = useState(true);
+  const [editingDue, setEditingDue]             = useState(null);
+  const [deleteConfirm, setDeleteConfirm]       = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const [selectedDue, setSelectedDue] = useState(null);
+  const [openMenuId, setOpenMenuId]             = useState(null);
+  const [selectedDue, setSelectedDue]           = useState(null);
 
   useEffect(() => {
     if (!group) return;
@@ -164,17 +221,11 @@ export default function DuesPanel({ group }) {
   useEffect(() => {
     if (!group || !socket) return;
     socket.emit('join_group', group.id);
-
     const onNewDue    = (d) => setDues(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
     const onUpdateDue = (d) => setDues(prev => prev.map(x => x.id === d.id ? d : x).sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
-
     socket.on('new_due',    onNewDue);
     socket.on('update_due', onUpdateDue);
-
-    return () => {
-      socket.off('new_due',    onNewDue);
-      socket.off('update_due', onUpdateDue);
-    };
+    return () => { socket.off('new_due', onNewDue); socket.off('update_due', onUpdateDue); };
   }, [group?.id, socket]);
 
   const handleDueUpdate = (updated) => {
@@ -197,12 +248,12 @@ export default function DuesPanel({ group }) {
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: 'transparent', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(91,95,239,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div className="max-w-3xl mx-auto px-6 py-8">
         <ConfirmDialog
           open={!!deleteConfirm} danger
           title="Delete this due date?"
-          description="This will remove it for everyone."
+          description="This will remove it for everyone in the group."
           confirmText="Delete"
           onCancel={() => { if (!confirmingDelete) setDeleteConfirm(null); }}
           onConfirm={handleConfirmDelete}
@@ -224,7 +275,7 @@ export default function DuesPanel({ group }) {
           )}
 
           {loading
-            ? [1, 2, 3].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)
+            ? [1,2,3].map(i => <div key={i} className="h-16 dark:bg-surface-2 bg-gray-100 rounded-xl animate-pulse"/>)
             : dues.length === 0
               ? (
                 <div className="py-16 text-center border border-dashed dark:border-brand-900/40 border-gray-200 rounded-xl">
@@ -244,10 +295,7 @@ export default function DuesPanel({ group }) {
                     <div key={d.id}
                       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-page)', transition: 'border-color 0.15s', cursor: 'pointer', position: 'relative' }}
                       className="group"
-                      onClick={() => setSelectedDue(d)}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
-                      {/* Date block */}
+                      onClick={() => setSelectedDue(d)}>
                       <div className="flex-shrink-0 w-10 text-center">
                         <p className="text-base font-semibold dark:text-white text-gray-900 leading-none">
                           {dt.toLocaleString('en-IN', { day: 'numeric', timeZone: 'Asia/Kolkata' })}
@@ -261,14 +309,11 @@ export default function DuesPanel({ group }) {
                           </p>
                         )}
                       </div>
-
                       <div style={{ width: 1, height: 28, background: 'var(--border-color)', flexShrink: 0 }}/>
-
                       <div className="flex-1 min-w-0">
                         <p className="font-medium dark:text-white text-gray-900 truncate" style={{ fontSize: 12 }}>{d.title}</p>
                         {d.description && <p className="dark:text-gray-500 text-gray-500 mt-0.5 truncate" style={{ fontSize: 11 }}>{d.description}</p>}
                       </div>
-
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`px-2 py-0.5 rounded-full border ${badge.cls}`} style={{ fontSize: 11 }}>{badge.label}</span>
                         {(isTeacher || d.users?.id === user?.id) && (
@@ -277,29 +322,22 @@ export default function DuesPanel({ group }) {
                               onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === d.id ? null : d.id); }}
                               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}
                               onMouseEnter={e => e.currentTarget.style.color = 'var(--text-2)'}
-                              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
-                            >
-                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                              </svg>
+                              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
                             </button>
                             {openMenuId === d.id && (
                               <>
                                 <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenMenuId(null)} />
                                 <div style={{ position: 'absolute', right: 0, top: 30, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden', minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
-                                  <button
-                                    onClick={() => { setEditingDue(d); setOpenMenuId(null); }}
+                                  <button onClick={() => { setEditingDue(d); setOpenMenuId(null); }}
                                     style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                  >Edit</button>
+                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}>Edit</button>
                                   <div style={{ height: 1, background: 'var(--border-color)' }} />
-                                  <button
-                                    onClick={() => { setDeleteConfirm(d.id); setOpenMenuId(null); }}
+                                  <button onClick={() => { setDeleteConfirm(d.id); setOpenMenuId(null); }}
                                     style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 300, fontFamily: 'Inter, sans-serif', textAlign: 'left', display: 'block' }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-raised)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                  >Delete</button>
+                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}>Delete</button>
                                 </div>
                               </>
                             )}
@@ -321,61 +359,40 @@ export default function DuesPanel({ group }) {
         const dt    = new Date(d.due_date);
         const hasTime = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }) !== '00:00';
         return (
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '0 20px' }}
-            onClick={() => setSelectedDue(null)}
-          >
-            <div
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px', width: '100%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Header */}
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '0 20px' }}
+            onClick={() => setSelectedDue(null)}>
+            <div style={{ background: '#1A1A1F', borderRadius: 18, padding: '24px', width: '100%', maxWidth: 360, boxShadow: '0 32px 80px rgba(0,0,0,0.9)', fontFamily: 'Inter, sans-serif' }}
+              onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)', margin: 0, lineHeight: 1.4 }}>{d.title}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedDue(null)}
-                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2, lineHeight: 0 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
-                  </svg>
+                <p style={{ fontSize: 16, fontWeight: 600, color: '#EEEEF5', margin: 0, lineHeight: 1.4 }}>{d.title}</p>
+                <button onClick={() => setSelectedDue(null)}
+                  style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: '#55556A', padding: 2, lineHeight: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/></svg>
                 </button>
               </div>
-
-              {/* Badge */}
               <span className={`px-2.5 py-0.5 rounded-full border ${badge.cls}`} style={{ fontSize: 11 }}>{badge.label}</span>
-
-              {/* Date / time */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14 }}>
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556A" style={{ flexShrink: 0 }}>
                   <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                 </svg>
-                <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 300 }}>
+                <span style={{ fontSize: 13, color: '#9898B0', fontWeight: 300 }}>
                   {dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                   {hasTime && ` · ${dt.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`}
                 </span>
               </div>
-
-              {/* Description */}
               {d.description && (
-                <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--bg-page)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
-                  <p style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 300, margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{d.description}</p>
+                <div style={{ marginTop: 14, padding: '12px 14px', background: '#111116', borderRadius: 8, border: '1px solid #2A2A38' }}>
+                  <p style={{ fontSize: 13, color: '#9898B0', fontWeight: 300, margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{d.description}</p>
                 </div>
               )}
-
-              {/* Teacher actions */}
               {(isTeacher || d.users?.id === user?.id) && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                  <button
-                    onClick={() => { setEditingDue(d); setSelectedDue(null); }}
-                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: 'rgba(165,180,252,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-                  >Edit</button>
-                  <button
-                    onClick={() => { setDeleteConfirm(d.id); setSelectedDue(null); }}
-                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-                  >Delete</button>
+                  <button onClick={() => { setEditingDue(d); setSelectedDue(null); }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(91,95,239,0.1)', border: '1px solid rgba(91,95,239,0.2)', color: 'rgba(165,180,252,0.8)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Edit</button>
+                  <button onClick={() => { setDeleteConfirm(d.id); setSelectedDue(null); }}
+                    style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Delete</button>
                 </div>
               )}
             </div>

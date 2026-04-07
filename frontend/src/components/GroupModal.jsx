@@ -2,14 +2,55 @@
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI } from '../services/api';
 
-const inp = {
-  width: '100%', background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10,
-  padding: '10px 14px', fontSize: 13, fontWeight: 300, color: 'var(--text-1)',
-  outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s',
-};
-const lbl = {
-  fontSize: 10, fontWeight: 400, color: 'var(--text-3)',
-  textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6,
+const S = {
+  backdrop: {
+    position: 'fixed', inset: 0, zIndex: 50,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)', padding: 16,
+  },
+  modal: {
+    width: '100%', maxWidth: 440,
+    background: '#1A1A1F', borderRadius: 20,
+    boxShadow: '0 32px 80px rgba(0,0,0,0.9)',
+    fontFamily: 'Inter, sans-serif', overflow: 'hidden',
+  },
+  lbl: {
+    fontSize: 10, fontWeight: 700, color: '#55556A',
+    textTransform: 'uppercase', letterSpacing: '0.1em',
+    display: 'block', marginBottom: 6,
+  },
+  inp: {
+    width: '100%', background: '#111116',
+    border: '1px solid #2A2A38', borderRadius: 10,
+    padding: '12px 16px', fontSize: 14, fontWeight: 400,
+    color: '#EEEEF5', outline: 'none',
+    fontFamily: 'Inter, sans-serif', boxSizing: 'border-box',
+    transition: 'border-color 0.15s',
+  },
+  primaryBtn: {
+    width: '100%', padding: '14px',
+    background: 'linear-gradient(135deg, #5B5FEF, #4338CA)',
+    border: 'none', borderRadius: 12,
+    color: '#fff', fontSize: 13, fontWeight: 700,
+    letterSpacing: '0.08em', textTransform: 'uppercase',
+    cursor: 'pointer', transition: 'opacity 0.15s',
+    fontFamily: 'Inter, sans-serif',
+  },
+  cancelBtn: {
+    width: '100%', padding: '12px',
+    background: 'none', border: 'none',
+    color: '#55556A', fontSize: 13, fontWeight: 400,
+    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+    transition: 'color 0.15s',
+  },
+  infoFooter: {
+    borderLeft: '3px solid #2A2A38',
+    background: '#111116',
+    borderRadius: 8,
+    padding: '10px 14px',
+    display: 'flex', alignItems: 'flex-start', gap: 8,
+  },
 };
 
 export default function GroupModal({ onClose, onSuccess }) {
@@ -37,100 +78,129 @@ export default function GroupModal({ onClose, onSuccess }) {
     finally { setLoading(false); }
   };
 
+  const tabs = isTeacher ? ['join', 'create'] : ['join'];
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: 16 }}
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ width: '100%', maxWidth: 420, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 20, padding: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.7)', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}
-        onClick={e => e.stopPropagation()}>
+    <div style={S.backdrop} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={S.modal} onClick={e => e.stopPropagation()}>
 
-        {/* Subtle top gradient */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, position: 'relative' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-1)', margin: 0 }}>
-            {mode === 'create' ? 'Create group' : 'Join group'}
-          </h2>
-          <button onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', lineHeight: 0, padding: 4 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-2)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
-            </svg>
-          </button>
+        {/* Tab bar */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #2A2A38' }}>
+          {tabs.map(t => (
+            <button key={t} onClick={() => { setMode(t); setError(''); }}
+              style={{
+                flex: 1, padding: '16px 0',
+                background: 'none', border: 'none',
+                borderBottom: mode === t ? '2px solid #5B5FEF' : '2px solid transparent',
+                marginBottom: -1,
+                color: mode === t ? '#EEEEF5' : '#55556A',
+                fontSize: 13,
+                fontWeight: mode === t ? 700 : 400,
+                cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                transition: 'color 0.15s',
+              }}>
+              {t === 'join' ? 'Join Group' : 'Create Group'}
+            </button>
+          ))}
         </div>
 
-        {/* Mode tabs — only show if teacher (has both options) */}
-        {isTeacher && (
-          <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'rgba(99,102,241,0.04)', borderRadius: 10, padding: 3, border: '1px solid var(--border-color)' }}>
-            {['create', 'join'].map(m => (
-              <button key={m} onClick={() => { setMode(m); setError(''); }}
-                style={{ flex: 1, padding: '8px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: mode === m ? 400 : 300, transition: 'all 0.15s',
-                  background: mode === m ? 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(55,48,163,0.2))' : 'transparent',
-                  color: mode === m ? 'rgba(199,210,254,0.95)' : 'rgba(255,255,255,0.35)',
-                  boxShadow: mode === m ? '0 0 10px rgba(99,102,241,0.12)' : 'none',
-                }}>
-                {m === 'create' ? 'Create' : 'Join'}
+        <div style={{ padding: '28px 28px 24px' }}>
+          {mode === 'join' ? (
+            <>
+              <p style={{ fontSize: 24, fontWeight: 700, color: '#EEEEF5', margin: '0 0 8px' }}>Collaborative Access</p>
+              <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', margin: '0 0 24px', lineHeight: 1.5 }}>
+                Enter a unique invitation code to join an existing group.
+              </p>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: 24, fontWeight: 700, color: '#EEEEF5', margin: '0 0 8px' }}>Create a Group</p>
+              <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', margin: '0 0 24px', lineHeight: 1.5 }}>
+                Set up a new collaborative space for your class.
+              </p>
+            </>
+          )}
+
+          {error && (
+            <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.85)', fontSize: 12, marginBottom: 20 }}>
+              {error}
+            </div>
+          )}
+
+          {mode === 'join' ? (
+            <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={S.lbl}>Invitation Code</label>
+                <input
+                  style={{ ...S.inp, textAlign: 'center', letterSpacing: '0.25em', textTransform: 'uppercase', fontSize: 20, fontFamily: 'monospace' }}
+                  placeholder="ST-XXXX-XXXX" value={joinCode} required
+                  onChange={e => setJoinCode(e.target.value)}
+                  onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                  onBlur={e => e.target.style.borderColor = '#2A2A38'}
+                />
+                <p style={{ fontSize: 12, fontWeight: 300, color: '#55556A', marginTop: 8, fontStyle: 'italic' }}>
+                  Example: STUDY-GROUP-2024
+                </p>
+              </div>
+
+              <button type="submit" disabled={loading}
+                style={{ ...S.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                {loading ? 'Validating…' : 'Validate & Join'}
               </button>
-            ))}
-          </div>
-        )}
+              <button type="button" onClick={onClose} style={S.cancelBtn}
+                onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
+                onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+                Cancel
+              </button>
 
-        {/* Error */}
-        {error && (
-          <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 300, marginBottom: 16 }}>
-            {error}
-          </div>
-        )}
-
-        {/* Create form */}
-        {mode === 'create' ? (
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div>
-              <label style={lbl}>Group name</label>
-              <input style={inp} placeholder="OS Section A" value={createForm.name} required
-                onChange={e => setCreateForm(p => ({ ...p, name: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
-            </div>
-            <div>
-              <label style={lbl}>Subject</label>
-              <input style={inp} placeholder="Operating Systems" value={createForm.subject} required
-                onChange={e => setCreateForm(p => ({ ...p, subject: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
-            </div>
-            <div>
-              <label style={lbl}>Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
-              <input style={inp} placeholder="Morning batch, Room 301" value={createForm.description}
-                onChange={e => setCreateForm(p => ({ ...p, description: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
-            </div>
-            <button type="submit" disabled={loading}
-              style={{ padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#3730a3)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 2 }}>
-              {loading ? 'Creating…' : 'Create group'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div>
-              <label style={lbl}>Invite code</label>
-              <input
-                style={{ ...inp, textAlign: 'center', letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: 20, fontWeight: 400, fontFamily: 'monospace' }}
-                placeholder="XK92PL" value={joinCode} required maxLength={6}
-                onChange={e => setJoinCode(e.target.value)}
-                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}/>
-              <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 6 }}>Ask your teacher for the 6-character code</p>
-            </div>
-            <button type="submit" disabled={loading}
-              style={{ padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#6366F1,#3730a3)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 2 }}>
-              {loading ? 'Joining…' : 'Join group'}
-            </button>
-          </form>
-        )}
+              <div style={{ ...S.infoFooter, marginTop: 8 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556A" style={{ flexShrink: 0, marginTop: 1 }}>
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>
+                <span style={{ fontSize: 12, fontWeight: 300, color: '#55556A', lineHeight: 1.5 }}>
+                  Joining a group gives you instant access to shared files and real-time collaboration.
+                </span>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={S.lbl}>Group Name</label>
+                <input style={S.inp} placeholder="OS Section A" value={createForm.name} required
+                  onChange={e => setCreateForm(p => ({ ...p, name: e.target.value }))}
+                  onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                  onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+              </div>
+              <div>
+                <label style={S.lbl}>Subject</label>
+                <input style={S.inp} placeholder="Operating Systems" value={createForm.subject} required
+                  onChange={e => setCreateForm(p => ({ ...p, subject: e.target.value }))}
+                  onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                  onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+              </div>
+              <div>
+                <label style={S.lbl}>
+                  Description <span style={{ color: '#55556A', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                </label>
+                <input style={S.inp} placeholder="Morning batch, Room 301" value={createForm.description}
+                  onChange={e => setCreateForm(p => ({ ...p, description: e.target.value }))}
+                  onFocus={e => e.target.style.borderColor = '#5B5FEF'}
+                  onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+                <button type="submit" disabled={loading}
+                  style={{ ...S.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                  {loading ? 'Creating…' : 'Create Group'}
+                </button>
+                <button type="button" onClick={onClose} style={S.cancelBtn}
+                  onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
