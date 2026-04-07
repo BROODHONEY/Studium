@@ -48,13 +48,13 @@ function RailBtn({ id, active, onClick, badge }) {
         width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s', position: 'relative',
-        background: active ? 'linear-gradient(135deg,rgba(99,102,241,0.18),rgba(37,99,235,0.1))' : 'none',
-        color: active ? '#6366F1' : 'var(--text-3)',
+        background: active ? 'rgba(91,95,239,0.15)' : 'none',
+        color: active ? '#7B7FF5' : '#55556A',
       }}
-      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(99,102,241,0.07)'; e.currentTarget.style.color = 'var(--text-2)'; } }}
-      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-3)'; } }}
+      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(91,95,239,0.08)'; e.currentTarget.style.color = '#9898B0'; } }}
+      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#55556A'; } }}
     >
-      {active && <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3, borderRadius: '0 2px 2px 0', background: '#6366F1' }}/>}
+      {active && <div style={{ position: 'absolute', left: 0, top: '22%', bottom: '22%', width: 3, borderRadius: '0 3px 3px 0', background: '#5B5FEF' }}/>}
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={icon}/></svg>
       {badge > 0 && (
         <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
@@ -304,7 +304,7 @@ export default function DashboardPage() {
       <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--bg-void)', flexDirection: 'column' }}>
 
         {/* ── Full-width top header bar ── */}
-        <div className="dash-topbar t-divider" style={{ height: 52, flexShrink: 0, borderBottomWidth: 1, borderBottomStyle: 'solid', display: 'flex', alignItems: 'center', paddingRight: 20 }}>
+        <div style={{ height: 52, flexShrink: 0, borderBottom: '1px solid #1A1A24', display: 'flex', alignItems: 'center', paddingRight: 20, background: '#0D0D10' }}>
           {/* Logo area — aligns with icon rail */}
           <div style={{ width: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img src={logo} alt="logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
@@ -335,7 +335,7 @@ export default function DashboardPage() {
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
 
           {/* Icon rail (56px) */}
-          <div className="dash-rail" style={{ width: 56, flexShrink: 0, borderRightWidth: 1, borderRightStyle: 'solid', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 8, paddingBottom: 12, gap: 4 }}>
+          <div style={{ width: 56, flexShrink: 0, borderRight: '1px solid #1A1A24', background: '#0D0D10', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 8, paddingBottom: 12, gap: 4 }}>
             {NAV_MAIN.map(id => (
               <RailBtn key={id} id={id} active={activeNav === id && panelOpen}
                 onClick={() => {
@@ -347,9 +347,9 @@ export default function DashboardPage() {
             <div style={{ flex: 1 }} />
             <button title="Support"
               onClick={() => { setSupportOpen(v => !v); setSettingsOpen(false); setPanelOpen(true); }}
-              style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: 'var(--text-3)', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.07)'; e.currentTarget.style.color = 'var(--text-2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-3)'; }}>
+              style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: '#55556A', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.08)'; e.currentTarget.style.color = '#9898B0'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#55556A'; }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                 <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
@@ -358,19 +358,19 @@ export default function DashboardPage() {
           </div>
 
           {/* Sliding panel */}
-          <div className="dash-sidebar" style={{
+          <div style={{
             width: panelOpen ? 220 : 0,
             flexShrink: 0, overflow: 'hidden',
-            borderRightWidth: panelOpen ? 1 : 0,
-            borderRightStyle: 'solid',
+            borderRight: panelOpen ? '1px solid #1A1A24' : 'none',
             transition: 'width 0.22s ease, border-width 0.22s ease',
             display: 'flex', flexDirection: 'column',
+            background: '#13131A',
           }}>
             <div style={{ width: 220, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
               {/* Panel header */}
-              <div className="t-divider" style={{ height: 44, padding: '0 14px', borderBottomWidth: 1, borderBottomStyle: 'solid', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ height: 44, padding: '0 14px', borderBottom: '1px solid #1A1A24', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#13131A' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                   {settingsOpen ? 'Settings' : NAV_META[activeNav]?.label}
                 </span>
                 {/* FAB for groups */}

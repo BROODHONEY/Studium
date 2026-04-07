@@ -58,36 +58,36 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
       onTouchMove={cancelPress}
       onContextMenu={e => { e.preventDefault(); onLongPress(group.id, e.clientX, e.clientY); }}
       onClick={() => onSelect(group)}
-      className={`w-full text-left px-3 py-2.5 transition select-none
-        ${isArchived ? 'opacity-40' : ''}
-        ${dragging ? 'opacity-30' : ''}
-        ${active
-          ? 'bg-[rgba(99,102,241,0.1)]'
-          : 'hover:bg-[rgba(99,102,241,0.05)]'}`}>
-      <div className="flex items-center gap-1.5 min-w-0">
+      style={{
+        width: '100%', textAlign: 'left', padding: '8px 12px 8px 14px',
+        background: active ? 'rgba(91,95,239,0.1)' : 'transparent',
+        border: 'none', cursor: 'pointer', display: 'block',
+        opacity: isArchived || dragging ? 0.4 : 1,
+        transition: 'background 0.12s',
+        position: 'relative',
+        borderLeft: active ? '2px solid #5B5FEF' : '2px solid transparent',
+      }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(91,95,239,0.05)'; }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {pinned && (
-          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
+          <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: '#55556A' }}>
             <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
           </svg>
         )}
-        {isArchived && (
-          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
-            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
-          </svg>
-        )}
-        <p className="text-sm truncate flex-1" style={{ fontWeight: active ? 400 : 300, color: active ? 'var(--text-1)' : 'var(--text-1)' }}>
+        <p style={{ fontSize: 13, fontWeight: active ? 500 : 400, color: active ? '#EEEEF5' : '#9898B0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, margin: 0 }}>
           {group.name}
         </p>
         {label && (
-          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 300, color: 'var(--text-2)', letterSpacing: '0.02em' }}>
+          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 400, color: '#55556A', letterSpacing: '0.04em' }}>
             {label}
           </span>
         )}
         {hasUnread && !active && (
-          <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full" style={{ background: '#6366F1' }}/>
+          <span style={{ flexShrink: 0, width: 6, height: 6, borderRadius: '50%', background: '#5B5FEF', display: 'inline-block' }}/>
         )}
       </div>
-      <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-2)', fontWeight: 300, fontSize: 12 }}>
+      <p style={{ fontSize: 11, fontWeight: 300, color: '#55556A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '2px 0 0' }}>
         {group.subject} · {group.my_role}
       </p>
     </button>
@@ -281,20 +281,24 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     <div className="flex flex-col h-full relative" onClick={() => { setContextMenu(null); }}>
 
       {/* Search bar */}
-      <div className="px-3 pt-2 pb-1 flex-shrink-0">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '8px 12px' }}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
+      <div style={{ padding: '10px 12px 8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0D0D10', border: '1px solid #1A1A24', borderRadius: 8, padding: '7px 10px', transition: 'border-color 0.15s' }}
+          onFocusCapture={e => e.currentTarget.style.borderColor = 'rgba(91,95,239,0.4)'}
+          onBlurCapture={e => e.currentTarget.style.borderColor = '#1A1A24'}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#55556A', flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, fontWeight: 300, color: 'var(--text-1)', fontFamily: 'Inter, sans-serif' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, fontWeight: 300, color: '#EEEEF5', fontFamily: 'Inter, sans-serif' }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} style={{ color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+            <button onClick={() => setSearchQuery('')} style={{ color: '#55556A', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}
+              onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
+              onMouseLeave={e => e.currentTarget.style.color = '#55556A'}>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
               </svg>
             </button>
@@ -313,11 +317,11 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             {/* ── Pinned section ── */}
             {pinnedGroups.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 px-2 py-1.5">
-                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px 6px' }}>
+                  <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: '#5B5FEF' }}>
                     <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
                   </svg>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pinned</span>
                 </div>
                 <div className="space-y-0.5">
                   {pinnedGroups.map(group => (
@@ -340,8 +344,8 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             {folders.length > 0 && (
               <div className="mb-1">
                 {/* Section header */}
-                <div className="flex items-center justify-between px-1 mb-2">
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Folders</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px 6px' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Folders</span>
                   <div className="flex items-center gap-1">
                     <button onClick={() => setFolderModal(true)}
                       style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>
@@ -466,7 +470,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               onDrop={e => { e.preventDefault(); const gid = e.dataTransfer.getData('groupId') || dragGroupIdRef.current; if (gid) { moveToFolder(gid, null); dragGroupIdRef.current = null; setDragGroupId(null); setDragFolderId(null); } }}
               className={`rounded-xl transition min-h-[4px] ${dragFolderId === '__none__' ? 'ring-1 ring-indigo-500/30' : ''}`}>
               {folders.length > 0 && ungrouped.length > 0 && (
-                <p style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 2px' }}>Other</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '10px 14px 4px' }}>Other</p>
               )}
               {dragFolderId === '__none__' && ungrouped.length === 0 && (
                 <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-2)', padding: '8px 12px', fontStyle: 'italic', textAlign: 'center' }}>Drop to remove from folder</p>
@@ -492,14 +496,14 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
               <div>
                 <button
                   onClick={() => setShowArchived(v => !v)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: 'var(--text-3)' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px 6px', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: '#55556A' }}>
                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
                   </svg>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Archived</span>
-                  <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)', marginLeft: 2 }}>{archivedGroups.length}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#55556A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Archived</span>
+                  <span style={{ fontSize: 10, fontWeight: 300, color: '#55556A', marginLeft: 2 }}>{archivedGroups.length}</span>
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"
-                    style={{ flexShrink: 0, color: 'var(--text-3)', marginLeft: 'auto', transform: showArchived ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}>
+                    style={{ flexShrink: 0, color: '#55556A', marginLeft: 'auto', transform: showArchived ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}>
                     <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                   </svg>
                 </button>
