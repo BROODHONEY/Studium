@@ -324,8 +324,9 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
             {/* Quick invite card */}
             {isAdmin && (
-              <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 22px', minWidth: 180, maxWidth: 220 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>
+              <div style={{ background: 'linear-gradient(145deg, #1E1208 0%, #1A1010 100%)', border: '1px solid rgba(255,179,142,0.20)', borderRadius: 14, padding: '20px 22px', minWidth: 180, maxWidth: 220, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(255,179,142,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>
                   Quick Invite
                 </span>
                 <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: '0 0 16px', lineHeight: 1.5 }}>

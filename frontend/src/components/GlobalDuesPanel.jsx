@@ -249,6 +249,7 @@ function FilterRow({ filter, setFilter, catFilter, setCatFilter }) {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 16 16'%3E%3Cpath fill='%23${active ? 'C0C1FF' : '555566'}' d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 10px center',
+    backgroundSize: '10px 10px',
     paddingRight: 28,
   });
 
@@ -395,6 +396,47 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
           {/* Right */}
           <div style={{ position: 'sticky', top: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <MiniCalendar dues={dues} onDayClick={setSelectedDay} selectedDay={selectedDay} />
+
+            {/* Overdue alert card */}
+            {overdueCount > 0 && (
+              <div style={{
+                background: 'linear-gradient(145deg, #1E1208 0%, #1A1010 100%)',
+                border: '1px solid rgba(255,179,142,0.20)',
+                borderRadius: 14, padding: '20px 20px 16px',
+                position: 'relative', overflow: 'hidden',
+              }}>
+                {/* Subtle glow */}
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(255,179,142,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+                <p style={{ fontSize: 10, fontWeight: 700, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 8px' }}>
+                  Alert
+                </p>
+                <p style={{ fontSize: 28, fontWeight: 800, color: P.text1, margin: '0 0 10px', fontFamily: "'Manrope','Inter',sans-serif", lineHeight: 1.1 }}>
+                  {overdueCount} Overdue
+                </p>
+                <p style={{ fontSize: 13, fontWeight: 300, color: P.text2, margin: '0 0 16px', lineHeight: 1.6 }}>
+                  {(() => {
+                    const overdueDues = dues.filter(d => new Date(d.due_date).getTime() < now);
+                    const names = [...new Set(overdueDues.map(d => d.title))].slice(0, 2);
+                    return `Immediate action required for ${names.join(' and ')}${overdueDues.length > 2 ? ` and ${overdueDues.length - 2} more` : ''}.`;
+                  })()}
+                </p>
+                <button
+                  onClick={() => setFilter('overdue')}
+                  style={{
+                    width: '100%', padding: '11px', borderRadius: 10,
+                    background: 'rgba(255,179,142,0.12)', border: '1px solid rgba(255,179,142,0.25)',
+                    color: P.secondary, fontSize: 11, fontWeight: 700,
+                    letterSpacing: '0.10em', textTransform: 'uppercase',
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,179,142,0.20)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,179,142,0.12)'; }}
+                >
+                  Review Now
+                </button>
+              </div>
+            )}
 
             {/* This week */}
             {(() => {
