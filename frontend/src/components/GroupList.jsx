@@ -88,7 +88,7 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
         )}
       </div>
       <p style={{ fontSize: 12, fontWeight: 300, color: '#666666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '2px 0 0' }}>
-        {group.subject} � {group.my_role}
+        {group.subject}  · {group.my_role}
       </p>
     </button>
   );

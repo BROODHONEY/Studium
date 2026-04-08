@@ -165,7 +165,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <label style={lbl}>Message</label>
               <textarea ref={contentRef}
                 style={{ ...inp, resize: 'none', lineHeight: 1.6, minHeight: 100 }}
-                rows={4} placeholder="Write your announcement�" required
+                rows={4} placeholder="Write your announcement ·" required
                 value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = '#C0C1FF'}
                 onBlur={e => e.target.style.borderColor = '#333333'} />
@@ -222,7 +222,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
                 style={{ width: '100%', padding: '14px', background: '#C0C1FF', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
-                {loading ? 'Saving�' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
+                {loading ? 'Saving ·' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
               </button>
               <button type="button" onClick={handleCancel}
                 style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#555555', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
@@ -249,7 +249,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   );
 }
 
-export default function GroupOverview({ group, onFileRef }) {
+export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
   const { user }     = useAuth();
   const { socket }   = useSocket();
   const { addToast } = useToast();
@@ -529,7 +529,7 @@ export default function GroupOverview({ group, onFileRef }) {
               )}
             </div>
 
-            {/* Scheduled � teachers only */}
+            {/* Scheduled  · teachers only */}
             {isTeacher && scheduled.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -548,7 +548,7 @@ export default function GroupOverview({ group, onFileRef }) {
                               <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 5, background: `${P.secondary}25`, color: P.secondary, border: `1px solid ${P.secondary}40`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tag.label}</span>
                               <span style={{ fontSize: 10, color: P.text3, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
-                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })} � {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}  · {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                               </span>
                             </div>
                             <p style={{ fontSize: 13, fontWeight: 500, color: P.text1, margin: '0 0 2px' }}>{a.title}</p>
@@ -654,8 +654,7 @@ export default function GroupOverview({ group, onFileRef }) {
                     style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px', borderRadius: 8, background: 'none', border: 'none', color: P.secondary, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.color = P.secondaryHi}
                     onMouseLeave={e => e.currentTarget.style.color = P.secondary}
-                    onClick={() => {}}>
-                    Open Calendar
+                    onClick={() => onOpenCalendar?.()}>                    Open Calendar
                     <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 1 0v4a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/><path d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/></svg>
                   </button>
                 </div>
@@ -711,7 +710,7 @@ export default function GroupOverview({ group, onFileRef }) {
                     <TagIcon type={a.tag || 'general'} />{tag.label}
                   </span>
                   <p style={{ fontSize: 16, fontWeight: 600, color: P.text1, margin: 0, lineHeight: 1.4 }}>{a.title}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name} � {formatDate(a.created_at)}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name}  · {formatDate(a.created_at)}</p>
                 </div>
                 <button onClick={() => setSelectedAnnouncement(null)}
                   style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 2, lineHeight: 0 }}>

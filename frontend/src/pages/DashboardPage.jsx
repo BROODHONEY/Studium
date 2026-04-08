@@ -20,15 +20,17 @@ import SettingsPanel, { SettingsSidebar } from '../components/SettingsPanel';
 import NotificationBell from '../components/NotificationBell';
 import ProfileModal from '../components/ProfileModal';
 import KickNotification from '../components/KickNotification';
-import { SearchSidebar, useSearch } from '../components/SearchPanel';
+import GlobalDuesPanel from '../components/GlobalDuesPanel';
+import { useSearch } from '../components/SearchPanel';
 import SupportPanel from '../components/SupportPanel';
 
-const NAV_MAIN = ['groups', 'dms'];
-const NAV_ALL  = ['groups', 'dms', 'notifications', 'settings'];
+const NAV_MAIN = ['groups', 'dms', 'dues'];
+const NAV_ALL  = ['groups', 'dms', 'dues', 'notifications', 'settings'];
 
 const NAV_META = {
   groups:        { label: 'Groups',        icon: 'M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z' },
   dms:           { label: 'Messages',      icon: 'M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2z' },
+  dues:          { label: 'Due Dates',     icon: 'M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z' },
   search:        { label: 'Search',        icon: 'M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z' },
   notifications: { label: 'Notifications', icon: 'M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z' },
   settings:      { label: 'Settings',      icon: 'M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z' },
@@ -251,6 +253,7 @@ export default function DashboardPage() {
         <DMList activeConvoId={activeConvo?.id} onSelect={handleSelectConvo} />
       </div>
     );
+    if (activeNav === 'dues') return null; // no sidebar for global dues
     if (activeNav === 'notifications') return (
       <div style={{ flex: 1, minHeight: 0 }}>
         <NotificationBell inline onNavigate={handleNotificationNavigate} />
@@ -267,6 +270,7 @@ export default function DashboardPage() {
       <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
         onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileView('detail'); } }} />
     );
+    if (activeNav === 'dues') return <GlobalDuesPanel onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Dues'); setActiveNav('groups'); setMobileView('detail'); } }} />;
     if (!activeGroup) return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(192,193,255,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
@@ -283,7 +287,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={handleFileRef} />}
+          {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={handleFileRef} onOpenCalendar={() => setActiveNav('dues')} />}
           {activeTab === 'Chat'     && <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={handleFileRef} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} />}
           {activeTab === 'Dues'     && <DuesPanel group={activeGroup} />}
           {activeTab === 'Files'    && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
@@ -357,9 +361,9 @@ export default function DashboardPage() {
         {/* ── Body: sliding panel + main ── */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
           <div style={{
-            width: panelOpen ? 220 : 0,
+            width: panelOpen && activeNav !== 'dues' ? 220 : 0,
             flexShrink: 0, overflow: 'hidden',
-            borderRight: panelOpen ? '1px solid #2A2A3A' : 'none',
+            borderRight: (panelOpen && activeNav !== 'dues') ? '1px solid #2A2A3A' : 'none',
             transition: 'width 0.22s ease, border-width 0.22s ease',
             display: 'flex', flexDirection: 'column',
             background: '#1E1E1E',
@@ -451,6 +455,8 @@ export default function DashboardPage() {
               {mobileDetailNav === 'dms'
                 ? <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
                     onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileDetailNav('groups'); setMobileView('detail'); } }} />
+                : mobileDetailNav === 'dues'
+                ? <GlobalDuesPanel onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Dues'); setActiveNav('groups'); setMobileDetailNav('groups'); setMobileView('detail'); } }} />
                 : mobileDetailNav === 'settings'
                 ? <SettingsPanel activeSection={settingsSection} />
                 : mobileDetailNav === 'support'

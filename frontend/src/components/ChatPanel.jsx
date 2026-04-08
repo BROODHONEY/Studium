@@ -480,7 +480,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
       )}
 
-      {/* -- Outer row: [left col] [right sidebar] � both span full height -- */}
+      {/* -- Outer row: [left col] [right sidebar]  · both span full height -- */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
 
         {/* -- Left column: timeline + input -- */}
@@ -676,9 +676,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 11, fontWeight: 500, color: C.secondary }}>{isPrivate ? '↩ Private reply to ' : '↩ Replying to '}</span>
                     <span style={{ fontSize: 11, fontWeight: 500, color: C.text2 }}>{r.senderName}</span>
-                    <p style={{ fontSize: 11, color: C.text3, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? '�' : ''}</p>
+                    <p style={{ fontSize: 11, color: C.text3, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? ' ·' : ''}</p>
                   </div>
-                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}>�</button>
+                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}> ·</button>
                 </div>
               );
             })()}
@@ -692,7 +692,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 1, padding: 0 }}
                       onMouseEnter={e => e.currentTarget.style.color = C.danger}
-                      onMouseLeave={e => e.currentTarget.style.color = C.text3}>�</button>
+                      onMouseLeave={e => e.currentTarget.style.color = C.text3}> ·</button>
                   </span>
                 ))}
               </div>
@@ -732,7 +732,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
                   </button>
                   <textarea ref={textareaRef} value={text} onChange={handleTextChange} onKeyDown={handleKeyDown} rows={1}
-                    placeholder={connected ? 'Share your thoughts� use @ to mention' : 'Reconnecting�'}
+                    placeholder={connected ? 'Share your thoughts · use @ to mention' : 'Reconnecting ·'}
                     style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: C.text1, resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }}
                     onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
                     disabled={!connected} />
@@ -825,7 +825,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search messages�"
+                placeholder="Search messages ·"
                 style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, fontWeight: 300, color: C.text1, fontFamily: 'Inter, sans-serif', minWidth: 0 }}
               />
               {searchQuery && (

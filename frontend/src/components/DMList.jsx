@@ -82,7 +82,7 @@ export default function DMList({ activeConvoId, onSelect }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-      {/* Search bar � identical to GroupList */}
+      {/* Search bar  · identical to GroupList */}
       <div style={{ padding: '8px 12px 8px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '8px 12px' }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
@@ -105,7 +105,7 @@ export default function DMList({ activeConvoId, onSelect }) {
       {search.trim() && (
         <div style={{ borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
           {searching ? (
-            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>Searching�</p>
+            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>Searching ·</p>
           ) : results.length === 0 ? (
             <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>No users found</p>
           ) : results.map(u => (

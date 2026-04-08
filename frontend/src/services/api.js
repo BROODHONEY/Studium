@@ -72,6 +72,7 @@ export const announcementsAPI = {
 };
 
 export const duesAPI = {
+  listAll: ()             => api.get('/dues'),
   list:   (groupId)       => api.get(`/dues/${groupId}`),
   create: (groupId, data) => api.post(`/dues/${groupId}`, data),
   update: (groupId, id, data) => api.put(`/dues/${groupId}/${id}`, data),

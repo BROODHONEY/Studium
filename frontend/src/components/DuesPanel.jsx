@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
@@ -52,7 +52,7 @@ const DS = {
 };
 
 function DueForm({ groupId, onCreated, editing, onCancel }) {
-  const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '' });
+  const [form, setForm]       = useState({ title: '', description: '', due_date: '', due_time: '', category: 'assignment' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(false);
 
@@ -63,10 +63,11 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
         description: editing.description || '',
         due_date: toISTDateInput(editing.due_date),
         due_time: (() => { const t = toISTTimeInput(editing.due_date); return t === '00:00' ? '' : t; })(),
+        category: editing.category || 'assignment',
       });
       setOpen(true);
     } else {
-      setForm({ title: '', description: '', due_date: '', due_time: '' });
+      setForm({ title: '', description: '', due_date: '', due_time: '', category: 'assignment' });
       if (!editing) setOpen(false);
     }
   }, [editing]);
@@ -77,12 +78,12 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
     try {
       const timeStr = form.due_time || '23:59';
       const isoDatetime = new Date(`${form.due_date}T${timeStr}`).toISOString();
-      const payload = { title: form.title, description: form.description, due_date: isoDatetime };
+      const payload = { title: form.title, description: form.description, due_date: isoDatetime, category: form.category };
       const res = editing
         ? await duesAPI.update(groupId, editing.id, payload)
         : await duesAPI.create(groupId, payload);
       onCreated(res.data);
-      setForm({ title: '', description: '', due_date: '', due_time: '' });
+      setForm({ title: '', description: '', due_date: '', due_time: '', category: 'assignment' });
       setOpen(false);
       if (onCancel) onCancel();
     } catch (err) { console.error(err); }
@@ -141,12 +142,32 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
               <label style={DS.lbl}>
                 Description <span style={{ color: '#55556E', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
               </label>
-              <input style={DS.inp} placeholder="Add more context�"
+              <input style={DS.inp} placeholder="Add more context ·"
                 value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = '#6366F1'}
                 onBlur={e => e.target.style.borderColor = '#2A2A38'} />
             </div>
-
+            <div>
+              <label style={DS.lbl}>Category</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {[
+                  { key: 'assignment',  label: 'Assignment',     color: '#C0C1FF' },
+                  { key: 'quiz',        label: 'Quiz',           color: '#FFB38E' },
+                  { key: 'observation', label: 'Observation',    color: '#22C55E' },
+                  { key: 'form',        label: 'Form / Details', color: '#9E9E9E' },
+                  { key: 'other',       label: 'Other',          color: '#555566' },
+                ].map(cat => {
+                  const active = form.category === cat.key;
+                  return (
+                    <button key={cat.key} type="button"
+                      onClick={() => setForm(p => ({ ...p, category: cat.key }))}
+                      style={{ padding: '5px 12px', borderRadius: 7, fontSize: 12, fontWeight: active ? 600 : 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s', background: active ? `${cat.color}20` : '#252525', color: active ? cat.color : '#555566', border: `1px solid ${active ? `${cat.color}50` : '#2A2A38'}` }}>
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <label style={DS.lbl}>Due Date</label>
@@ -169,7 +190,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
                 style={{ ...DS.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
-                {loading ? (editing ? 'Updating�' : 'Adding�') : (editing ? 'Update' : 'Add Due Date')}
+                {loading ? (editing ? 'Updating ·' : 'Adding ·') : (editing ? 'Update' : 'Add Due Date')}
               </button>
               <button type="button" onClick={handleCancel} style={DS.cancelBtn}
                 onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}
@@ -192,6 +213,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
     </div>
   );
 }
+// category picker injected via strReplace below
 
 export default function DuesPanel({ group }) {
   const { user }     = useAuth();
@@ -379,7 +401,7 @@ export default function DuesPanel({ group }) {
                 </svg>
                 <span style={{ fontSize: 13, color: '#9898B0', fontWeight: 300 }}>
                   {dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })}
-                  {hasTime && ` � ${dt.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`}
+                  {hasTime && `  · ${dt.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`}
                 </span>
               </div>
               {d.description && (
