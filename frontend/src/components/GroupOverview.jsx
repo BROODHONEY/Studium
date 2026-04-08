@@ -606,8 +606,13 @@ export default function GroupOverview({ group, onFileRef }) {
             {/* Upcoming Deadlines */}
             {(() => {
               const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+              const sevenDaysLater = new Date(todayStart); sevenDaysLater.setDate(todayStart.getDate() + 7);
               const upcoming = dues
-                .filter(d => d.due_date && new Date(d.due_date) >= todayStart)
+                .filter(d => {
+                  if (!d.due_date) return false;
+                  const dt = new Date(d.due_date);
+                  return dt >= todayStart && dt <= sevenDaysLater;
+                })
                 .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
                 .slice(0, 5);
               const BAR_COLORS = [P.secondary, P.primary, P.tertiaryHi, '#22C55E', P.primaryHi];
@@ -617,26 +622,28 @@ export default function GroupOverview({ group, onFileRef }) {
                 const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
                 const dDay = new Date(d); dDay.setHours(0,0,0,0);
                 const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                if (dDay.getTime() === today.getTime()) return { label: `Today, ${timeStr}`, urgent: true };
-                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow, ${timeStr}`, urgent: false };
-                return { label: `${d.toLocaleDateString([], { weekday: 'long' })}, ${timeStr}`, urgent: false };
+                const dateStr = d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                if (dDay.getTime() === today.getTime()) return { label: `Today · ${timeStr}`, date: dateStr, urgent: true };
+                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow · ${timeStr}`, date: dateStr, urgent: false };
+                return { label: `${d.toLocaleDateString([], { weekday: 'long' })} · ${timeStr}`, date: dateStr, urgent: false };
               };
               return (
                 <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column' }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: P.text1, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Upcoming Deadlines</p>
                   {upcoming.length === 0 ? (
-                    <p style={{ fontSize: 12, color: P.text3, fontWeight: 300, fontStyle: 'italic', margin: 0 }}>No upcoming deadlines</p>
+                    <p style={{ fontSize: 12, color: P.text3, fontWeight: 300, fontStyle: 'italic', margin: 0 }}>No dues in the next 7 days</p>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                       {upcoming.map((d, i) => {
-                        const { label, urgent } = fmtDeadline(d.due_date);
+                        const { label, date, urgent } = fmtDeadline(d.due_date);
                         const color = BAR_COLORS[i % BAR_COLORS.length];
                         return (
                           <div key={d.id} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                             <div style={{ width: 4, borderRadius: 4, background: color, alignSelf: 'stretch', flexShrink: 0, minHeight: 36 }} />
-                            <div style={{ minWidth: 0 }}>
-                              <p style={{ fontSize: 13, fontWeight: 600, color: P.text1, margin: '0 0 3px', lineHeight: 1.3 }}>{d.title}</p>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: P.text1, margin: '0 0 2px', lineHeight: 1.3 }}>{d.title}</p>
                               <p style={{ fontSize: 11, fontWeight: 400, color: urgent ? P.secondary : P.text3, margin: 0 }}>{label}</p>
+                              <p style={{ fontSize: 10, fontWeight: 300, color: P.text3, margin: '1px 0 0' }}>{date}</p>
                             </div>
                           </div>
                         );

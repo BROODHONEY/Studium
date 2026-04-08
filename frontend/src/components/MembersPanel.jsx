@@ -2,33 +2,31 @@
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { groupsAPI } from '../services/api';
-import QRCode from 'qrcode';
 import ConfirmDialog from './ui/ConfirmDialog';
 
-const ini = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
-const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
+// ── Helpers ────────────────────────────────────────────
+const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+const AVATAR_COLORS = ['#C0C1FF', '#7072AC', '#FFB38E', '#22C55E', '#9E9E9E', '#db2777'];
+const avatarBg = (n) => AVATAR_COLORS[(n?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
-const S = {
-  label: { fontSize: 11, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' },
-  card:  { borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-card)', padding: '16px 18px' },
-  row:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+// ── Role badge config ──────────────────────────────────
+const ROLE_BADGE = {
+  admin:   { label: 'Admin',   bg: 'rgba(192,193,255,0.14)', color: '#C0C1FF', border: 'rgba(192,193,255,0.30)' },
+  teacher: { label: 'Faculty', bg: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: 'rgba(255,179,142,0.30)' },
+  student: { label: 'Student', bg: 'rgba(158,158,158,0.12)', color: '#9E9E9E', border: 'rgba(158,158,158,0.25)' },
 };
 
-function ActionBtn({ label, onClick, danger, accent }) {
-  const [hov, setHov] = useState(false);
-  const base = { padding: '4px 10px', borderRadius: 7, fontSize: 11, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'Inter, sans-serif' };
-  let bg = hov
-    ? danger ? 'rgba(239,68,68,0.15)' : accent ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.08)'
-    : 'var(--bg-raised)';
-  let color = hov
-    ? danger ? 'rgba(239,68,68,0.9)' : accent ? 'rgba(165,180,252,0.9)' : 'var(--text-1)'
-    : 'var(--text-3)';
+function RoleBadge({ role }) {
+  const cfg = ROLE_BADGE[role] || ROLE_BADGE.student;
   return (
-    <button onClick={onClick} style={{ ...base, background: bg, color }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      {label}
-    </button>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px', borderRadius: 5,
+      fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+      background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`,
+    }}>
+      {cfg.label}
+    </span>
   );
 }
 
@@ -37,40 +35,96 @@ function MemberRow({ m, currentUserId, isAdmin, canKick, canPromote, canDemote, 
   const u = m.users;
   if (!u) return null;
   const isMe = u.id === currentUserId;
+
   return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: hov ? 'rgba(99,102,241,0.04)' : 'none', transition: 'background 0.1s' }}>
-      <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(u.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff', flexShrink: 0 }}>
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '10px 14px', borderRadius: 10,
+        background: hov ? 'rgba(192,193,255,0.04)' : 'transparent',
+        transition: 'background 0.15s',
+      }}
+    >
+      {/* Avatar */}
+      <div style={{
+        width: 36, height: 36, borderRadius: '50%',
+        background: avatarBg(u.name),
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 12, fontWeight: 600, color: '#fff', flexShrink: 0,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+      }}>
         {ini(u.name)}
       </div>
+
+      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <button onClick={() => onViewProfile?.(u.id)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)' }}>{u.name}</span>
-          {isMe && <span style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)' }}>you</span>}
+        <button
+          onClick={() => onViewProfile?.(u.id)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}>{u.name}</span>
+          {isMe && (
+            <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>you</span>
+          )}
         </button>
-        {u.email && <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>}
+        {u.email && (
+          <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {u.email}
+          </p>
+        )}
       </div>
-      {isAdmin && !isMe && hov && (
+
+      {/* Actions (hover, admin only) */}
+      {isAdmin && !isMe && hov ? (
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          {canDemote  && <ActionBtn label="Revoke admin" onClick={() => onDemote(u)} danger />}
-          {canPromote && <ActionBtn label="Make admin"   onClick={() => onPromote(u)} accent />}
-          {canKick    && <ActionBtn label="Remove"       onClick={() => onKick(u)} danger />}
+          {canDemote && (
+            <button onClick={() => onDemote(u)} style={actionBtnStyle('danger')}>Revoke</button>
+          )}
+          {canPromote && (
+            <button onClick={() => onPromote(u)} style={actionBtnStyle('accent')}>Promote</button>
+          )}
+          {canKick && (
+            <button onClick={() => onKick(u)} style={actionBtnStyle('danger')}>Remove</button>
+          )}
         </div>
+      ) : (
+        <RoleBadge role={m.role} />
       )}
     </div>
   );
 }
 
+function actionBtnStyle(type) {
+  const isDanger = type === 'danger';
+  return {
+    padding: '4px 10px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer',
+    border: `1px solid ${isDanger ? 'rgba(239,68,68,0.30)' : 'rgba(192,193,255,0.30)'}`,
+    background: isDanger ? 'rgba(239,68,68,0.10)' : 'rgba(192,193,255,0.10)',
+    color: isDanger ? '#EF4444' : '#C0C1FF',
+    transition: 'all 0.15s',
+  };
+}
+
 function MemberSection({ title, members, ...rest }) {
   if (!members.length) return null;
   return (
-    <section>
-      <p style={{ ...S.label, marginBottom: 8 }}>{title} · {members.length}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div>
+      {/* Section header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px', marginBottom: 4 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>
+          {title}
+        </span>
+        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em' }}>
+          {String(members.length).padStart(2, '0')} {members.length === 1 ? 'ENTRY' : 'ENTRIES'}
+        </span>
+      </div>
+      {/* Rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {members.map(m => <MemberRow key={m.users?.id} m={m} {...rest} />)}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -100,9 +154,6 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   const [memberConfirm, setMemberConfirm]       = useState(null);
   const [confirmingMember, setConfirmingMember] = useState(false);
 
-  const [showQR, setShowQR]       = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState('');
-
   useEffect(() => {
     if (!group) return;
     setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' });
@@ -112,13 +163,6 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [group?.id]);
-
-  useEffect(() => {
-    if (!showQR || !group?.invite_code) return;
-    QRCode.toDataURL(group.invite_code, { width: 240, margin: 2, color: { dark: '#ffffff', light: '#0d0d0d' } })
-      .then(url => setQrDataUrl(url))
-      .catch(console.error);
-  }, [showQR, group?.invite_code]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.invite_code);
@@ -188,7 +232,8 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   const teachers = members.filter(m => m.role === 'teacher');
   const students = members.filter(m => m.role === 'student');
 
-  const sharedMemberProps = { currentUserId: user?.id, isAdmin, onViewProfile,
+  const sharedMemberProps = {
+    currentUserId: user?.id, isAdmin, onViewProfile,
     onKick:    u => setMemberConfirm({ action: 'kick',    userId: u.id, name: u.name }),
     onPromote: u => setMemberConfirm({ action: 'promote', userId: u.id, name: u.name }),
     onDemote:  u => setMemberConfirm({ action: 'demote',  userId: u.id, name: u.name }),
@@ -196,173 +241,176 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
   return (
     <>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', background: 'transparent', position: 'relative', fontFamily: 'Inter, sans-serif' }}>
-        <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', background: 'var(--void)', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
 
-        <div style={{ maxWidth: 640, margin: '0 auto', width: '100%', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 24, position: 'relative', zIndex: 1 }}>
+        {/* Ambient glows */}
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.07) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: 300, height: 250, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.04) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
 
-          {/* Error */}
+        <div style={{ maxWidth: 720, margin: '0 auto', width: '100%', padding: '28px 24px 48px', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 }}>
+
+          {/* Error banner */}
           {error && (
-            <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: 'rgba(239,68,68,0.8)', fontSize: 12, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', borderRadius: 10, color: '#EF4444', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               {error}
-              <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.5)', fontSize: 14, lineHeight: 1 }}>�</button>
+              <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.5)', fontSize: 16, lineHeight: 1 }}>×</button>
             </div>
           )}
 
-          {/* Admin panel */}
-          {isAdmin && (
-            <div style={S.card}>
-              {/* Invite code */}
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ ...S.label, marginBottom: 8 }}>Invite code</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 600, color: 'rgba(165,180,252,0.9)', letterSpacing: '0.15em' }}>{group.invite_code}</span>
-                  <button onClick={copyCode}
-                    style={{ marginLeft: 'auto', padding: '5px 12px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: copied ? 'rgba(48,209,88,0.8)' : 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer', transition: 'all 0.15s' }}>
-                    {copied ? 'Copied!' : 'Copy'}
-                  </button>
-                  <button onClick={() => setShowQR(true)}
-                    style={{ padding: '5px 12px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 11, fontWeight: 300, cursor: 'pointer' }}>
-                    QR
-                  </button>
-                </div>
-              </div>
+          {/* ── Top two-column cards ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 14, alignItems: 'start' }}>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: 'var(--border-color)', margin: '16px 0' }}/>
-
-              {/* Group info */}
-              <div>
-                <div style={{ ...S.row, marginBottom: 8 }}>
-                  <p style={S.label}>Group info</p>
-                  {!editingDesc && (
-                    <button onClick={() => setEditingDesc(true)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 300, color: 'rgba(99,102,241,0.8)' }}>Edit</button>
-                  )}
-                </div>
-                {editingDesc ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div>
-                      <label className="form-label">Group name</label>
-                      <input className="form-input" value={editForm.name} required onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} placeholder="Group name"/>
-                    </div>
-                    <div>
-                      <label className="form-label">Subject</label>
-                      <input className="form-input" value={editForm.subject} required onChange={e => setEditForm(p => ({ ...p, subject: e.target.value }))} placeholder="e.g. Mathematics"/>
-                    </div>
-                    <div>
-                      <label className="form-label">Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
-                      <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a description�" className="form-input" style={{ resize: 'none' }}/>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={handleSaveDescription} disabled={savingDesc || !editForm.name.trim() || !editForm.subject.trim()}
-                        style={{ padding: '6px 14px', borderRadius: 8, background: '#6366F1', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer', opacity: savingDesc ? 0.6 : 1 }}>
-                        {savingDesc ? 'Saving�' : 'Save'}
-                      </button>
-                      <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
-                        style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 12, fontWeight: 300, color: group.description ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)', fontStyle: group.description ? 'normal' : 'italic' }}>
-                    {group.description || 'No description'}
-                  </p>
+            {/* Group description card */}
+            <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 22px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                  Group Description
+                </span>
+                {isAdmin && !editingDesc && (
+                  <button
+                    onClick={() => setEditingDesc(true)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 500, color: 'var(--primary)', padding: 0 }}
+                  >
+                    Edit
+                  </button>
                 )}
               </div>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: 'var(--border-color)', margin: '16px 0' }}/>
+              {!editingDesc && (
+                <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 10px', fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+                  {group.name}
+                </p>
+              )}
 
-              {/* Admins only toggle */}
-              <div style={S.row}>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>Admins only mode</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 2 }}>Only admins can send messages</p>
+              {editingDesc ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div>
+                    <label className="form-label">Group name</label>
+                    <input className="form-input" value={editForm.name} required onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} placeholder="Group name" />
+                  </div>
+                  <div>
+                    <label className="form-label">Subject</label>
+                    <input className="form-input" value={editForm.subject} required onChange={e => setEditForm(p => ({ ...p, subject: e.target.value }))} placeholder="e.g. Mathematics" />
+                  </div>
+                  <div>
+                    <label className="form-label">Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
+                    <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a description…" className="form-input" style={{ resize: 'none' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={handleSaveDescription} disabled={savingDesc || !editForm.name.trim() || !editForm.subject.trim()}
+                      style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--primary)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: savingDesc ? 0.6 : 1 }}>
+                      {savingDesc ? 'Saving…' : 'Save'}
+                    </button>
+                    <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
+                      style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-                <button onClick={handleToggleAdminsOnly} disabled={toggling}
-                  style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, background: adminsOnly ? '#6366F1' : 'var(--border-color)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
-                  <span style={{ position: 'absolute', top: 3, left: adminsOnly ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }}/>
-                </button>
-              </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, fontWeight: 300, color: group.description ? 'var(--text-2)' : 'var(--text-3)', fontStyle: group.description ? 'normal' : 'italic', margin: '0 0 16px', lineHeight: 1.6 }}>
+                    {group.description || 'No description added yet.'}
+                  </p>
+                  {/* Stats row */}
+                  <div style={{ display: 'flex', gap: 24 }}>
+                    <StatItem value={members.length} label="Active Members" />
+                    <StatItem value={admins.length + teachers.length} label="Admins & Teachers" />
+                    <StatItem value={students.length} label="Students" />
+                  </div>
+                </>
+              )}
             </div>
-          )}
 
-          {/* Members */}
+            {/* Quick invite card */}
+            {isAdmin && (
+              <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 22px', minWidth: 180, maxWidth: 220 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>
+                  Quick Invite
+                </span>
+                <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: '0 0 16px', lineHeight: 1.5 }}>
+                  Share this code with peers to let them join instantly.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.15em' }}>
+                    {group.invite_code}
+                  </span>
+                  <button onClick={copyCode}
+                    style={{ padding: '4px 8px', borderRadius: 7, background: copied ? 'rgba(34,197,94,0.12)' : 'rgba(192,193,255,0.10)', border: `1px solid ${copied ? 'rgba(34,197,94,0.30)' : 'rgba(192,193,255,0.25)'}`, color: copied ? '#22C55E' : 'var(--primary)', fontSize: 11, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                {/* Admins only toggle */}
+                <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div>
+                      <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-2)', margin: 0 }}>Admins only</p>
+                      <p style={{ fontSize: 10, fontWeight: 300, color: 'var(--text-3)', margin: '2px 0 0' }}>Restrict messaging</p>
+                    </div>
+                    <button onClick={handleToggleAdminsOnly} disabled={toggling}
+                      style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: adminsOnly ? 'var(--primary)' : 'var(--border)', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+                      <span style={{ position: 'absolute', top: 2, left: adminsOnly ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Member sections ── */}
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[1,2,3,4].map(i => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-raised)' }}/>
-                  <div style={{ height: 12, width: 120, borderRadius: 6, background: 'var(--bg-raised)' }}/>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--raised)' }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ height: 12, width: 140, borderRadius: 6, background: 'var(--raised)' }} />
+                    <div style={{ height: 10, width: 100, borderRadius: 6, background: 'var(--raised)' }} />
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <>
-              <MemberSection title="Admins"   members={admins}   canKick={false} canPromote={false} canDemote={true}  {...sharedMemberProps}/>
-              <MemberSection title="Teachers" members={teachers} canKick={true}  canPromote={true}  canDemote={false} {...sharedMemberProps}/>
-              <MemberSection title="Students" members={students} canKick={true}  canPromote={false} canDemote={false} {...sharedMemberProps}/>
-            </>
-          )}
-
-          {/* Leave group */}
-          {!isCreator && (
-            <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
-              {confirmLeave ? (
-                <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(239,68,68,0.8)', margin: 0 }}>Leave this group?</p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={handleLeave} disabled={leaving}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.8)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
-                      {leaving ? 'Leaving�' : 'Yes, leave'}
-                    </button>
-                    <button onClick={() => setConfirmLeave(false)}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button onClick={() => setConfirmLeave(true)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 300, color: 'rgba(239,68,68,0.5)', transition: 'color 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.8)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(239,68,68,0.5)'}>
-                  Leave group
-                </button>
-              )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <MemberSection title="Admins" members={admins}
+                canKick={false} canPromote={false} canDemote={true} {...sharedMemberProps} />
+              <MemberSection title="Teachers & Faculty" members={teachers}
+                canKick={true} canPromote={true} canDemote={false} {...sharedMemberProps} />
+              <MemberSection title="Students" members={students}
+                canKick={true} canPromote={false} canDemote={false} {...sharedMemberProps} />
             </div>
           )}
 
-          {/* Delete group */}
-          {isCreator && (
-            <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
-              {confirmDelete ? (
-                <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(239,68,68,0.8)', margin: 0 }}>Delete "{group.name}"?</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0 }}>This permanently removes the group, all messages, and all files.</p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={handleDeleteGroup} disabled={deleting}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.8)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
-                      {deleting ? 'Deleting�' : 'Yes, delete'}
-                    </button>
-                    <button onClick={() => setConfirmDelete(false)}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
+          {/* ── Danger zone ── */}
+          <div style={{ paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {!isCreator && (
+              confirmLeave ? (
+                <DangerConfirm
+                  message={`Leave "${group.name}"?`}
+                  confirmLabel={leaving ? 'Leaving…' : 'Yes, leave'}
+                  disabled={leaving}
+                  onConfirm={handleLeave}
+                  onCancel={() => setConfirmLeave(false)}
+                />
               ) : (
-                <button onClick={() => setConfirmDelete(true)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 300, color: 'rgba(239,68,68,0.5)', transition: 'color 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.8)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(239,68,68,0.5)'}>
-                  Delete group
-                </button>
-              )}
-            </div>
-          )}
+                <GhostDangerBtn label="Leave group" onClick={() => setConfirmLeave(true)} />
+              )
+            )}
+            {isCreator && (
+              confirmDelete ? (
+                <DangerConfirm
+                  message={`Delete "${group.name}"? This removes all messages and files permanently.`}
+                  confirmLabel={deleting ? 'Deleting…' : 'Yes, delete'}
+                  disabled={deleting}
+                  onConfirm={handleDeleteGroup}
+                  onCancel={() => setConfirmDelete(false)}
+                />
+              ) : (
+                <GhostDangerBtn label="Delete group" onClick={() => setConfirmDelete(true)} />
+              )
+            )}
+          </div>
+
         </div>
       </div>
 
@@ -380,26 +428,48 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
         onConfirm={handleConfirmMemberAction}
         disabled={confirmingMember}
       />
-
-      {/* QR modal */}
-      {showQR && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}
-          onClick={() => setShowQR(false)}>
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}
-            onClick={e => e.stopPropagation()}>
-            <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-1)', margin: 0 }}>Scan to join</p>
-            {qrDataUrl
-              ? <img src={qrDataUrl} alt="QR code" style={{ width: 200, height: 200, borderRadius: 12, margin: '0 auto', display: 'block' }}/>
-              : <div style={{ width: 200, height: 200, borderRadius: 12, background: 'var(--bg-raised)', margin: '0 auto' }}/>
-            }
-            <p style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 600, color: 'rgba(165,180,252,0.9)', letterSpacing: '0.15em', margin: 0 }}>{group.invite_code}</p>
-            <button onClick={() => setShowQR(false)}
-              style={{ padding: '10px', borderRadius: 10, background: 'var(--bg-raised)', border: '1px solid var(--border-color)', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, cursor: 'pointer' }}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </>
+  );
+}
+
+// ── Small helpers ──────────────────────────────────────
+function StatItem({ value, label }) {
+  return (
+    <div>
+      <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-1)', margin: 0, lineHeight: 1, fontFamily: "'Manrope', 'Inter', sans-serif" }}>{value}</p>
+      <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-3)', margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
+    </div>
+  );
+}
+
+function GhostDangerBtn({ label, onClick }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 400, color: hov ? '#EF4444' : 'rgba(239,68,68,0.45)', transition: 'color 0.15s', padding: 0, textAlign: 'left' }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function DangerConfirm({ message, confirmLabel, disabled, onConfirm, onCancel }) {
+  return (
+    <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(239,68,68,0.85)', margin: 0 }}>{message}</p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={onConfirm} disabled={disabled}
+          style={{ padding: '7px 16px', borderRadius: 8, background: 'rgba(239,68,68,0.80)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: disabled ? 0.6 : 1 }}>
+          {confirmLabel}
+        </button>
+        <button onClick={onCancel}
+          style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
+          Cancel
+        </button>
+      </div>
+    </div>
   );
 }
