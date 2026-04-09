@@ -544,20 +544,32 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   const canEdit   = isOwn && item.type !== 'system';
                   const reactionMap = {};
                   (item.message_reactions || []).forEach(r => { if (!reactionMap[r.emoji]) reactionMap[r.emoji] = []; reactionMap[r.emoji].push(r.user_id); });
+
+                  // Grouping: same sender, within 5 minutes, no date separator between
                   const prevItem   = i > 0 ? timeline[i - 1] : null;
+                  const nextItem   = i < timeline.length - 1 ? timeline[i + 1] : null;
                   const prevSender = prevItem?._kind !== 'system' ? (prevItem?.users || prevItem?.sender) : null;
-                  const showSenderName = !prevSender || prevSender.id !== sender?.id;
+                  const nextSender = nextItem?._kind !== 'system' ? (nextItem?.users || nextItem?.sender) : null;
+                  const prevDateLabel = prevItem?.created_at ? getDateLabel(prevItem.created_at) : null;
+                  const timeDiffPrev = prevItem?.created_at ? (new Date(item.created_at) - new Date(prevItem.created_at)) / 60000 : Infinity;
+                  const timeDiffNext = nextItem?.created_at ? (new Date(nextItem.created_at) - new Date(item.created_at)) / 60000 : Infinity;
+                  const sameGroupAsPrev = !showSep && prevSender?.id === sender?.id && timeDiffPrev < 5 && prevDateLabel === label;
+                  const sameGroupAsNext = nextSender?.id === sender?.id && timeDiffNext < 5 && (nextItem?.created_at ? getDateLabel(nextItem.created_at) : null) === label && nextItem?._kind !== 'system';
+                  const showSenderName = !sameGroupAsPrev;
+                  // Show time inside bubble only on the last message of a group (or standalone)
+                  const showTimeInBubble = !sameGroupAsNext;
+
                   const nameColor = sender?.role === 'admin' ? C.tertiary : sender?.role === 'teacher' ? C.primaryHi : isOwn ? C.secondary : C.text2;
 
                   els.push(
                     <div key={item.id} id={`message-${item.id}`}
                       ref={(el) => { if (el) messageRefs.current.set(item.id, el); else messageRefs.current.delete(item.id); }}
                       className="group/msg"
-                      style={{ display: 'flex', flexDirection: isOwn ? 'row-reverse' : 'row', gap: 10, alignItems: 'flex-start', padding: '3px 8px', borderRadius: 10, transition: 'background 0.12s', marginLeft: -8, marginRight: -8 }}
+                      style={{ display: 'flex', flexDirection: isOwn ? 'row-reverse' : 'row', gap: 10, alignItems: 'flex-start', padding: sameGroupAsPrev ? '1px 8px' : '3px 8px', borderRadius: 10, transition: 'background 0.12s', marginLeft: -8, marginRight: -8, marginTop: sameGroupAsPrev ? 1 : 6 }}
                       onMouseEnter={e => e.currentTarget.style.background = `${C.primary}06`}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-                      {/* Avatar — top-aligned, shown for both own and others when sender changes */}
+                      {/* Avatar — top-aligned, shown only when sender changes */}
                       <div style={{ flexShrink: 0, width: 34, alignSelf: 'flex-start', paddingTop: 2 }}>
                         {showSenderName ? (
                           <button onClick={() => onViewProfile?.(isOwn ? user?.id : sender?.id)}
@@ -580,39 +592,40 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                         )}
 
                         {/* Reply preview */}
-                        {item.replied_message && (
-                          <button onClick={() => scrollToMessage(item.replied_message.id)}
-                            style={{ display: 'block', width: '100%', textAlign: isOwn ? 'right' : 'left', marginBottom: 4, padding: '6px 10px', borderRadius: 6, borderLeft: isOwn ? 'none' : `3px solid ${C.secondary}`, borderRight: isOwn ? `3px solid ${C.secondary}` : 'none', background: C.secondaryLo, border: 'none', cursor: 'pointer' }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: C.secondary, display: 'block' }}>{item.replied_message.users?.name || 'Unknown'}</span>
-                            <span style={{ fontSize: 11, color: C.text3, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.replied_message.content?.slice(0, 80)}</span>
-                          </button>
-                        )}
+                        {item.replied_message && (() => {
+                          const raw = item.replied_message.content || '';
+                          const clean = raw
+                            .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
+                            .replace(/\{\{file:[^:]+:([^:]+):[^}]+\}\}/g, '📎 $1')
+                            .slice(0, 80);
+                          return (
+                            <button onClick={() => scrollToMessage(item.replied_message.id)}
+                              style={{
+                                display: 'block', width: '100%', textAlign: isOwn ? 'right' : 'left',
+                                marginBottom: 4, padding: '6px 10px', borderRadius: 8,
+                                borderLeft: isOwn ? 'none' : `3px solid ${C.secondary}`,
+                                borderRight: isOwn ? `3px solid ${C.secondary}` : 'none',
+                                borderTop: 'none', borderBottom: 'none',
+                                background: isOwn ? 'rgba(255,179,142,0.10)' : C.secondaryLo,
+                                cursor: 'pointer',
+                              }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: C.secondary, display: 'block' }}>
+                                {item.replied_message.users?.name || 'Unknown'}
+                              </span>
+                              <span style={{ fontSize: 11, color: C.text2, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4 }}>
+                                {clean}{raw.length > 80 ? '…' : ''}
+                              </span>
+                            </button>
+                          );
+                        })()}
 
-                        {/* Message bubble */}
-                        <div style={{
-                          padding: '9px 14px',
-                          borderRadius: isOwn ? '4px 4px 2px 4px' : '4px 4px 4px 2px',
-                          background: isOwn ? '#5B5CE8' : C.raised,
-                          border: isOwn ? 'none' : `1px solid ${C.border}`,
-                          fontSize: 14, fontWeight: 300,
-                          color: isOwn ? '#FFFFFF' : C.text1,
-                          lineHeight: 1.6, wordBreak: 'break-words',
-                          position: 'relative',
-                        }}>
-                          <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
-                          {item.edited && <span style={{ fontSize: 10, color: isOwn ? 'rgba(255,255,255,0.5)' : C.text3, marginLeft: 6 }}>(edited)</span>}
-                        </div>
-
-                        {/* File attachment */}
-                        {item.files && <FilePreview file={item.files} />}
-
-                        {/* Time + menu row */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }} className="group/msg">
-                          {/* Three-dot menu */}
+                        {/* Bubble row: menu button sits beside the bubble */}
+                        <div style={{ display: 'flex', flexDirection: isOwn ? 'row' : 'row-reverse', alignItems: 'center', gap: 4 }}>
+                          {/* Three-dot menu — beside bubble, shown on hover */}
                           {editingId !== item.id && (
-                            <div className="opacity-0 group-hover/msg:opacity-100 transition" style={{ position: 'relative', order: isOwn ? 0 : 1 }}>
+                            <div className="opacity-0 group-hover/msg:opacity-100 transition" style={{ position: 'relative', flexShrink: 0 }}>
                               <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
-                                style={{ padding: '2px 5px', borderRadius: 5, background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, display: 'flex', alignItems: 'center' }}
+                                style={{ padding: '4px 6px', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 0, display: 'flex', alignItems: 'center' }}
                                 onMouseEnter={e => { e.currentTarget.style.background = C.raised; e.currentTarget.style.color = C.text1; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text3; }}>
                                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
@@ -630,8 +643,29 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                               )}
                             </div>
                           )}
-                          <span style={{ fontSize: 10, color: C.text3, fontWeight: 300, order: isOwn ? 1 : 0 }}>{formatTime(item.created_at)}</span>
+
+                          {/* Message bubble */}
+                          <div style={{
+                            padding: '9px 14px',
+                            borderRadius: isOwn ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                            background: isOwn ? C.primaryMid : C.raised,
+                            border: isOwn ? `1px solid ${C.primary}40` : `1px solid ${C.border}`,
+                            fontSize: 14, fontWeight: 300,
+                            color: isOwn ? C.primaryHi : C.text1,
+                            lineHeight: 1.6, wordBreak: 'break-words',
+                          }}>
+                            <MessageContent content={item.content} isOwn={isOwn} onFileRef={onFileRef} />
+                            {item.edited && <span style={{ fontSize: 10, color: isOwn ? `${C.primary}90` : C.text3, marginLeft: 6 }}>(edited)</span>}
+                            {showTimeInBubble && (
+                              <span style={{ display: 'block', fontSize: 10, color: isOwn ? `${C.primary}90` : C.text3, fontWeight: 300, marginTop: 4, textAlign: isOwn ? 'right' : 'left' }}>
+                                {formatTime(item.created_at)}
+                              </span>
+                            )}
+                          </div>
                         </div>
+
+                        {/* File attachment */}
+                        {item.files && <FilePreview file={item.files} />}
 
                         {/* Reactions */}
                         {Object.keys(reactionMap).length > 0 && (
@@ -740,9 +774,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   <div style={{ padding: '8px 8px 8px 0', flexShrink: 0, display: 'flex', alignItems: 'flex-end' }}>
                     <button onClick={privateReply ? handlePrivateReply : sendMessage}
                       disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
-                      style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (text.trim() || fileRefs.length > 0) ? '#5B5CE8' : C.raised, color: '#fff', transition: 'all 0.15s', flexShrink: 0 }}
-                      onMouseEnter={e => { if (text.trim() || fileRefs.length > 0) e.currentTarget.style.background = '#7B7CCC'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = (text.trim() || fileRefs.length > 0) ? '#5B5CE8' : C.raised; }}>
+                      style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: (text.trim() || fileRefs.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (text.trim() || fileRefs.length > 0) ? C.primary : C.raised, color: (text.trim() || fileRefs.length > 0) ? '#181818' : C.text3, transition: 'all 0.15s', flexShrink: 0 }}
+                      onMouseEnter={e => { if (text.trim() || fileRefs.length > 0) e.currentTarget.style.background = C.primaryHi; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = (text.trim() || fileRefs.length > 0) ? C.primary : C.raised; }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
                     </button>
                   </div>

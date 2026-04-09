@@ -189,6 +189,8 @@ export default function DashboardPage() {
       setMobileDetailNav(id); // reset so settings sidebar doesn't persist
       setActiveNav(id);
       setMobileView('list');
+      setSettingsOpen(false);
+      setSupportOpen(false);
     }
   };
 
@@ -317,10 +319,10 @@ export default function DashboardPage() {
 
           {/* Nav buttons */}
           {NAV_MAIN.map(id => (
-            <RailBtn key={id} id={id} active={activeNav === id && panelOpen}
+            <RailBtn key={id} id={id} active={activeNav === id && panelOpen && !settingsOpen && !supportOpen}
               onClick={() => {
-                if (activeNav === id) { setPanelOpen(v => !v); }
-                else { setActiveNav(id); setPanelOpen(true); }
+                if (activeNav === id && !settingsOpen && !supportOpen) { setPanelOpen(v => !v); }
+                else { setActiveNav(id); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }
               }} />
           ))}
 
@@ -329,11 +331,11 @@ export default function DashboardPage() {
 
           <NotificationBell
             onNavigate={handleNotificationNavigate}
-            onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); }}
+            onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }}
           />
 
           <button title="Support"
-            onClick={() => { setSupportOpen(v => !v); setSettingsOpen(false); setPanelOpen(true); }}
+            onClick={() => { setSupportOpen(true); setSettingsOpen(false); setPanelOpen(true); }}
             style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: '#555555', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#9E9E9E'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; }}>
@@ -343,7 +345,7 @@ export default function DashboardPage() {
             </svg>
           </button>
 
-          <button onClick={() => { setSettingsOpen(v => { const next = !v; if (next) { setPanelOpen(true); setSupportOpen(false); } return next; }); }}
+          <button onClick={() => { setSettingsOpen(true); setPanelOpen(true); setSupportOpen(false); }}
             title="Settings"
             style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(192,193,255,0.12)' : 'none', color: settingsOpen ? '#C0C1FF' : '#555555', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#D4D5FF'; }}

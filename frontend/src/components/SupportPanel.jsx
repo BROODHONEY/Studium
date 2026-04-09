@@ -1,32 +1,32 @@
 import { useState } from 'react';
 
 const FAQS = [
-  { q: 'How do I join a group?', a: 'Ask your teacher for the invite code, then tap "New group / folder" ? "Create or join group" and enter the code.' },
-  { q: 'How do I create a group?', a: 'Only teachers can create groups. Go to Groups ? New group / folder ? Create or join group.' },
-  { q: 'Why am I not receiving notifications?', a: 'Make sure notifications are enabled in Settings ? Personalise. Also check your browser notification permissions.' },
+  { q: 'How do I join a group?', a: 'Ask your teacher for the invite code, then tap "New group / folder" > "Create or join group" and enter the code.' },
+  { q: 'How do I create a group?', a: 'Only teachers can create groups. Go to Groups > New group / folder > Create or join group.' },
+  { q: 'Why am I not receiving notifications?', a: 'Make sure notifications are enabled in Settings > Personalise. Also check your browser notification permissions.' },
   { q: 'How do I send a direct message?', a: 'Go to the Messages tab, search for a user by email, and start a conversation.' },
-  { q: 'Can I delete a message?', a: 'Yes — hover over a message and click the three-dot menu, then select Delete. Admins can delete any message.' },
-  { q: 'How do I change my password?', a: 'Go to Settings ? Security ? Change Password.' },
-  { q: 'How do I leave or delete a group?', a: 'Go to the group ? Members tab. Scroll to the bottom to find Leave group. Only the group creator can delete it.' },
+  { q: 'Can I delete a message?', a: 'Yes â€” hover over a message and click the three-dot menu, then select Delete. Admins can delete any message.' },
+  { q: 'How do I change my password?', a: 'Go to Settings > Security > Change Password.' },
+  { q: 'How do I leave or delete a group?', a: 'Go to the group > Members tab. Scroll to the bottom to find Leave group. Only the group creator can delete it.' },
 ];
 
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', background: 'var(--bg-card)', transition: 'border-color 0.15s' }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
+    <div style={{ border: '1px solid #333333', borderRadius: 10, overflow: 'hidden', background: '#252525', transition: 'border-color 0.15s' }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(192,193,255,0.3)'}
+      onMouseLeave={e => e.currentTarget.style.borderColor = '#333333'}>
       <button onClick={() => setOpen(v => !v)}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif' }}>
-        <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-1)' }}>{q}</span>
+        <span style={{ fontSize: 13, fontWeight: 400, color: '#F0F0F0' }}>{q}</span>
         <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"
-          style={{ flexShrink: 0, color: 'var(--text-3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          style={{ flexShrink: 0, color: '#555555', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
           <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
         </svg>
       </button>
       {open && (
-        <div style={{ padding: '0 16px 14px', borderTop: '1px solid var(--border-color)' }}>
-          <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)', margin: '12px 0 0', lineHeight: 1.6 }}>{a}</p>
+        <div style={{ padding: '0 16px 14px', borderTop: '1px solid #333333' }}>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: '12px 0 0', lineHeight: 1.6 }}>{a}</p>
         </div>
       )}
     </div>
@@ -35,33 +35,34 @@ function FaqItem({ q, a }) {
 
 export default function SupportPanel() {
   return (
-    <div style={{ flex: 1, overflowY: 'auto', backgroundColor: 'var(--bg-page)', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#181818', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px', position: 'relative' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(37,99,235,0.12))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#6366F1' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(192,193,255,0.18), rgba(192,193,255,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#C0C1FF' }}>
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
               <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
             </svg>
           </div>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>Support</h1>
-            <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-3)', margin: 0 }}>Help & frequently asked questions</p>
+            <h1 style={{ fontSize: 20, fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Support</h1>
+            <p style={{ fontSize: 13, fontWeight: 300, color: '#555555', margin: 0 }}>Help & frequently asked questions</p>
           </div>
         </div>
 
         {/* Contact card */}
-        <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(37,99,235,0.07))', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 14, padding: '20px 24px', marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ background: 'linear-gradient(135deg, rgba(192,193,255,0.10), rgba(192,193,255,0.05))', border: '1px solid rgba(192,193,255,0.20)', borderRadius: 14, padding: '20px 24px', marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
-            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', margin: '0 0 4px' }}>Need more help?</p>
-            <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-2)', margin: 0 }}>Reach out and we'll get back to you.</p>
+            <p style={{ fontSize: 14, fontWeight: 500, color: '#F0F0F0', margin: '0 0 4px' }}>Need more help?</p>
+            <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: 0 }}>Reach out and we'll get back to you.</p>
           </div>
           <a href="mailto:support@studiplus.app"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 9, background: '#6366F1', color: '#fff', fontSize: 13, fontWeight: 500, textDecoration: 'none', transition: 'opacity 0.15s', flexShrink: 0 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 9, background: '#C0C1FF', color: '#131313', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'opacity 0.15s', flexShrink: 0 }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
             <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
@@ -92,28 +93,28 @@ export default function SupportPanel() {
             },
           ].map(item => (
             <button key={item.label}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-card)', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', transition: 'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}>
-              <span style={{ color: '#6366F1', flexShrink: 0 }}>{item.icon}</span>
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', borderRadius: 10, border: '1px solid #333333', background: '#252525', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', transition: 'border-color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(192,193,255,0.3)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#333333'}>
+              <span style={{ color: '#C0C1FF', flexShrink: 0 }}>{item.icon}</span>
               <div>
-                <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
-                <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', margin: 0 }}>{item.desc}</p>
+                <p style={{ fontSize: 12, fontWeight: 500, color: '#F0F0F0', margin: 0 }}>{item.label}</p>
+                <p style={{ fontSize: 11, fontWeight: 300, color: '#555555', margin: 0 }}>{item.desc}</p>
               </div>
             </button>
           ))}
         </div>
 
         {/* FAQ */}
-        <h2 style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
+        <h2 style={{ fontSize: 11, fontWeight: 700, color: '#F0F0F0', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>
           Frequently asked questions
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {FAQS.map((item, i) => <FaqItem key={i} q={item.q} a={item.a} />)}
         </div>
 
-        <p style={{ fontSize: 11, fontWeight: 300, color: 'var(--text-3)', marginTop: 40, textAlign: 'center' }}>
-          Studi+ · © {new Date().getFullYear()}
+        <p style={{ fontSize: 11, fontWeight: 300, color: '#555555', marginTop: 40, textAlign: 'center' }}>
+          Studi+ &middot; {new Date().getFullYear()}
         </p>
       </div>
     </div>

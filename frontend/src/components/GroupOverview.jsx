@@ -36,6 +36,7 @@ const formatDate = (d) => formatDateTime(d);
 
 function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const [form, setForm]           = useState({ title: '', content: '', tag: 'general' });
+  const [attachedFiles, setAttachedFiles] = useState([]);
   const [scheduled, setScheduled] = useState(false);
   const [schedDate, setSchedDate] = useState('');
   const [schedTime, setSchedTime] = useState('');
@@ -67,7 +68,9 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = { ...form };
+      const fileTokens = attachedFiles.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
+      const fullContent = [form.content, fileTokens].filter(Boolean).join('\n');
+      const payload = { ...form, content: fullContent };
       if (scheduled && schedDate) {
         payload.scheduled_at = new Date(`${schedDate}T${schedTime || '09:00'}`).toISOString();
       }
@@ -76,6 +79,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
         : await announcementsAPI.create(groupId, payload);
       onCreated(res.data);
       setForm({ title: '', content: '', tag: 'general' });
+      setAttachedFiles([]);
       setScheduled(false); setSchedDate(''); setSchedTime('');
       setOpen(false);
       if (onCancel) onCancel();
@@ -86,6 +90,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
   const handleCancel = () => {
     setOpen(false);
     setForm({ title: '', content: '', tag: 'general' });
+    setAttachedFiles([]);
     setScheduled(false); setSchedDate(''); setSchedTime('');
     if (onCancel) onCancel();
   };
@@ -169,25 +174,44 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                 value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = '#C0C1FF'}
                 onBlur={e => e.target.style.borderColor = '#333333'} />
-              <button ref={fileButtonRef} type="button" title="Attach file reference"
-                onClick={() => setShowFilePicker(v => !v)}
-                style={{ position: 'absolute', bottom: 10, right: 10, width: 28, height: 28, borderRadius: 7, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', background: showFilePicker ? '#C0C1FF' : 'rgba(255,255,255,0.06)', color: showFilePicker ? '#fff' : '#555555' }}
-                onMouseEnter={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#9E9E9E'; } }}
-                onMouseLeave={e => { if (!showFilePicker) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#555555'; } }}>
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
-                </svg>
-              </button>
-              {showFilePicker && (
-                <FilePickerPopover groupId={groupId} triggerRef={fileButtonRef}
-                  onPick={ref => {
-                    const el = contentRef.current;
-                    if (!el) { setForm(p => ({ ...p, content: p.content + ref })); }
-                    else { const s = el.selectionStart; setForm(p => ({ ...p, content: el.value.slice(0, s) + ref + el.value.slice(s) })); }
-                    setShowFilePicker(false);
-                  }}
-                  onClose={() => setShowFilePicker(false)} />
+
+              {/* Attached files chips */}
+              {attachedFiles.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                  {attachedFiles.map(f => (
+                    <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#252525', border: '1px solid #333333', fontSize: 11, color: '#9E9E9E', maxWidth: 220 }}>
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="#555555" style={{ flexShrink: 0 }}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{f.filename.length > 24 ? f.filename.slice(0, 22) + '…' : f.filename}</span>
+                      <button type="button" onClick={() => setAttachedFiles(prev => prev.filter(x => x.id !== f.id))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555555', lineHeight: 1, padding: 0, flexShrink: 0 }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#555555'}>×</button>
+                    </span>
+                  ))}
+                </div>
               )}
+
+              {/* Attach file button */}
+              <div style={{ position: 'relative', marginTop: 8 }}>
+                <button ref={fileButtonRef} type="button" title="Attach file"
+                  onClick={() => setShowFilePicker(v => !v)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 7, border: '1px solid #333333', cursor: 'pointer', fontSize: 11, transition: 'all 0.15s', background: showFilePicker ? 'rgba(192,193,255,0.12)' : 'rgba(255,255,255,0.04)', color: showFilePicker ? '#C0C1FF' : '#555555' }}
+                  onMouseEnter={e => { if (!showFilePicker) { e.currentTarget.style.color = '#9E9E9E'; } }}
+                  onMouseLeave={e => { if (!showFilePicker) { e.currentTarget.style.color = '#555555'; } }}>
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
+                  Attach file
+                </button>
+                {showFilePicker && (
+                  <FilePickerPopover groupId={groupId} triggerRef={fileButtonRef}
+                    onPick={file => {
+                      if (!attachedFiles.find(f => f.id === file.id)) {
+                        setAttachedFiles(prev => [...prev, file]);
+                      }
+                      setShowFilePicker(false);
+                    }}
+                    onClose={() => setShowFilePicker(false)} />
+                )}
+              </div>
             </div>
 
             {/* Schedule toggle */}
@@ -266,6 +290,8 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [openEmojiId, setOpenEmojiId] = useState(null);
+  const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '🔥', '👏'];
 
   useEffect(() => {
     if (!group) return;
@@ -509,17 +535,40 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                             <div style={{ fontSize: 12, fontWeight: 300, color: P.text2, lineHeight: 1.55, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                               <MessageContent content={a.content} isOwn={false} onFileRef={onFileRef} />
                             </div>
-                            {/* Reaction pills */}
-                            {Object.keys(reactionMap).length > 0 && (
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }} onClick={e => e.stopPropagation()}>
-                                {Object.entries(reactionMap).map(([emoji, userIds]) => (
-                                  <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ` : `1px solid `, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
-                                    <span>{emoji}</span><span>{userIds.length}</span>
-                                  </button>
-                                ))}
+                            {/* Reactions row */}
+                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 8 }} onClick={e => e.stopPropagation()}>
+                              {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                                <button key={emoji} onClick={() => handleReact(a.id, emoji)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, fontSize: 11, border: `1px solid ${userIds.includes(user?.id) ? P.primary + '60' : P.border}`, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer', transition: 'all 0.1s' }}>
+                                  <span>{emoji}</span><span>{userIds.length}</span>
+                                </button>
+                              ))}
+                              {/* Add reaction button */}
+                              <div style={{ position: 'relative' }}>
+                                <button
+                                  onClick={() => setOpenEmojiId(openEmojiId === a.id ? null : a.id)}
+                                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 22, borderRadius: 20, border: `1px solid ${P.border}`, background: 'transparent', cursor: 'pointer', fontSize: 13, color: P.text3, transition: 'all 0.1s' }}
+                                  onMouseEnter={e => { e.currentTarget.style.borderColor = P.primary; e.currentTarget.style.color = P.primary; }}
+                                  onMouseLeave={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.color = P.text3; }}>
+                                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/></svg>
+                                </button>
+                                {openEmojiId === a.id && (
+                                  <>
+                                    <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setOpenEmojiId(null)} />
+                                    <div style={{ position: 'absolute', bottom: 28, left: 0, zIndex: 999, display: 'flex', gap: 4, padding: '6px 8px', background: P.surface, border: `1px solid ${P.border}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+                                      {EMOJI_OPTIONS.map(e => (
+                                        <button key={e} onClick={() => { handleReact(a.id, e); setOpenEmojiId(null); }}
+                                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '2px 3px', borderRadius: 6, transition: 'background 0.1s' }}
+                                          onMouseEnter={el => el.currentTarget.style.background = P.card}
+                                          onMouseLeave={el => el.currentTarget.style.background = 'none'}>
+                                          {e}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                            )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -720,16 +769,40 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
               <div style={{ padding: '14px 16px', background: P.card, borderRadius: 10, border: `1px solid ${P.border}`, fontSize: 13, fontWeight: 300, color: P.text2, lineHeight: 1.7 }}>
                 <MessageContent content={a.content} isOwn={false} onFileRef={(id) => { onFileRef(id); setSelectedAnnouncement(null); }} />
               </div>
-              {Object.keys(reactionMap).length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
-                  {Object.entries(reactionMap).map(([emoji, userIds]) => (
-                    <button key={emoji} onClick={() => handleReact(a.id, emoji)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, border: userIds.includes(user?.id) ? `1px solid ` : `1px solid `, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer' }}>
-                      <span>{emoji}</span><span>{userIds.length}</span>
-                    </button>
-                  ))}
+              {/* Reactions */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 12 }}>
+                {Object.entries(reactionMap).map(([emoji, userIds]) => (
+                  <button key={emoji} onClick={() => handleReact(a.id, emoji)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, border: `1px solid ${userIds.includes(user?.id) ? P.primary + '60' : P.border}`, background: userIds.includes(user?.id) ? `${P.primary}20` : 'transparent', color: userIds.includes(user?.id) ? P.primary : P.text3, cursor: 'pointer', transition: 'all 0.1s' }}>
+                    <span>{emoji}</span><span>{userIds.length}</span>
+                  </button>
+                ))}
+                {/* Add reaction */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setOpenEmojiId(openEmojiId === `modal-${a.id}` ? null : `modal-${a.id}`)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 26, borderRadius: 20, border: `1px solid ${P.border}`, background: 'transparent', cursor: 'pointer', fontSize: 14, color: P.text3, transition: 'all 0.1s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = P.primary; e.currentTarget.style.color = P.primary; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.color = P.text3; }}>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/></svg>
+                  </button>
+                  {openEmojiId === `modal-${a.id}` && (
+                    <>
+                      <div style={{ position: 'fixed', inset: 0, zIndex: 1001 }} onClick={() => setOpenEmojiId(null)} />
+                      <div style={{ position: 'absolute', bottom: 32, left: 0, zIndex: 1002, display: 'flex', gap: 4, padding: '6px 8px', background: P.surface, border: `1px solid ${P.border}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+                        {EMOJI_OPTIONS.map(e => (
+                          <button key={e} onClick={() => { handleReact(a.id, e); setOpenEmojiId(null); }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, padding: '2px 3px', borderRadius: 6, transition: 'background 0.1s' }}
+                            onMouseEnter={el => el.currentTarget.style.background = P.card}
+                            onMouseLeave={el => el.currentTarget.style.background = 'none'}>
+                            {e}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
-              )}
+              </div>
               {(isTeacher || a.users?.id === user?.id) && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                   <button onClick={() => { setEditingAnnouncement(a); setSelectedAnnouncement(null); }}

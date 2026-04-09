@@ -17,7 +17,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
   const dropRef = useRef(null);
   const unread  = notifications.length;
 
-  // Hooks must always run — before any early return
+  // Hooks must always run ï¿½ before any early return
   useEffect(() => {
     if (!open) return;
     const h = (e) => {
@@ -82,7 +82,13 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
   const openDropdown = () => {
     if (open) { setOpen(false); return; }
     const r = btnRef.current?.getBoundingClientRect();
-    if (r) setPos({ top: r.bottom + 8, right: window.innerWidth - r.right });
+    if (r) {
+      const left = r.right + 8;
+      // Clamp top so the dropdown (max ~380px tall) doesn't overflow the bottom
+      const maxTop = window.innerHeight - 400;
+      const top = Math.min(r.top, Math.max(8, maxTop));
+      setPos({ top, left });
+    }
     setOpen(true);
     markRead();
   };
@@ -111,7 +117,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
 
       {open && createPortal(
         <div ref={dropRef}
-          style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 9999, width: 300, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.15)', fontFamily: 'Inter, sans-serif' }}
+          style={{ position: 'fixed', top: pos.top, left: Math.min(pos.left, window.innerWidth - 316), zIndex: 9999, width: 300, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.15)', fontFamily: 'Inter, sans-serif' }}
           onMouseDown={e => e.stopPropagation()}>
 
           {/* Header */}
@@ -126,7 +132,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
             )}
           </div>
 
-          {/* List — up to 5 items */}
+          {/* List ï¿½ up to 5 items */}
           <div style={{ maxHeight: 280, overflowY: 'auto' }}>
             {notifications.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center' }}>

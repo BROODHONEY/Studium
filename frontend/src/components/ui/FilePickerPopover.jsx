@@ -90,7 +90,7 @@ export default function FilePickerPopover({ groupId, onPick, onClose, triggerRef
   );
 
   const handlePick = (file) => {
-    onPick(`{{file:${file.id}:${file.filename}:${file.file_url}}}`);
+    onPick(file);
     onClose();
   };
 

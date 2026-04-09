@@ -37,7 +37,7 @@ function FileChip({ filename, fileUrl, fileId, isOwn, onFileRef }) {
       </div>
       {/* File info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{filename}</p>
+        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{filename && filename.length > 28 ? filename.slice(0, 26) + '…' : filename}</p>
         <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0', textTransform: 'uppercase' }}>{ext} Document</p>
       </div>
       {/* Download icon */}
