@@ -19,7 +19,9 @@ import DMPanel from '../components/DMPanel';
 import SettingsPanel, { SettingsSidebar } from '../components/SettingsPanel';
 import NotificationBell from '../components/NotificationBell';
 import ProfileModal from '../components/ProfileModal';
+import ProfilePage from '../components/ProfilePage';
 import KickNotification from '../components/KickNotification';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import GlobalDuesPanel from '../components/GlobalDuesPanel';
 import { useSearch } from '../components/SearchPanel';
 import SupportPanel from '../components/SupportPanel';
@@ -112,10 +114,21 @@ export default function DashboardPage() {
   const [fabOpen, setFabOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
+  const [fullProfileUserId, setFullProfileUserId] = useState(null);
   const [kickNotice, setKickNotice] = useState(null);
   const searchState = useSearch(); void searchState;
   const [highlightMessageId, setHighlightMessageId] = useState(null);
   const [highlightFileId, setHighlightFileId]       = useState(null);
+
+  // Unsaved-edit guard for SettingsPanel
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const [pendingNav, setPendingNav]       = useState(null); // { type, payload }
+  const [showDirtyConfirm, setShowDirtyConfirm] = useState(false);
+
+  const handleDirtyChange = useCallback((dirty) => setSettingsDirty(dirty), []);
+
+  // Per-group chat drafts (unsent text)
+  const [chatDrafts, setChatDrafts] = useState({});
 
   const [mobileView, setMobileView] = useState('list');
   const [mobileDetailNav, setMobileDetailNav] = useState('groups');
@@ -181,17 +194,42 @@ export default function DashboardPage() {
 
   const handleFileRef = useCallback((fileId) => { setActiveTab('Files'); setHighlightFileId(fileId); }, []);
 
-  const wrappedHandleNavChange = (id) => {
-    if (id === 'settings') {
-      setMobileDetailNav('settings');
-      setMobileView('list');
+  // Guard navigation away from settings when there are unsaved edits
+  const guardedNav = useCallback((action) => {
+    if (settingsDirty) {
+      setPendingNav(action);
+      setShowDirtyConfirm(true);
     } else {
-      setMobileDetailNav(id); // reset so settings sidebar doesn't persist
-      setActiveNav(id);
-      setMobileView('list');
-      setSettingsOpen(false);
-      setSupportOpen(false);
+      action();
     }
+  }, [settingsDirty]);
+
+  const confirmLeave = () => {
+    setShowDirtyConfirm(false);
+    setSettingsDirty(false);
+    pendingNav?.();
+    setPendingNav(null);
+  };
+
+  const cancelLeave = () => {
+    setShowDirtyConfirm(false);
+    setPendingNav(null);
+  };
+
+  const wrappedHandleNavChange = (id) => {
+    const doNav = () => {
+      if (id === 'settings') {
+        setMobileDetailNav('settings');
+        setMobileView('list');
+      } else {
+        setMobileDetailNav(id);
+        setActiveNav(id);
+        setMobileView('list');
+        setSettingsOpen(false);
+        setSupportOpen(false);
+      }
+    };
+    guardedNav(doNav);
   };
 
   // -- Sidebar panel content (below nav) -----------------
@@ -202,7 +240,8 @@ export default function DashboardPage() {
         <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <SettingsSidebar activeSection={settingsSection}
             onSection={(s) => { setSettingsSection(s); setMobileView('detail'); }}
-            onViewProfile={setProfileUserId} />
+            onViewProfile={setProfileUserId}
+            onViewFullProfile={(id) => { setFullProfileUserId(id); setMobileView('detail'); }} />
         </div>
         {/* Support button */}
         <div className="t-divider" style={{ borderTopWidth: 1, borderTopStyle: 'solid', padding: '8px 8px', flexShrink: 0 }}>
@@ -222,7 +261,8 @@ export default function DashboardPage() {
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <SettingsSidebar activeSection={settingsSection}
           onSection={(s) => { setSettingsSection(s); }}
-          onViewProfile={setProfileUserId} />
+          onViewProfile={setProfileUserId}
+          onViewFullProfile={setFullProfileUserId} />
       </div>
     );
     if (activeNav === 'groups') return (
@@ -267,7 +307,7 @@ export default function DashboardPage() {
   // -- Main content ---------------------------------------
   const renderMain = () => {
     if (supportOpen) return <SupportPanel />;
-    if (settingsOpen) return <SettingsPanel activeSection={settingsSection} />;
+    if (settingsOpen) return <SettingsPanel activeSection={settingsSection} onDirtyChange={handleDirtyChange} />;
     if (activeNav === 'dms') return (
       <DMPanel conversation={activeConvo} onNewMessage={() => {}} onViewProfile={setProfileUserId}
         onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Chat'); setActiveNav('groups'); setMobileView('detail'); } }} />
@@ -290,7 +330,7 @@ export default function DashboardPage() {
         <ChatHeader group={activeGroup} activeTab={activeTab} onTabChange={setActiveTab} />
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {activeTab === 'Overview' && <GroupOverview group={activeGroup} onFileRef={handleFileRef} onOpenCalendar={() => setActiveNav('dues')} />}
-          {activeTab === 'Chat'     && <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={handleFileRef} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} />}
+          {activeTab === 'Chat'     && <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={handleFileRef} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} draft={chatDrafts[activeGroup?.id] || ''} onDraftChange={(val) => setChatDrafts(prev => ({ ...prev, [activeGroup.id]: val }))} />}
           {activeTab === 'Dues'     && <DuesPanel group={activeGroup} />}
           {activeTab === 'Files'    && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
           {activeTab === 'Members'  && <MembersPanel group={activeGroup} onGroupUpdate={handleGroupUpdate} onLeft={handleGroupLeft} onGroupDeleted={handleGroupDeleted} onViewProfile={setProfileUserId} />}
@@ -321,8 +361,11 @@ export default function DashboardPage() {
           {NAV_MAIN.map(id => (
             <RailBtn key={id} id={id} active={activeNav === id && panelOpen && !settingsOpen && !supportOpen}
               onClick={() => {
-                if (activeNav === id && !settingsOpen && !supportOpen) { setPanelOpen(v => !v); }
-                else { setActiveNav(id); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }
+                const doNav = () => {
+                  if (activeNav === id && !settingsOpen && !supportOpen) { setPanelOpen(v => !v); }
+                  else { setActiveNav(id); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }
+                };
+                guardedNav(doNav);
               }} />
           ))}
 
@@ -335,7 +378,7 @@ export default function DashboardPage() {
           />
 
           <button title="Support"
-            onClick={() => { setSupportOpen(true); setSettingsOpen(false); setPanelOpen(true); }}
+            onClick={() => guardedNav(() => { setSupportOpen(true); setSettingsOpen(false); setPanelOpen(true); })}
             style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: '#555555', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#9E9E9E'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; }}>
@@ -345,7 +388,7 @@ export default function DashboardPage() {
             </svg>
           </button>
 
-          <button onClick={() => { setSettingsOpen(true); setPanelOpen(true); setSupportOpen(false); }}
+          <button onClick={() => guardedNav(() => { setSettingsOpen(true); setPanelOpen(true); setSupportOpen(false); })}
             title="Settings"
             style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(192,193,255,0.12)' : 'none', color: settingsOpen ? '#C0C1FF' : '#555555', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#D4D5FF'; }}
@@ -354,7 +397,7 @@ export default function DashboardPage() {
           </button>
 
           {/* User avatar */}
-          <button onClick={() => setProfileUserId(user?.id)} title={user?.name}
+          <button onClick={() => guardedNav(() => setFullProfileUserId(user?.id))} title={user?.name}
             style={{ width: 34, height: 34, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}>
             {ini(user?.name)}
           </button>
@@ -432,7 +475,7 @@ export default function DashboardPage() {
         <div className="dash-topbar t-divider" style={{ flexShrink: 0, borderBottomWidth: 1, borderBottomStyle: 'solid', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
           <img src={logo} alt="logo" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em', flex: 1 }}>Studi+</span>
-          <button onClick={() => setProfileUserId(user?.id)} style={{ width: 28, height: 28, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+          <button onClick={() => setFullProfileUserId(user?.id)} style={{ width: 28, height: 28, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             {ini(user?.name)}
           </button>
         </div>
@@ -460,7 +503,7 @@ export default function DashboardPage() {
                 : mobileDetailNav === 'dues'
                 ? <GlobalDuesPanel onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Dues'); setActiveNav('groups'); setMobileDetailNav('groups'); setMobileView('detail'); } }} />
                 : mobileDetailNav === 'settings'
-                ? <SettingsPanel activeSection={settingsSection} />
+                ? <SettingsPanel activeSection={settingsSection} onDirtyChange={handleDirtyChange} />
                 : mobileDetailNav === 'support'
                 ? <SupportPanel />
                 : renderMain()
@@ -475,8 +518,30 @@ export default function DashboardPage() {
 
       {/* -- Modals -- */}
       {showGroupModal && <GroupModal onClose={() => setShowGroupModal(false)} onSuccess={handleGroupCreated} />}
-      {profileUserId && <ProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />}
+      {profileUserId && (
+        <ProfileModal
+          userId={profileUserId}
+          onClose={() => setProfileUserId(null)}
+          onViewFull={(id) => setFullProfileUserId(id)}
+        />
+      )}
+      {fullProfileUserId && (
+        <ProfilePage
+          userId={fullProfileUserId}
+          onClose={() => setFullProfileUserId(null)}
+        />
+      )}
       <KickNotification notice={kickNotice} onDismiss={() => setKickNotice(null)} />
+      <ConfirmDialog
+        open={showDirtyConfirm}
+        title="Unsaved changes"
+        description="You have unsaved changes. Leave anyway and discard them?"
+        confirmText="Leave"
+        cancelText="Stay"
+        danger
+        onConfirm={confirmLeave}
+        onCancel={cancelLeave}
+      />
     </NotificationProvider>
   );
 }

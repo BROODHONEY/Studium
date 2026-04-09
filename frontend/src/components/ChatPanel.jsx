@@ -35,12 +35,12 @@ const C = {
   dangerLo:  'rgba(239,68,68,0.10)',
 };
 
-export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMessageId, onHighlightClear }) {
+export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMessageId, onHighlightClear, draft, onDraftChange }) {
   const { user }   = useAuth();
   const { socket, connected } = useSocket();
 
   const [messages, setMessages]     = useState([]);
-  const [text, setText]             = useState('');
+  const [text, setText]             = useState(draft || '');
   const mentionsRef = useRef({});
   const [loading, setLoading]       = useState(true);
   const [adminsOnly, setAdminsOnly] = useState(false);
@@ -232,6 +232,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     setMessages(prev => [...prev, optimistic]);
     socket.emit('send_message', { groupId: group.id, content, type: 'text', ...(replyTo ? { replyTo: replyTo.id } : {}) });
     setText(''); mentionsRef.current = {}; setFileRefs([]); setReplyTo(null);
+    onDraftChange?.('');
     clearTimeout(typingTimeoutRef.current); isTypingRef.current = false;
     socket.emit('typing_stop', { groupId: group.id });
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
@@ -312,6 +313,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   const handleTextChange = (e) => {
     const val = e.target.value;
     setText(val);
+    onDraftChange?.(val);
     if (!val) mentionsRef.current = {};
     const pos = e.target.selectionStart;
     const textUpToCaret = val.slice(0, pos);
@@ -814,30 +816,42 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         <div style={{ width: 260, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: C.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* PINNED NOTES */}
-          <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-              <svg width="10" height="10" viewBox="0 0 16 16" fill={C.primary}><path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/></svg>
+          <div style={{ padding: '18px 16px 16px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+              <svg width="11" height="11" viewBox="0 0 16 16" fill={C.primary}><path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/></svg>
               <span style={{ fontSize: 10, fontWeight: 700, color: C.text1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Pinned Notes</span>
             </div>
             {pinnedMsgs.length === 0 ? (
               <p style={{ fontSize: 12, color: C.text3, margin: 0, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.5 }}>No pinned messages</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 200, overflowY: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 260, overflowY: 'auto' }}>
                 {pinnedMsgs.map(pm => (
                   <div key={pm.id} onClick={() => scrollToMessage(pm.id)}
-                    style={{ padding: '10px 12px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, borderLeft: `3px solid `, cursor: 'pointer', transition: 'border-color 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.borderLeftColor = C.primary; }}>
-                    <p style={{ fontSize: 12, color: C.text1, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4, fontWeight: 300, fontStyle: 'italic' }}>
-                      "{pm.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').slice(0, 60)}"
-                    </p>
-                    {pm.pin_time && <p style={{ fontSize: 10, color: C.tertiary, margin: '4px 0 0', fontWeight: 400 }}>{formatPinLabel(pm.pin_time)}</p>}
+                    style={{ borderRadius: 12, background: '#1A1A1A', border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.primary}`, cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.15s, background 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.raised; e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.borderLeftColor = C.primary; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#1A1A1A'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.borderLeftColor = C.primary; }}>
+                    <div style={{ padding: '12px 14px 10px' }}>
+                      <p style={{ fontSize: 13, color: C.text1, margin: '0 0 2px', lineHeight: 1.5, fontWeight: 300, fontStyle: 'italic', wordBreak: 'break-word' }}>
+                        "{pm.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+\}\}/g, '📎').slice(0, 80)}{(pm.content?.length ?? 0) > 80 ? '…' : ''}"
+                      </p>
+                      {pm.pin_time && (
+                        <p style={{ fontSize: 10, color: C.tertiary, margin: '4px 0 0', fontWeight: 400 }}>{formatPinLabel(pm.pin_time)}</p>
+                      )}
+                    </div>
                     {myRole === 'admin' && (
-                      <div style={{ display: 'flex', gap: 5, marginTop: 7 }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: 8, padding: '0 14px 12px' }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => { const r = getRemainingMinutes(pm.pin_time); setPinTimeModal({ open: true, messageId: pm.id, pin_ttl_minutes: r === null ? '' : String(r), content: pm.content }); }}
-                          style={{ fontSize: 10, padding: '2px 8px', borderRadius: 5, background: C.secondaryLo, border: `1px solid 40`, color: C.primaryHi, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Expiry</button>
+                          style={{ fontSize: 12, fontWeight: 500, padding: '5px 14px', borderRadius: 8, background: 'rgba(192,193,255,0.08)', border: '1px solid rgba(192,193,255,0.15)', color: C.primaryHi, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(192,193,255,0.16)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(192,193,255,0.08)'}>
+                          Expiry
+                        </button>
                         <button onClick={() => handleUnpinMessage(pm.id)}
-                          style={{ fontSize: 10, padding: '2px 8px', borderRadius: 5, background: C.dangerLo, border: `1px solid ${C.danger}30`, color: C.danger, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Unpin</button>
+                          style={{ fontSize: 12, fontWeight: 500, padding: '5px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#FF6B6B', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.22)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.12)'}>
+                          Unpin
+                        </button>
                       </div>
                     )}
                   </div>

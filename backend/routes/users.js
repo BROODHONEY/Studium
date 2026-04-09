@@ -1,35 +1,57 @@
 const express = require('express');
 const bcrypt  = require('bcryptjs');
+const multer  = require('multer');
 const supabase = require('../config/db');
 const auth = require('../middleware/auth');
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (_, file, cb) => {
+    const allowed = ['application/pdf','image/jpeg','image/png','image/gif','image/webp'];
+    cb(allowed.includes(file.mimetype) ? null : new Error('File type not allowed'), allowed.includes(file.mimetype));
+  },
+});
+
 const router = express.Router();
 
-// GET /api/users/:id — view any user's profile
-router.get('/:id', auth, async (req, res) => {
+// POST /api/users/me/attachments — must be before GET /:id to avoid "me" being treated as an id
+router.post('/me/attachments', auth, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file provided' });
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id, name, email, phone, role, roll_no, department, year, created_at')
-      .eq('id', req.params.id)
-      .single();
+    const { originalname, mimetype, buffer } = req.file;
+    const safeName    = originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const storagePath = `profile-attachments/${req.user.id}/${Date.now()}-${safeName}`;
 
-    if (error || !user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
+    const { error: uploadErr } = await supabase.storage
+      .from('studium-files')
+      .upload(storagePath, buffer, { contentType: mimetype, upsert: false });
+    if (uploadErr) throw uploadErr;
+
+    const { data: signed, error: signErr } = await supabase.storage
+      .from('studium-files')
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
+    if (signErr) throw signErr;
+
+    res.json({ url: signed.signedUrl, name: originalname, type: mimetype });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: 'Upload failed' });
   }
 });
 
-// PATCH /api/users/me — update own profile
+// PATCH /api/users/me — must be before GET /:id
 router.patch('/me', auth, async (req, res) => {
-  const { name, department, year } = req.body;
+  const { name, department, year, cgpa, achievements, internships, certificates } = req.body;
   const updates = {};
 
-  if (name !== undefined)       updates.name       = name.trim();
-  if (department !== undefined) updates.department = department.trim();
-  if (year !== undefined)       updates.year       = year;
+  if (name !== undefined)         updates.name         = name.trim();
+  if (department !== undefined)   updates.department   = department.trim();
+  if (year !== undefined)         updates.year         = year;
+  if (cgpa !== undefined)         updates.cgpa         = cgpa === '' ? null : Number(cgpa);
+  if (achievements !== undefined) updates.achievements = achievements;
+  if (internships !== undefined)  updates.internships  = internships;
+  if (certificates !== undefined) updates.certificates = certificates;
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: 'No valid fields to update' });
@@ -40,7 +62,7 @@ router.patch('/me', auth, async (req, res) => {
       .from('users')
       .update(updates)
       .eq('id', req.user.id)
-      .select('id, name, email, phone, role, roll_no, department, year, created_at')
+      .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
       .single();
 
     if (error) throw error;
@@ -51,7 +73,7 @@ router.patch('/me', auth, async (req, res) => {
   }
 });
 
-// PATCH /api/users/me/password — change own password
+// PATCH /api/users/me/password — must be before GET /:id
 router.patch('/me/password', auth, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both current and new password are required' });
@@ -66,6 +88,23 @@ router.patch('/me/password', auth, async (req, res) => {
     if (updateErr) throw updateErr;
     res.json({ message: 'Password updated' });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Something went wrong' }); }
+});
+
+// GET /api/users/:id — must be LAST so /me routes aren't swallowed
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
 });
 
 module.exports = router;
