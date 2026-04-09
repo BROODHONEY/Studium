@@ -17,7 +17,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
   const dropRef = useRef(null);
   const unread  = notifications.length;
 
-  // Hooks must always run � before any early return
+  // Hooks must always run  · before any early return
   useEffect(() => {
     if (!open) return;
     const h = (e) => {
@@ -132,7 +132,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
             )}
           </div>
 
-          {/* List � up to 5 items */}
+          {/* List  · up to 5 items */}
           <div style={{ maxHeight: 280, overflowY: 'auto' }}>
             {notifications.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center' }}>
