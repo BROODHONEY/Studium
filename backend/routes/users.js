@@ -90,6 +90,23 @@ router.patch('/me/password', auth, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Something went wrong' }); }
 });
 
+// GET /api/users/public/:id — no auth required, for shared profile links
+router.get('/public/:id', async (req, res) => {
+  try {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, role, roll_no, department, year, cgpa, achievements, internships, certificates')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 // GET /api/users/:id — must be LAST so /me routes aren't swallowed
 router.get('/:id', auth, async (req, res) => {
   try {

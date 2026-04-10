@@ -242,6 +242,19 @@ html:not(.dark) {
 .btn-primary:hover:not(:disabled) { background: var(--primary-hi); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* Auth page submit button — dark indigo to match the theme */
+.btn-auth {
+  width: 100%; padding: 12px; border-radius: 12px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  font-family: 'Inter', sans-serif;
+  background: #3730a3;
+  color: #fff;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+}
+.btn-auth:hover:not(:disabled) { background: #4338ca; }
+.btn-auth:active:not(:disabled) { transform: scale(0.99); }
+.btn-auth:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* Tertiary CTA — orange, used for urgent actions */
 .btn-cta {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -537,4 +550,13 @@ html:not(.dark) .group-item-inactive:hover { background: var(--primary-lo) !impo
   .chat-system-msg  { font-size: 10px !important; }
   .chat-avatar      { width: 26px !important; height: 26px !important; font-size: 9px !important; }
   .chat-reaction    { font-size: 10px !important; padding: 2px 6px !important; }
+}
+
+/* ── Auth layout left panel ─────────────────────────────
+   ═══════════════════════════════════════════════════════ */
+.auth-left-panel {
+  width: 42%;
+}
+@media (max-width: 700px) {
+  .auth-left-panel { display: none; }
 }

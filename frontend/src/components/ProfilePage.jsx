@@ -39,9 +39,6 @@ function AchievementCard({ item, accent, accentLo, icon }) {
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: T.card, border: `1px solid ${T.border}`, transition: 'border-color 0.15s' }}
       onMouseEnter={e => e.currentTarget.style.borderColor = accent}
       onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
-      <div style={{ width: 28, height: 28, borderRadius: 8, background: accentLo, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: accent }}>
-        {icon}
-      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 12, fontWeight: 600, color: T.text1, margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</p>
         {item.subtitle && <p style={{ fontSize: 10, fontWeight: 300, color: T.text2, margin: '2px 0 0', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.subtitle}</p>}
@@ -66,9 +63,6 @@ function CertCard({ item, accent, accentLo, icon }) {
       onMouseEnter={e => e.currentTarget.style.borderColor = accent}
       onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: accentLo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent }}>
-          {icon}
-        </div>
         <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: statusBg, color: statusColor, textTransform: 'uppercase', letterSpacing: '0.1em', border: `1px solid ${statusColor}30` }}>
           {status}
         </span>
@@ -93,9 +87,6 @@ function InternCard({ item, accent, accentLo, icon }) {
   return (
     <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, borderLeft: `3px solid ${accent}`, overflow: 'hidden', transition: 'border-color 0.15s' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 14px' }}>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: accentLo, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: accent }}>
-          {icon}
-        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: T.text1, margin: 0, lineHeight: 1.3 }}>{item.title}</p>
           {item.subtitle && <p style={{ fontSize: 11, fontWeight: 300, color: T.text2, margin: '3px 0 0', lineHeight: 1.4 }}>{item.subtitle}</p>}
@@ -103,7 +94,7 @@ function InternCard({ item, accent, accentLo, icon }) {
         </div>
       </div>
       {item.attachments?.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 14px 12px 56px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 14px 12px 14px' }}>
           {item.attachments.map((att, ai) => (
             isImage(att.type)
               ? <a key={ai} href={att.url} target="_blank" rel="noreferrer">
@@ -136,6 +127,15 @@ export default function ProfilePage({ userId, onClose }) {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    const url = `${window.location.origin}/profile/${userId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -167,6 +167,16 @@ export default function ProfilePage({ userId, onClose }) {
           Back
         </button>
         <span style={{ fontSize: 13, fontWeight: 500, color: T.text2 }}>{isOwn ? 'Your Profile' : 'Profile'}</span>
+        <div style={{ flex: 1 }} />
+        <button onClick={handleShare}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 14px', borderRadius: 8, background: copied ? T.greenLo : 'none', border: `1px solid ${copied ? T.green + '60' : T.border}`, color: copied ? T.green : T.text2, fontSize: 12, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Inter, sans-serif' }}
+          onMouseEnter={e => { if (!copied) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; } }}
+          onMouseLeave={e => { if (!copied) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text2; } }}>
+          {copied
+            ? <><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> Copied!</>
+            : <><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg> Share</>
+          }
+        </button>
       </div>
 
       {/* Scrollable body */}

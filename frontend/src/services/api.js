@@ -81,6 +81,7 @@ export const duesAPI = {
 
 export const profileAPI = {
   get:               (userId) => api.get(`/users/${userId}`),
+  getPublic:         (userId) => api.get(`/users/public/${userId}`),
   update:            (data)   => api.patch('/users/me', data),
   changePassword:    (data)   => api.patch('/users/me/password', data),
   uploadAttachment:  (formData) => api.post('/users/me/attachments', formData, {

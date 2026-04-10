@@ -406,9 +406,9 @@ export default function DashboardPage() {
         {/* ── Body: sliding panel + main ── */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
           <div style={{
-            width: panelOpen && activeNav !== 'dues' ? 220 : 0,
+            width: panelOpen && (settingsOpen || activeNav !== 'dues') && !supportOpen ? 220 : 0,
             flexShrink: 0, overflow: 'hidden',
-            borderRight: (panelOpen && activeNav !== 'dues') ? '1px solid #2A2A3A' : 'none',
+            borderRight: (panelOpen && (settingsOpen || activeNav !== 'dues') && !supportOpen) ? '1px solid #2A2A3A' : 'none',
             transition: 'width 0.22s ease, border-width 0.22s ease',
             display: 'flex', flexDirection: 'column',
             background: '#1E1E1E',
