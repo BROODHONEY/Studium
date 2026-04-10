@@ -752,23 +752,89 @@ export function SettingsSidebar({ activeSection, onSection, onViewProfile, onVie
 
 function SignOutButton() {
   const { logout } = useAuth();
-  const [confirm, setConfirm] = useState(false);
-  if (confirm) return (
-    <div style={{ display: 'flex', gap: 8 }}>
-      <button onClick={logout} style={{ flex: 1, padding: '9px', borderRadius: 10, background: T.dangerLo, border: `1px solid ${T.danger}40`, color: T.danger, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>Sign out</button>
-      <button onClick={() => setConfirm(false)} style={{ flex: 1, padding: '9px', borderRadius: 10, background: T.card, border: `1px solid ${T.border}`, color: T.text2, fontSize: 12, fontWeight: 300, cursor: 'pointer' }}>Cancel</button>
-    </div>
-  );
+  const [open, setOpen] = useState(false);
+
   return (
-    <button onClick={() => setConfirm(true)}
-      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'none', color: `${T.danger}90`, transition: 'all 0.15s' }}
-      onMouseEnter={e => { e.currentTarget.style.background = T.dangerLo; e.currentTarget.style.color = T.danger; }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = `${T.danger}90`; }}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-      </svg>
-      <span style={{ fontSize: 14, fontWeight: 300 }}>Sign out</span>
-    </button>
+    <>
+      {/* Sidebar button */}
+      <button onClick={() => setOpen(true)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+          padding: '11px 14px', borderRadius: 12, border: `1px solid ${T.border}`,
+          cursor: 'pointer', background: T.card, color: T.text2,
+          transition: 'all 0.15s', fontFamily: 'Inter, sans-serif',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = `${T.danger}60`; e.currentTarget.style.color = T.danger; e.currentTarget.style.background = T.dangerLo; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text2; e.currentTarget.style.background = T.card; }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+        <span style={{ fontSize: 13, fontWeight: 400 }}>Sign out</span>
+      </button>
+
+      {/* Confirmation modal */}
+      {open && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 600,
+          background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'Inter, sans-serif',
+        }} onClick={() => setOpen(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#1A1A1A', border: '1px solid #2A2A2A',
+            borderRadius: 24, padding: '40px 32px 32px',
+            width: '100%', maxWidth: 360, textAlign: 'center',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+          }}>
+            {/* Icon */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 18,
+              background: '#252525', border: '1px solid #333',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px', color: T.primary,
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+              </svg>
+            </div>
+
+            <h3 style={{ fontSize: 22, fontWeight: 700, color: T.text1, margin: '0 0 12px', letterSpacing: '-0.02em', fontFamily: "'Manrope','Inter',sans-serif" }}>
+              Signing out?
+            </h3>
+            <p style={{ fontSize: 13, fontWeight: 300, color: T.text3, margin: '0 0 32px', lineHeight: 1.7 }}>
+              Are you sure you want to end your current session? Your data will be preserved.
+            </p>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setOpen(false)}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 12,
+                  background: '#252525', border: '1px solid #333',
+                  color: T.text2, fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase',
+                  fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#2E2E2E'; e.currentTarget.style.color = T.text1; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#252525'; e.currentTarget.style.color = T.text2; }}>
+                Cancel
+              </button>
+              <button onClick={logout}
+                style={{
+                  flex: 2, padding: '12px', borderRadius: 12,
+                  background: 'rgba(192,193,255,0.15)', border: '1px solid rgba(192,193,255,0.25)',
+                  color: T.primary, fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase',
+                  fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.22)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.15)'; }}>
+                Confirm Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
