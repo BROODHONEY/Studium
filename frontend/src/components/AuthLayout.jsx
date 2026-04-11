@@ -145,7 +145,7 @@ export default function AuthLayout({ children, tagline, sub }) {
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           padding: '40px 48px',
         }}>
-          <div style={{ width: '100%', maxWidth: 360, margin: 'auto 0' }}>
+          <div style={{ width: '100%', maxWidth: 360, margin: 'auto 0' }} className="anim-slide-up">
             {children}
           </div>
         </div>

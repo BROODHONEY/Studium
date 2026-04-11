@@ -182,7 +182,7 @@ export default function DMList({ activeConvoId, onSelect }) {
                     {preview}
                   </p>
                   {hasUnread && (
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366F1', flexShrink: 0 }}/>
+                    <span className="unread-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366F1', flexShrink: 0 }}/>
                   )}
                 </div>
               </div>

@@ -109,7 +109,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
           <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
         </svg>
         {unread > 0 && (
-          <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+          <span className="badge-pop" style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
             {unread > 99 ? '99+' : unread}
           </span>
         )}
@@ -118,6 +118,7 @@ export default function NotificationBell({ onNavigate, inline, onOpenPanel }) {
       {open && createPortal(
         <div ref={dropRef}
           style={{ position: 'fixed', top: pos.top, left: Math.min(pos.left, window.innerWidth - 316), zIndex: 9999, width: 300, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.15)', fontFamily: 'Inter, sans-serif' }}
+          className="dropdown-enter"
           onMouseDown={e => e.stopPropagation()}>
 
           {/* Header */}

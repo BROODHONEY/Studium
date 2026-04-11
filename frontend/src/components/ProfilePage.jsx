@@ -114,7 +114,90 @@ function InternCard({ item, accent, accentLo, icon }) {
   );
 }
 
-// -- Icons ----------------------------------------------
+// -- Detail Modal --------------------------------------
+function DetailModal({ item, type, accent, onClose }) {
+  const fmtDate = (d) => {
+    if (!d) return null;
+    try { return new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }); }
+    catch { return d; }
+  };
+  const isImage = (t) => t?.startsWith('image/');
+
+  const typeLabel = type === 'achievement' ? 'Achievement' : type === 'certificate' ? 'Certificate' : 'Internship';
+  const typeIcon  = ICONS[type === 'achievement' ? 'achievement' : type === 'certificate' ? 'certificate' : 'internship'];
+
+  const statusColor = item.date ? T.green : T.amber;
+  const statusBg    = item.date ? T.greenLo : T.amberLo;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={onClose}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 18, width: '100%', maxWidth: 480, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ color: accent, lineHeight: 0, flexShrink: 0 }}>{typeIcon}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', flex: 1 }}>{typeLabel}</span>
+          {type === 'certificate' && (
+            <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: statusBg, color: statusColor, textTransform: 'uppercase', letterSpacing: '0.1em', border: `1px solid ${statusColor}30` }}>
+              {item.date ? 'Active' : 'In Progress'}
+            </span>
+          )}
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.text3, padding: 4, lineHeight: 0, marginLeft: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = T.text1}
+            onMouseLeave={e => e.currentTarget.style.color = T.text3}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: T.text1, margin: '0 0 6px', fontFamily: "'Manrope','Inter',sans-serif", lineHeight: 1.2 }}>{item.title}</h2>
+            {item.subtitle && <p style={{ fontSize: 13, fontWeight: 300, color: T.text2, margin: 0, lineHeight: 1.6 }}>{item.subtitle}</p>}
+          </div>
+
+          {item.date && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="11" height="11" viewBox="0 0 16 16" fill={accent}><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+              <span style={{ fontSize: 12, fontWeight: 500, color: accent }}>{fmtDate(item.date)}</span>
+            </div>
+          )}
+
+          {item.description && (
+            <div style={{ background: T.card, borderRadius: 10, padding: '12px 14px', border: `1px solid ${T.border}` }}>
+              <p style={{ fontSize: 12, fontWeight: 300, color: T.text2, margin: 0, lineHeight: 1.7 }}>{item.description}</p>
+            </div>
+          )}
+
+          {item.attachments?.length > 0 && (
+            <div>
+              <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 10px' }}>Attachments</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {item.attachments.map((att, ai) => (
+                  isImage(att.type)
+                    ? <a key={ai} href={att.url} target="_blank" rel="noreferrer">
+                        <img src={att.url} alt={att.name} style={{ height: 72, width: 100, objectFit: 'cover', borderRadius: 8, border: `1px solid ${T.border}`, display: 'block' }} />
+                      </a>
+                    : <a key={ai} href={att.url} target="_blank" rel="noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: T.card, border: `1px solid ${T.border}`, textDecoration: 'none', transition: 'border-color 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = accent}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill={accent}><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/></svg>
+                        <span style={{ fontSize: 11, color: T.text2, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{att.name}</span>
+                      </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 const ICONS = {
   achievement: <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33.076 33.076 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935zm10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935z"/></svg>,
   internship:  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z"/></svg>,
@@ -128,6 +211,7 @@ export default function ProfilePage({ userId, onClose }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [selected, setSelected] = useState(null); // { item, type, accent }
 
   const handleShare = () => {
     const url = `${window.location.origin}/profile/${userId}`;
@@ -232,9 +316,10 @@ export default function ProfilePage({ userId, onClose }) {
                 </div>
 
                 {/* CGPA + achievements side by side */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, alignItems: 'start' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, alignItems: 'stretch' }}>
 
-                  {/* Left: CGPA card */}
+                  {/* Left: CGPA card + stats card stacked */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
                   <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', bottom: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `${T.primary}06`, pointerEvents: 'none' }} />
                     <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 12px' }}>Academic Performance</p>
@@ -267,17 +352,38 @@ export default function ProfilePage({ userId, onClose }) {
                     </div>
                   </div>
 
+                  {/* Stats card below CGPA */}
+                  <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px 28px', flex: 1 }}>
+                    <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Activity</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                      {[
+                        { label: 'Achievements', value: achievements.length, color: T.primary, bg: T.primaryLo },
+                        { label: 'Certificates',  value: certificates.length,  color: T.green,   bg: T.greenLo },
+                        { label: 'Internships',   value: internships.length,   color: T.secondary, bg: T.secondaryLo },
+                      ].map(({ label, value, color, bg }) => (
+                        <div key={label} style={{ background: bg, border: `1px solid ${color}25`, borderRadius: 10, padding: '12px 14px', textAlign: 'center' }}>
+                          <p style={{ fontSize: 24, fontWeight: 800, color, margin: 0, fontFamily: "'Manrope','Inter',sans-serif", lineHeight: 1 }}>{value}</p>
+                          <p style={{ fontSize: 9, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '5px 0 0' }}>{label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  </div>{/* end left column */}
+
                   {/* Right: achievements column */}
                   {achievements.length > 0 && (
-                    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' }}>
+                    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                         <span style={{ color: T.primary, lineHeight: 0 }}>{ICONS.achievement}</span>
                         <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Achievements</span>
                         <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.primaryLo, color: T.primary, border: `1px solid ${T.primary}30`, marginLeft: 'auto' }}>{achievements.length}</span>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto', paddingRight: 2 }}>
                         {achievements.map((item, i) => (
-                          <AchievementCard key={i} item={item} accent={T.primary} accentLo={T.primaryLo} icon={ICONS.achievement} />
+                          <div key={i} onClick={() => setSelected({ item, type: 'achievement', accent: T.primary })} style={{ cursor: 'pointer' }}>
+                            <AchievementCard item={item} accent={T.primary} accentLo={T.primaryLo} icon={ICONS.achievement} />
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -294,7 +400,9 @@ export default function ProfilePage({ userId, onClose }) {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                       {certificates.map((item, i) => (
-                        <CertCard key={i} item={item} accent={T.green} accentLo={T.greenLo} icon={ICONS.certificate} />
+                        <div key={i} onClick={() => setSelected({ item, type: 'certificate', accent: T.green })} style={{ cursor: 'pointer' }}>
+                          <CertCard item={item} accent={T.green} accentLo={T.greenLo} icon={ICONS.certificate} />
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -310,7 +418,9 @@ export default function ProfilePage({ userId, onClose }) {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {internships.map((item, i) => (
-                        <InternCard key={i} item={item} accent={T.secondary} accentLo={T.secondaryLo} icon={ICONS.internship} />
+                        <div key={i} onClick={() => setSelected({ item, type: 'internship', accent: T.secondary })} style={{ cursor: 'pointer' }}>
+                          <InternCard item={item} accent={T.secondary} accentLo={T.secondaryLo} icon={ICONS.internship} />
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -361,6 +471,10 @@ export default function ProfilePage({ userId, onClose }) {
           </div>
         )}
       </div>
+
+      {selected && (
+        <DetailModal item={selected.item} type={selected.type} accent={selected.accent} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }

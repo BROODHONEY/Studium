@@ -63,7 +63,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div>
+          <div className="auth-field">
             <label style={lbl}>Email</label>
             <input style={inp} type="email" name="email" value={form.email}
               onChange={handleChange} placeholder="you@example.com" required
@@ -71,7 +71,7 @@ export default function LoginPage() {
               onBlur={e => e.target.style.borderColor = '#2E2E2E'} />
           </div>
 
-          <div>
+          <div className="auth-field">
             <label style={lbl}>Password</label>
             <div style={{ position: 'relative' }}>
               <input style={{ ...inp, paddingRight: 42 }}

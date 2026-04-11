@@ -118,8 +118,9 @@ function AttachmentUploader({ attachments, onChange, accentColor }) {
 function EntryModal({ title, accentColor, onClose, onSave, canSave, children }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', fontFamily: 'Inter, sans-serif' }}
+      className="modal-backdrop"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 18, width: '100%', maxWidth: 480, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+      <div className="modal-content" style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 18, width: '100%', maxWidth: 480, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: T.text1, margin: 0, fontFamily: "'Manrope','Inter',sans-serif" }}>{title}</h3>
@@ -131,7 +132,7 @@ function EntryModal({ title, accentColor, onClose, onSave, canSave, children }) 
         </div>
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }} className="anim-stagger">
             {children}
           </div>
         </div>
@@ -779,8 +780,8 @@ function SignOutButton() {
           background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'Inter, sans-serif',
-        }} onClick={() => setOpen(false)}>
-          <div onClick={e => e.stopPropagation()} style={{
+        }} className="modal-backdrop" onClick={() => setOpen(false)}>
+          <div onClick={e => e.stopPropagation()} className="modal-content" style={{
             background: '#1A1A1A', border: '1px solid #2A2A2A',
             borderRadius: 24, padding: '40px 32px 32px',
             width: '100%', maxWidth: 360, textAlign: 'center',
@@ -860,12 +861,11 @@ export default function SettingsPanel({ activeSection, onDirtyChange }) {
       <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: `radial-gradient(ellipse at top right, ${T.primaryLo} 0%, transparent 70%)`, pointerEvents: 'none', zIndex: 0 }}/>
       {!activeSection && empty}
       {activeSection && (
-        <div style={{ maxWidth: 620, margin: '0 auto', width: '100%', padding: '32px 24px 60px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 620, margin: '0 auto', width: '100%', padding: '32px 24px 60px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', zIndex: 1 }} className="section-enter">
           <h2 style={{ fontSize: 20, fontWeight: 700, color: T.text1, margin: '0 0 22px', textTransform: 'capitalize', fontFamily: "'Manrope','Inter',sans-serif", letterSpacing: '-0.01em' }}>{activeSection}</h2>
           {activeSection === 'account'     && <AccountSection user={user} login={login} token={token} addToast={addToast} onDirtyChange={onDirtyChange}/>}
           {activeSection === 'security'    && <SecuritySection addToast={addToast}/>}
-          {activeSection === 'personalise' && <PersonaliseSection/>}
-        </div>
+          {activeSection === 'personalise' && <PersonaliseSection/>}        </div>
       )}
     </div>
   );

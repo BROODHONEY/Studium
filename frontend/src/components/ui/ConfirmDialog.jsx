@@ -22,6 +22,7 @@ export default function ConfirmDialog({
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         padding: 16,
       }}
+      className="modal-backdrop"
       onClick={e => e.target === e.currentTarget && !disabled && onCancel?.()}
     >
       <div
@@ -32,6 +33,7 @@ export default function ConfirmDialog({
           boxShadow: '0 32px 80px rgba(0,0,0,0.85)',
           fontFamily: 'Inter, sans-serif',
         }}
+        className="modal-content"
         onClick={e => e.stopPropagation()}
       >
         <h3 style={{ fontSize: 18, fontWeight: 700, color: '#EEEEF8', margin: '0 0 10px' }}>

@@ -136,24 +136,24 @@ router.get('/', async (req, res) => {
         role,
         joined_at,
         groups (
-          id, name, subject, description, invite_code, created_at,
-          created_by (id, name)
+          id, name, subject, description, invite_code, created_at, created_by
         )
       `)
       .eq('user_id', req.user.id);
 
     if (error) throw error;
 
-    // Flatten the response so it's easier to use on the frontend
-    const groups = data.map(row => ({
-      ...row.groups,
-      my_role: row.role,
-      joined_at: row.joined_at
-    }));
+    const groups = data
+      .filter(row => row.groups)
+      .map(row => ({
+        ...row.groups,
+        my_role: row.role,
+        joined_at: row.joined_at
+      }));
 
     res.json(groups);
   } catch (err) {
-    console.error(err);
+    console.error('GET /groups error:', err);
     res.status(500).json({ error: 'Could not fetch groups' });
   }
 });

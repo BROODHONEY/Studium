@@ -566,7 +566,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   els.push(
                     <div key={item.id} id={`message-${item.id}`}
                       ref={(el) => { if (el) messageRefs.current.set(item.id, el); else messageRefs.current.delete(item.id); }}
-                      className="group/msg"
+                      className={`group/msg${item.id?.startsWith('temp-') ? ' msg-enter' : ''}`}
                       style={{ display: 'flex', flexDirection: isOwn ? 'row-reverse' : 'row', gap: 10, alignItems: 'flex-start', padding: sameGroupAsPrev ? '1px 8px' : '3px 8px', borderRadius: 10, transition: 'background 0.12s', marginLeft: -8, marginRight: -8, marginTop: sameGroupAsPrev ? 1 : 6 }}
                       onMouseEnter={e => e.currentTarget.style.background = `${C.primary}06`}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -794,7 +794,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
               {Object.keys(typingUsers).length > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <div style={{ display: 'flex', gap: 3 }}>
-                    {[0,150,300].map(d => <span key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: C.secondary, display: 'inline-block', animation: 'bounce 1s infinite', animationDelay: `${d}ms` }}/>)}
+                    {[0,1,2].map(i => <span key={i} className="typing-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: C.secondary, display: 'inline-block' }}/>)}
                   </div>
                   <span style={{ fontSize: 11, color: C.text3 }}>{Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} typing</span>
                 </div>

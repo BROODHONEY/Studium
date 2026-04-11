@@ -63,10 +63,11 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
         background: active ? 'rgba(192,193,255,0.10)' : 'transparent',
         border: 'none', cursor: 'pointer', display: 'block',
         opacity: isArchived || dragging ? 0.4 : 1,
-        transition: 'background 0.12s',
+        transition: 'background 0.12s, transform 0.1s',
         position: 'relative',
         borderLeft: active ? '2px solid #C0C1FF' : '2px solid transparent',
       }}
+      className="press"
       onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>

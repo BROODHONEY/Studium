@@ -69,7 +69,7 @@ export function ToastProvider({ children }) {
           return (
             <div
               key={t.id}
-              className={`rounded-xl border ${tone.bg} ${tone.border} p-3 shadow-lg backdrop-blur bg-gray-900/60`}
+              className={`toast-enter rounded-xl border ${tone.bg} ${tone.border} p-3 shadow-lg backdrop-blur bg-gray-900/60`}
               role="status"
               aria-live="polite"
             >

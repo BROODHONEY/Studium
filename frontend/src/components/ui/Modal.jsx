@@ -22,16 +22,15 @@ export default function Modal({ open, onClose, children, className }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 modal-backdrop"
       role="presentation"
       onMouseDown={(e) => {
-        // Close only when clicking the backdrop.
         if (e.target === e.currentTarget) onClose?.();
       }}
     >
       <div
         ref={dialogRef}
-        className={className || 'bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm'}
+        className={`modal-content ${className || 'bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm'}`}
         role="dialog"
         aria-modal="true"
       >
