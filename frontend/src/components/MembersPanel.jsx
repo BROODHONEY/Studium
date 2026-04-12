@@ -262,25 +262,31 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
             {/* Group description card */}
             <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                  Group Description
-                </span>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#FFB38E', textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 4px' }}>
+                    {group.subject || 'Group'}
+                  </p>
+                  {!editingDesc && (
+                    <>
+                      <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px', fontFamily: "'Manrope', 'Inter', sans-serif", letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                        {group.name}
+                      </p>
+                      <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
+                        {group.description || 'Manage group members and settings'}
+                      </p>
+                    </>
+                  )}
+                </div>
                 {isAdmin && !editingDesc && (
                   <button
                     onClick={() => setEditingDesc(true)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 500, color: 'var(--primary)', padding: 0 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 500, color: 'var(--primary)', padding: 0, flexShrink: 0, marginTop: 2 }}
                   >
                     Edit
                   </button>
                 )}
               </div>
-
-              {!editingDesc && (
-                <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 10px', fontFamily: "'Manrope', 'Inter', sans-serif" }}>
-                  {group.name}
-                </p>
-              )}
 
               {editingDesc ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -309,11 +315,8 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                 </div>
               ) : (
                 <>
-                  <p style={{ fontSize: 13, fontWeight: 300, color: group.description ? 'var(--text-2)' : 'var(--text-3)', fontStyle: group.description ? 'normal' : 'italic', margin: '0 0 16px', lineHeight: 1.6 }}>
-                    {group.description || 'No description added yet.'}
-                  </p>
                   {/* Stats row */}
-                  <div style={{ display: 'flex', gap: 24 }}>
+                  <div style={{ display: 'flex', gap: 24, marginTop: 16 }}>
                     <StatItem value={members.length} label="Active Members" />
                     <StatItem value={admins.length + teachers.length} label="Admins & Teachers" />
                     <StatItem value={students.length} label="Students" />

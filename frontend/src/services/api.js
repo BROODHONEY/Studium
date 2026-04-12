@@ -79,6 +79,28 @@ export const duesAPI = {
   delete: (groupId, id)   => api.delete(`/dues/${groupId}/${id}`)
 };
 
+export const submissionsAPI = {
+  list:    (groupId)                       => api.get(`/submissions/${groupId}`),
+  create:  (groupId, data)                 => api.post(`/submissions/${groupId}`, data),
+  delete:  (groupId, assignmentId)         => api.delete(`/submissions/${groupId}/${assignmentId}`),
+  update:  (groupId, assignmentId, data)   => api.put(`/submissions/${groupId}/${assignmentId}`, data),
+  submit:  (groupId, assignmentId, data)   => api.post(`/submissions/${groupId}/${assignmentId}/submit`, data),
+  report:  (groupId, assignmentId)         => api.get(`/submissions/${groupId}/${assignmentId}/report`),
+};
+
+export const quizzesAPI = {
+  list:    (groupId)                     => api.get(`/quizzes/${groupId}`),
+  get:     (groupId, quizId)             => api.get(`/quizzes/${groupId}/${quizId}`),
+  create:  (groupId, data)               => api.post(`/quizzes/${groupId}`, data),
+  update:  (groupId, quizId, data)       => api.put(`/quizzes/${groupId}/${quizId}`, data),
+  delete:  (groupId, quizId)             => api.delete(`/quizzes/${groupId}/${quizId}`),
+  attempt: (groupId, quizId, data)       => api.post(`/quizzes/${groupId}/${quizId}/attempt`, data),
+  report:  (groupId, quizId)             => api.get(`/quizzes/${groupId}/${quizId}/report`),
+  // Public (no auth token needed — uses separate axios call)
+  getByToken:    (token)          => api.get(`/quizzes/take/${token}`),
+  submitByToken: (token, data)    => api.post(`/quizzes/take/${token}/submit`, data),
+};
+
 export const profileAPI = {
   get:               (userId) => api.get(`/users/${userId}`),
   getPublic:         (userId) => api.get(`/users/public/${userId}`),

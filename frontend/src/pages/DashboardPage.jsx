@@ -25,6 +25,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import GlobalDuesPanel from '../components/GlobalDuesPanel';
 import { useSearch } from '../components/SearchPanel';
 import SupportPanel from '../components/SupportPanel';
+import SubmissionsPanel from '../components/SubmissionsPanel';
 
 const NAV_MAIN = ['groups', 'dms', 'dues'];
 const NAV_ALL  = ['groups', 'dms', 'dues', 'notifications', 'settings'];
@@ -333,7 +334,8 @@ export default function DashboardPage() {
           {activeTab === 'Chat'     && <ChatPanel group={activeGroup} onViewProfile={setProfileUserId} onFileRef={handleFileRef} highlightMessageId={highlightMessageId} onHighlightClear={() => setHighlightMessageId(null)} draft={chatDrafts[activeGroup?.id] || ''} onDraftChange={(val) => setChatDrafts(prev => ({ ...prev, [activeGroup.id]: val }))} />}
           {activeTab === 'Dues'     && <DuesPanel group={activeGroup} />}
           {activeTab === 'Files'    && <FilesPanel group={activeGroup} highlightFileId={highlightFileId} onHighlightClear={() => setHighlightFileId(null)} />}
-          {activeTab === 'Members'  && <MembersPanel group={activeGroup} onGroupUpdate={handleGroupUpdate} onLeft={handleGroupLeft} onGroupDeleted={handleGroupDeleted} onViewProfile={setProfileUserId} />}
+          {activeTab === 'Members'     && <MembersPanel group={activeGroup} onGroupUpdate={handleGroupUpdate} onLeft={handleGroupLeft} onGroupDeleted={handleGroupDeleted} onViewProfile={setProfileUserId} />}
+          {activeTab === 'Submissions' && <SubmissionsPanel group={activeGroup} />}
         </div>
       </div>
     );

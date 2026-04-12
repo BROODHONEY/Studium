@@ -4,6 +4,7 @@ import LoginPage    from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PublicProfilePage from './pages/PublicProfilePage';
+import QuizPage from './pages/QuizPage';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/profile/:userId" element={<PublicProfilePage />} />
+        <Route path="/quiz/:groupId/:quizId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

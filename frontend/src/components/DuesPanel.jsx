@@ -333,7 +333,25 @@ export default function DuesPanel({ group }) {
                       </div>
                       <div style={{ width: 1, height: 28, background: 'var(--border-color)', flexShrink: 0 }}/>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium dark:text-white text-gray-900 truncate" style={{ fontSize: 12 }}>{d.title}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                          <p className="font-medium dark:text-white text-gray-900 truncate" style={{ fontSize: 12 }}>{d.title}</p>
+                          {d.category && d.category !== 'other' && (
+                            <span style={{
+                              fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
+                              textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0,
+                              ...(d.category === 'quiz'
+                                ? { background: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: '1px solid rgba(255,179,142,0.30)' }
+                                : d.category === 'assignment'
+                                  ? { background: 'rgba(192,193,255,0.12)', color: '#C0C1FF', border: '1px solid rgba(192,193,255,0.25)' }
+                                  : d.category === 'exam'
+                                    ? { background: 'rgba(239,68,68,0.12)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)' }
+                                    : { background: 'rgba(158,158,158,0.12)', color: '#9E9E9E', border: '1px solid rgba(158,158,158,0.25)' }
+                              )
+                            }}>
+                              {d.category}
+                            </span>
+                          )}
+                        </div>
                         {d.description && <p className="dark:text-gray-500 text-gray-500 mt-0.5 truncate" style={{ fontSize: 11 }}>{d.description}</p>}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
