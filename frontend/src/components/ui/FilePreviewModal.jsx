@@ -190,7 +190,7 @@ export default function FilePreviewModal({ file, onClose, onDelete, canDelete })
 
   return createPortal(
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'stretch', background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', fontFamily: 'Inter, sans-serif' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', alignItems: 'stretch', background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', fontFamily: 'Inter, sans-serif' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', maxWidth: 1100, margin: '0 auto', padding: '20px 24px 24px' }}>

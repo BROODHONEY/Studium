@@ -23,7 +23,7 @@ const emptyQuestion = () => ({ question: '', options: ['', '', '', ''], correct_
 
 export default function QuizBuilder({ groupId, onCreated, onCancel }) {
   const { addToast } = useToast();
-  const [meta, setMeta] = useState({ title: '', description: '', duration_mins: 10, start_date: '', start_time: '', end_date: '', end_time: '' });
+  const [meta, setMeta] = useState({ title: '', description: '', duration_mins: 10, start_date: '', start_time: '', end_date: '', end_time: '', show_score: true });
   const [questions, setQuestions] = useState([emptyQuestion()]);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('meta'); // meta | questions
@@ -36,11 +36,12 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
   const handleSubmit = async () => {
     if (!meta.title || !meta.start_date || !meta.end_date) { addToast({ type: 'error', message: 'Fill all required fields' }); return; }
     if (questions.some(q => !q.question || q.options.some(o => !o))) { addToast({ type: 'error', message: 'Complete all questions and options' }); return; }
+    const starts_at = new Date(`${meta.start_date}T${meta.start_time || '00:00'}`).toISOString();
+    const ends_at   = new Date(`${meta.end_date}T${meta.end_time || '23:59'}`).toISOString();
+    if (new Date(ends_at) <= new Date(starts_at)) { addToast({ type: 'error', message: 'Closing date/time must be after opening date/time' }); return; }
     setLoading(true);
     try {
-      const starts_at = new Date(`${meta.start_date}T${meta.start_time || '00:00'}`).toISOString();
-      const ends_at   = new Date(`${meta.end_date}T${meta.end_time || '23:59'}`).toISOString();
-      const res = await quizzesAPI.create(groupId, { title: meta.title, description: meta.description, duration_mins: Number(meta.duration_mins), starts_at, ends_at, questions });
+      const res = await quizzesAPI.create(groupId, { title: meta.title, description: meta.description, duration_mins: Number(meta.duration_mins), starts_at, ends_at, questions, show_score: meta.show_score });
       addToast({ type: 'success', message: 'Quiz created' });
       onCreated(res.data);
     } catch { addToast({ type: 'error', message: 'Failed to create quiz' }); }
@@ -76,10 +77,20 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
                 onChange={e => setMeta(m => ({ ...m, duration_mins: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} />
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 10, background: T.card, border: `1px solid ${T.border}` }}>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 500, color: T.text1, margin: 0 }}>Show score to students</p>
+                <p style={{ fontSize: 11, color: T.text3, margin: '2px 0 0' }}>Students will see their score after submitting</p>
+              </div>
+              <button type="button" onClick={() => setMeta(m => ({ ...m, show_score: !m.show_score }))}
+                style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: meta.show_score ? T.green : T.border, transition: 'background 0.2s', position: 'relative', flexShrink: 0 }}>
+                <span style={{ position: 'absolute', top: 3, left: meta.show_score ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', display: 'block' }} />
+              </button>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Opens Date *</label>
-                <input type="date" style={inp} value={meta.start_date} onChange={e => setMeta(m => ({ ...m, start_date: e.target.value }))}
+                <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Opens Date *</label>                <input type="date" style={inp} value={meta.start_date} onChange={e => setMeta(m => ({ ...m, start_date: e.target.value }))}
                   onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -89,12 +100,16 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Closes Date *</label>
-                <input type="date" style={inp} value={meta.end_date} onChange={e => setMeta(m => ({ ...m, end_date: e.target.value }))}
+                <input type="date" style={inp} value={meta.end_date}
+                  min={meta.start_date || undefined}
+                  onChange={e => setMeta(m => ({ ...m, end_date: e.target.value }))}
                   onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Closes Time</label>
-                <input type="time" style={inp} value={meta.end_time} onChange={e => setMeta(m => ({ ...m, end_time: e.target.value }))}
+                <input type="time" style={inp} value={meta.end_time}
+                  min={meta.end_date && meta.end_date === meta.start_date ? (meta.start_time || undefined) : undefined}
+                  onChange={e => setMeta(m => ({ ...m, end_time: e.target.value }))}
                   onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} />
               </div>
             </div>

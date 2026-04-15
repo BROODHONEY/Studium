@@ -6,7 +6,7 @@ import { useNotifications } from '../context/NotificationContext';
 export default function ChatHeader({ group, activeTab, onTabChange }) {
   const { user } = useAuth();
   const { groupTabUnreads } = useNotifications();
-  const tabs = ['Overview', 'Chat', 'Dues', 'Files', 'Members', 'Submissions'];
+  const tabs = ['Overview', 'Chat', 'Files', 'Dues', 'Submissions', 'Members'];
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPos, setDropdownPos]   = useState({ top: 0, right: 0 });
   const triggerRef = useRef(null);

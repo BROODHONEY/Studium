@@ -11,60 +11,53 @@ import slide5 from '../assets/carousel/5.jpeg';
 const SLIDES   = [slide1, slide2, slide3, slide4, slide5];
 const INTERVAL = 4500;
 
-// ── Carousel (slide-in animation) ─────────────────────
-function BgCarousel({ cur, next, going, onTransitionEnd }) {
+// ── Carousel ───────────────────────────────────────────
+// Each slide is absolutely positioned; the acti
+// ve one translates to 0,
+// the previous slides sit at -100% and incoming at +100%.
+function BgCarousel({ slides, cur, prev }) {
   return (
-    <>
-      <img src={SLIDES[cur]} alt="" style={{
-        position: 'absolute', inset: 0, width: '100%', height: '100%',
-        objectFit: 'cover', objectPosition: 'center', zIndex: 0,
-      }} />
-      {next !== null && (
-        <img
-          src={SLIDES[next]} alt=""
-          onTransitionEnd={onTransitionEnd}
-          style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center', zIndex: 1,
-            transform: going ? 'translateX(0)' : 'translateX(105%)',
-            transition: going ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1)' : 'none',
-          }}
-        />
-      )}
-    </>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      {slides.map((src, i) => {
+        let x = '100%';
+        if (i === cur)  x = '0%';
+        else if (i === prev) x = '-100%';
+        return (
+          <img key={i} src={src} alt=""
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center',
+              transform: `translateX(${x})`,
+              transition: (i === cur || i === prev)
+                ? 'transform 0.75s cubic-bezier(0.77, 0, 0.175, 1)'
+                : 'none',
+              willChange: 'transform',
+            }} />
+        );
+      })}
+    </div>
   );
 }
 
 // ── Layout shell ──────────────────────────────────────
 export default function AuthLayout({ children, tagline, sub }) {
-  const [cur,   setCur]   = useState(0);
-  const [next,  setNext]  = useState(null);
-  const [going, setGoing] = useState(false);
-  const timer = useRef(null);
+  const [cur, setCur]   = useState(0);
+  const [prev, setPrev] = useState(null);
+  const curRef = useRef(0);
 
-  const advance = (to) => {
-    if (going || to === cur) return;
-    setNext(to);
-    requestAnimationFrame(() => requestAnimationFrame(() => setGoing(true)));
-  };
-
-  const onTransitionEnd = () => {
-    setCur(next);
-    setNext(null);
-    setGoing(false);
+  const goTo = (n) => {
+    if (n === curRef.current) return;
+    setPrev(curRef.current);
+    curRef.current = n;
+    setCur(n);
   };
 
   useEffect(() => {
     if (SLIDES.length < 2) return;
-    timer.current = setInterval(() => {
-      setCur(c => {
-        const n = (c + 1) % SLIDES.length;
-        setNext(n);
-        requestAnimationFrame(() => requestAnimationFrame(() => setGoing(true)));
-        return c;
-      });
+    const id = setInterval(() => {
+      goTo((curRef.current + 1) % SLIDES.length);
     }, INTERVAL);
-    return () => clearInterval(timer.current);
+    return () => clearInterval(id);
   }, []);
 
   return (
@@ -86,7 +79,7 @@ export default function AuthLayout({ children, tagline, sub }) {
           position: 'relative', flexShrink: 0, overflow: 'hidden',
           borderRadius: '28px 0 0 28px',
         }}>
-          <BgCarousel cur={cur} next={next} going={going} onTransitionEnd={onTransitionEnd} />
+          <BgCarousel slides={SLIDES} cur={cur} prev={prev} />
 
           {/* Gradient overlays */}
           <div style={{
@@ -116,7 +109,7 @@ export default function AuthLayout({ children, tagline, sub }) {
               {SLIDES.length > 1 && (
                 <div style={{ display: 'flex', gap: 6 }}>
                   {SLIDES.map((_, i) => (
-                    <button key={i} onClick={() => advance(i)}
+                    <button key={i} onClick={() => goTo(i)}
                       style={{
                         width: i === cur ? 22 : 6, height: 6, borderRadius: 3, padding: 0,
                         background: i === cur ? '#fff' : 'rgba(255,255,255,0.28)',

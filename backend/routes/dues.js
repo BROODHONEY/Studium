@@ -22,6 +22,7 @@ router.get('/', async (req, res) => {
       .from('dues')
       .select(`id, group_id, title, description, due_date, category, created_at, users!created_by (id, name)`)
       .in('group_id', groupIds)
+      .is('closed_at', null)
       .order('due_date', { ascending: true });
 
     if (error) throw error;
@@ -53,6 +54,7 @@ router.get('/:groupId', async (req, res) => {
         users!created_by (id, name)
       `)
       .eq('group_id', req.params.groupId)
+      .is('closed_at', null)
       .order('due_date', { ascending: true });
 
     if (error) throw error;
@@ -172,6 +174,36 @@ router.put('/:groupId/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not update due' });
+  }
+});
+
+// ── Close a due manually (admin/creator only) ─────────
+router.patch('/:groupId/:id/close', async (req, res) => {
+  try {
+    const { data: due } = await supabase
+      .from('dues').select('created_by').eq('id', req.params.id).single();
+    if (!due) return res.status(404).json({ error: 'Due not found' });
+
+    const { data: membership } = await supabase
+      .from('group_members').select('role')
+      .eq('group_id', req.params.groupId).eq('user_id', req.user.id).single();
+
+    if (!membership || (membership.role === 'student' && due.created_by !== req.user.id)) {
+      return res.status(403).json({ error: 'Not authorised' });
+    }
+
+    const { data, error } = await supabase
+      .from('dues')
+      .update({ closed_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not close due' });
   }
 });
 

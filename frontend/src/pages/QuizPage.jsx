@@ -148,7 +148,15 @@ export default function QuizPage() {
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <svg width="48" height="48" viewBox="0 0 16 16" fill={T.green} style={{ marginBottom: 16 }}><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
             <p style={{ fontSize: 22, fontWeight: 800, color: T.text1, margin: '0 0 8px', fontFamily: "'Manrope','Inter',sans-serif" }}>Quiz Submitted!</p>
-            {result && <p style={{ fontSize: 15, color: T.primary, margin: '0 0 6px' }}>Score: {result.score} / {result.total}</p>}
+            {result && result.show_score !== false && result.score != null && (
+              <p style={{ fontSize: 15, color: T.primary, margin: '0 0 6px' }}>
+                Score: {result.score} / {result.total}
+                {result.total > 0 && <span style={{ color: T.text2, fontSize: 13 }}> ({Math.round((result.score / result.total) * 100)}%)</span>}
+              </p>
+            )}
+            {result && result.show_score === false && (
+              <p style={{ fontSize: 13, color: T.text2, margin: '0 0 6px' }}>Your score will not be shown for this quiz.</p>
+            )}
             <p style={{ fontSize: 12, color: T.text3 }}>This tab will close automatically…</p>
             <button onClick={() => window.close()} style={{ marginTop: 20, padding: '10px 24px', borderRadius: 10, border: 'none', background: T.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Close Now</button>
           </div>

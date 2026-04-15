@@ -86,14 +86,17 @@ router.post('/:groupId', async (req, res) => {
     const m = await getMembership(req.params.groupId, req.user.id);
     if (!m || m.role === 'student') return res.status(403).json({ error: 'Forbidden' });
 
-    const { title, description, duration_mins, starts_at, ends_at, questions } = req.body;
+    const { title, description, duration_mins, starts_at, ends_at, questions, show_score } = req.body;
     if (!title || !duration_mins || !starts_at || !ends_at) {
       return res.status(400).json({ error: 'title, duration_mins, starts_at, ends_at required' });
+    }
+    if (new Date(ends_at) <= new Date(starts_at)) {
+      return res.status(400).json({ error: 'ends_at must be after starts_at' });
     }
 
     const { data: quiz, error } = await supabase
       .from('quizzes')
-      .insert({ group_id: req.params.groupId, title, description, duration_mins, starts_at, ends_at, created_by: req.user.id })
+      .insert({ group_id: req.params.groupId, title, description, duration_mins, starts_at, ends_at, show_score: show_score !== false, created_by: req.user.id })
       .select('*, users!created_by(id, name)')
       .single();
     if (error) throw error;
@@ -138,14 +141,17 @@ router.put('/:groupId/:quizId', async (req, res) => {
     const m = await getMembership(req.params.groupId, req.user.id);
     if (!m || m.role === 'student') return res.status(403).json({ error: 'Forbidden' });
 
-    const { title, description, duration_mins, starts_at, ends_at } = req.body;
+    const { title, description, duration_mins, starts_at, ends_at, show_score } = req.body;
     if (!title || !duration_mins || !starts_at || !ends_at) {
       return res.status(400).json({ error: 'title, duration_mins, starts_at, ends_at required' });
+    }
+    if (new Date(ends_at) <= new Date(starts_at)) {
+      return res.status(400).json({ error: 'ends_at must be after starts_at' });
     }
 
     const { data, error } = await supabase
       .from('quizzes')
-      .update({ title, description, duration_mins, starts_at, ends_at })
+      .update({ title, description, duration_mins, starts_at, ends_at, show_score: show_score !== false })
       .eq('id', req.params.quizId)
       .eq('group_id', req.params.groupId)
       .select('*, users!created_by(id, name)')
@@ -163,18 +169,47 @@ router.put('/:groupId/:quizId', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to update quiz' }); }
 });
 
+// ── Close quiz (removes due, keeps quiz for history) ──
+router.patch('/:groupId/:quizId/close', async (req, res) => {
+  try {
+    const m = await getMembership(req.params.groupId, req.user.id);
+    if (!m || m.role === 'student') return res.status(403).json({ error: 'Forbidden' });
+
+    const { data, error } = await supabase
+      .from('quizzes')
+      .update({ closed_at: new Date().toISOString() })
+      .eq('id', req.params.quizId)
+      .eq('group_id', req.params.groupId)
+      .select('*, users!created_by(id, name)')
+      .single();
+
+    if (error) throw error;
+
+    // Remove from due dates
+    await supabase.from('dues')
+      .delete()
+      .eq('ref_id', req.params.quizId)
+      .eq('ref_type', 'quiz');
+
+    res.json(data);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to close quiz' }); }
+});
+
 // ── Delete quiz (teacher/admin) ───────────────────────
 router.delete('/:groupId/:quizId', async (req, res) => {
   try {
     const m = await getMembership(req.params.groupId, req.user.id);
     if (!m || m.role === 'student') return res.status(403).json({ error: 'Forbidden' });
 
-    // Remove linked due entry
+    // Delete attempts and questions first (avoids FK constraint issues)
+    await supabase.from('quiz_attempts').delete().eq('quiz_id', req.params.quizId);
+    await supabase.from('quiz_questions').delete().eq('quiz_id', req.params.quizId);
+
+    // Remove linked due entry (may already be gone if closed)
     await supabase.from('dues')
       .delete()
       .eq('ref_id', req.params.quizId)
-      .eq('ref_type', 'quiz')
-      .eq('group_id', req.params.groupId);
+      .eq('ref_type', 'quiz');
 
     await supabase.from('quizzes').delete().eq('id', req.params.quizId).eq('group_id', req.params.groupId);
     res.json({ success: true });
@@ -210,7 +245,16 @@ router.post('/:groupId/:quizId/attempt', async (req, res) => {
       .select().single();
     if (error) throw error;
 
-    res.status(201).json(data);
+    // Fetch quiz to check show_score setting
+    const { data: quiz } = await supabase
+      .from('quizzes').select('show_score').eq('id', req.params.quizId).single();
+
+    res.status(201).json({
+      ...data,
+      score: quiz?.show_score !== false ? data.score : null,
+      total: quiz?.show_score !== false ? data.total : null,
+      show_score: quiz?.show_score !== false,
+    });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to submit' }); }
 });
 

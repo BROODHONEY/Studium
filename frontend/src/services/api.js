@@ -76,6 +76,7 @@ export const duesAPI = {
   list:   (groupId)       => api.get(`/dues/${groupId}`),
   create: (groupId, data) => api.post(`/dues/${groupId}`, data),
   update: (groupId, id, data) => api.put(`/dues/${groupId}/${id}`, data),
+  close:  (groupId, id)   => api.patch(`/dues/${groupId}/${id}/close`),
   delete: (groupId, id)   => api.delete(`/dues/${groupId}/${id}`)
 };
 
@@ -84,8 +85,11 @@ export const submissionsAPI = {
   create:  (groupId, data)                 => api.post(`/submissions/${groupId}`, data),
   delete:  (groupId, assignmentId)         => api.delete(`/submissions/${groupId}/${assignmentId}`),
   update:  (groupId, assignmentId, data)   => api.put(`/submissions/${groupId}/${assignmentId}`, data),
+  close:   (groupId, assignmentId)         => api.patch(`/submissions/${groupId}/${assignmentId}/close`),
   submit:  (groupId, assignmentId, data)   => api.post(`/submissions/${groupId}/${assignmentId}/submit`, data),
+  uploadFile: (groupId, assignmentId, formData) => api.post(`/submissions/${groupId}/${assignmentId}/upload`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   report:  (groupId, assignmentId)         => api.get(`/submissions/${groupId}/${assignmentId}/report`),
+  markOffline: (groupId, assignmentId, userId, marked) => api.patch(`/submissions/${groupId}/${assignmentId}/mark-offline/${userId}`, { marked }),
 };
 
 export const quizzesAPI = {
@@ -93,6 +97,7 @@ export const quizzesAPI = {
   get:     (groupId, quizId)             => api.get(`/quizzes/${groupId}/${quizId}`),
   create:  (groupId, data)               => api.post(`/quizzes/${groupId}`, data),
   update:  (groupId, quizId, data)       => api.put(`/quizzes/${groupId}/${quizId}`, data),
+  close:   (groupId, quizId)             => api.patch(`/quizzes/${groupId}/${quizId}/close`),
   delete:  (groupId, quizId)             => api.delete(`/quizzes/${groupId}/${quizId}`),
   attempt: (groupId, quizId, data)       => api.post(`/quizzes/${groupId}/${quizId}/attempt`, data),
   report:  (groupId, quizId)             => api.get(`/quizzes/${groupId}/${quizId}/report`),
