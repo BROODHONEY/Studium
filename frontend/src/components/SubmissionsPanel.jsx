@@ -909,11 +909,27 @@ function QuizRow({ item, isTeacher, groupId, onDelete, onReport, onEdit, onClose
   const isUpcoming = !isClosed && now < starts;
   const attempted  = !!item.my_attempt;
 
+  // Check if quiz is in-progress (tab was closed mid-quiz)
+  const storageKey = `quiz_started_${item.id}`;
+  const startedAt = !attempted ? localStorage.getItem(storageKey) : null;
+  const inProgress = isLive && !attempted && !!startedAt;
+  const remainingMins = inProgress
+    ? Math.max(0, Math.ceil((item.duration_mins * 60 - Math.floor((now - Number(startedAt)) / 1000)) / 60))
+    : null;
+
   const statusLabel = isClosed ? 'Closed' : isUpcoming ? 'Upcoming' : isLive ? 'Live' : 'Ended';
   const statusColor = isClosed ? C.t3 : isUpcoming ? C.amber : isLive ? C.green : C.t3;
   const statusDim   = isClosed ? 'rgba(85,85,85,0.12)' : isUpcoming ? C.amberDim : isLive ? C.greenDim : 'rgba(85,85,85,0.12)';
 
-  const openQuiz = () => window.open(`${window.location.origin}/quiz/${groupId}/${item.id}`, '_blank', 'noopener,noreferrer');
+  const openQuiz = () => {
+    const existing = window.open('', `quiz_${item.id}`);
+    if (existing && (existing.location.href === 'about:blank' || existing.location.href.includes(`/quiz/${groupId}/${item.id}`))) {
+      existing.location.href = `${window.location.origin}/quiz/${groupId}/${item.id}`;
+      existing.focus();
+    } else if (existing) {
+      existing.focus();
+    }
+  };
 
   const actions = isTeacher ? (
     <>
@@ -925,7 +941,11 @@ function QuizRow({ item, isTeacher, groupId, onDelete, onReport, onEdit, onClose
       ]} />
     </>
   ) : isLive && !attempted ? (
-    <PrimaryBtn onClick={openQuiz} color={C.green} style={{ width: 140, justifyContent: 'center' }}>Start Quiz →</PrimaryBtn>
+    inProgress
+      ? <PrimaryBtn onClick={openQuiz} color={C.amber} style={{ width: 180, justifyContent: 'center' }}>
+          Resume · {remainingMins}m left →
+        </PrimaryBtn>
+      : <PrimaryBtn onClick={openQuiz} color={C.green} style={{ width: 140, justifyContent: 'center' }}>Start Quiz →</PrimaryBtn>
   ) : attempted ? (
     <Pill label="Completed" color={C.green} dim={C.greenDim} />
   ) : null;

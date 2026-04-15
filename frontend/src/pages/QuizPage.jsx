@@ -37,6 +37,7 @@ export default function QuizPage() {
       const res = await quizzesAPI.attempt(groupId, quizId, { answers: ans });
       setResult(res.data);
       setPhase('done');
+      localStorage.removeItem(`quiz_started_${quizId}`);
     } catch (err) {
       setError(err?.response?.data?.error || 'Submission failed');
     } finally { setSubmitting(false); }
@@ -48,14 +49,26 @@ export default function QuizPage() {
     quizzesAPI.get(groupId, quizId)
       .then(r => {
         setQuiz(r.data);
-        if (r.data.my_attempt) { setPhase('already'); }
+        if (r.data.my_attempt) { setPhase('already'); localStorage.removeItem(`quiz_started_${quizId}`); }
         else {
           const now = Date.now();
           const start = new Date(r.data.starts_at).getTime();
           const end   = new Date(r.data.ends_at).getTime();
           if (now < start) setPhase('waiting');
           else if (now > end) setPhase('done');
-          else { setPhase('active'); setTimeLeft(r.data.duration_mins * 60); }
+          else {
+            setPhase('active');
+            const storageKey = `quiz_started_${quizId}`;
+            let startedAt = localStorage.getItem(storageKey);
+            if (!startedAt) {
+              startedAt = String(now);
+              localStorage.setItem(storageKey, startedAt);
+            }
+            const elapsed = Math.floor((now - Number(startedAt)) / 1000);
+            const total = r.data.duration_mins * 60;
+            const remaining = Math.max(0, total - elapsed);
+            setTimeLeft(remaining);
+          }
         }
       })
       .catch(e => setError(e?.response?.data?.error || 'Could not load quiz'))

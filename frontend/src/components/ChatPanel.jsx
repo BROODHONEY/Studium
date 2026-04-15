@@ -8,7 +8,7 @@ import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
 import { formatTime, getDateLabel } from '../utils/time';
 
-const EMOJI_OPTIONS = ['??', '??', '??', '??', '??', '??'];
+const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
 // -- Design tokens - new palette ------------------------
 const C = {
@@ -269,7 +269,20 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   const handleReact = async (messageId, emoji) => {
     setOpenMenuId(null);
-    try { await messagesAPI.react(messageId, emoji); } catch (err) { console.error(err); }
+    // Optimistic update
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+      const reactions = [...(m.message_reactions || [])];
+      const existing = reactions.findIndex(r => r.emoji === emoji && r.user_id === user?.id);
+      if (existing >= 0) reactions.splice(existing, 1);
+      else reactions.push({ emoji, user_id: user?.id });
+      return { ...m, message_reactions: reactions };
+    }));
+    try { await messagesAPI.react(messageId, emoji); } catch (err) {
+      console.error(err);
+      // Revert on error by re-fetching
+      messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error);
+    }
   };
 
   const handleUnpinMessage = async (messageId) => {
@@ -369,7 +382,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, textDecoration: 'none', maxWidth: 280, transition: 'border-color 0.15s' }}
         onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-        <span style={{ fontSize: 20 }}>{isPdf ? '??' : '??'}</span>
+        <span style={{ fontSize: 20 }}>{isPdf ? '📄' : '📎'}</span>
         <div style={{ minWidth: 0 }}>
           <p style={{ fontSize: 12, color: C.text1, fontWeight: 400, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.filename}</p>
           {sizeStr && <p style={{ fontSize: 11, color: C.text3, margin: '2px 0 0' }}>{sizeStr}</p>}
@@ -706,7 +719,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             {(replyTo || privateReply) && (() => {
               const r = replyTo || privateReply;
               const isPrivate = !!privateReply;
-              const displayContent = (r.content || '').replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '?? $1').slice(0, 60);
+              const displayContent = (r.content || '').replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1').slice(0, 60);
               return (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 12px', borderRadius: 9, borderLeft: `3px solid `, background: C.surface }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -714,7 +727,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <span style={{ fontSize: 11, fontWeight: 500, color: C.text2 }}>{r.senderName}</span>
                     <p style={{ fontSize: 11, color: C.text3, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? ' ·' : ''}</p>
                   </div>
-                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}> ·</button>
+                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
                 </div>
               );
             })()}
@@ -728,7 +741,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 1, padding: 0 }}
                       onMouseEnter={e => e.currentTarget.style.color = C.danger}
-                      onMouseLeave={e => e.currentTarget.style.color = C.text3}> ·</button>
+                      onMouseLeave={e => e.currentTarget.style.color = C.text3}>×</button>
                   </span>
                 ))}
               </div>
@@ -772,7 +785,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: C.text1, resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }}
                     onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
                     disabled={!connected} />
-                  <button style={{ flexShrink: 0, width: 36, alignSelf: 'stretch', border: 'none', background: 'none', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, opacity: 0.4 }}>??</button>
+                  <button style={{ flexShrink: 0, width: 36, alignSelf: 'stretch', border: 'none', background: 'none', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, opacity: 0.4 }}>😊</button>
                   <div style={{ padding: '8px 8px 8px 0', flexShrink: 0, display: 'flex', alignItems: 'flex-end' }}>
                     <button onClick={privateReply ? handlePrivateReply : sendMessage}
                       disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
@@ -800,8 +813,8 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: 14 }}>
-                  <span style={{ fontSize: 10, color: C.text3 }}>? Return to send</span>
-                  <span style={{ fontSize: 10, color: C.text3 }}>?? New line</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>⏎ Return to send</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>⇧⏎ New line</span>
                   <span style={{ fontSize: 10, color: C.text3 }}>@ Mention</span>
                 </div>
               )}
