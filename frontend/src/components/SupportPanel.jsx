@@ -5,7 +5,7 @@ const FAQS = [
   { q: 'How do I create a group?', a: 'Only teachers can create groups. Go to Groups > New group / folder > Create or join group.' },
   { q: 'Why am I not receiving notifications?', a: 'Make sure notifications are enabled in Settings > Personalise. Also check your browser notification permissions.' },
   { q: 'How do I send a direct message?', a: 'Go to the Messages tab, search for a user by email, and start a conversation.' },
-  { q: 'Can I delete a message?', a: 'Yes ââ hover over a message and click the three-dot menu, then select Delete. Admins can delete any message.' },
+  { q: 'Can I delete a message?', a: 'Yes. hover over a message and click the three-dot menu, then select Delete. Admins can delete any message.' },
   { q: 'How do I change my password?', a: 'Go to Settings > Security > Change Password.' },
   { q: 'How do I leave or delete a group?', a: 'Go to the group > Members tab. Scroll to the bottom to find Leave group. Only the group creator can delete it.' },
 ];
