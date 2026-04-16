@@ -942,8 +942,9 @@ function QuizRow({ item, isTeacher, groupId, onDelete, onReport, onEdit, onClose
     </>
   ) : isLive && !attempted ? (
     inProgress
-      ? <PrimaryBtn onClick={openQuiz} color={C.amber} style={{ width: 180, justifyContent: 'center' }}>
-          Resume · {remainingMins}m left →
+      ? <PrimaryBtn onClick={openQuiz} color={C.amber} style={{ width: 200, justifyContent: 'center', gap: 8 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.amber, boxShadow: `0 0 6px ${C.amber}`, display: 'inline-block', flexShrink: 0 }} />
+          Quiz in Progress · {remainingMins}m left
         </PrimaryBtn>
       : <PrimaryBtn onClick={openQuiz} color={C.green} style={{ width: 140, justifyContent: 'center' }}>Start Quiz →</PrimaryBtn>
   ) : attempted ? (
@@ -1010,6 +1011,23 @@ export default function SubmissionsPanel({ group }) {
   const [reloadKey, setReloadKey] = useState(0);
   const load = () => setReloadKey(k => k + 1);
 
+  // Listen for quiz completion from the quiz tab (cross-tab via localStorage)
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e.key?.startsWith('quiz_started_')) return;
+      if (e.newValue !== null) return; // key was set, not removed
+      const quizId = e.key.replace('quiz_started_', '');
+      // Mark that quiz as attempted in local state so button flips to Completed
+      setQuizzes(prev => prev.map(q =>
+        q.id === quizId && !q.my_attempt
+          ? { ...q, my_attempt: { submitted_at: new Date().toISOString() } }
+          : q
+      ));
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
+
   useEffect(() => {
     if (!group?.id) return;
     const controller = new AbortController();
@@ -1071,11 +1089,9 @@ export default function SubmissionsPanel({ group }) {
   };
   // Stats
   const totalItems   = assignments.length + quizzes.length;
-  // Stats — "Submitted" = fully submitted (no attempts left) or closed with a submission
-  const submitted    = assignments.filter(a => {
-    const used = a.my_submissions || 0;
-    return used >= 2 || (!!a.closed_at && used > 0);
-  }).length;
+  // "Submitted" = any submission made (online or offline) + completed quizzes
+  const submitted    = assignments.filter(a => (a.my_submissions || 0) > 0).length
+                     + quizzes.filter(q => !!q.my_attempt).length;
   const liveQuizzes  = quizzes.filter(q => { const n = new Date().getTime(); return n >= new Date(q.starts_at).getTime() && n <= new Date(q.ends_at).getTime(); }).length;
 
   return (

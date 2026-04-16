@@ -88,13 +88,20 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
               const createdMs = new Date(d.created_at.endsWith('Z') ? d.created_at : d.created_at + 'Z').getTime();
               return createdMs > new Date(dueLastSeen).getTime();
             })
-            .forEach(d => add({
-              type: 'due',
-              title: `New due date in ${group.name}`,
-              body: d.title || 'New due date added',
-              groupId: group.id, groupName: group.name,
-              at: new Date(d.created_at),
-            }));
+            .forEach(d => {
+              add({
+                type: 'due',
+                title: `New due date in ${group.name}`,
+                body: d.title || 'New due date added',
+                groupId: group.id, groupName: group.name,
+                at: new Date(d.created_at),
+              });
+              if (d.ref_type === 'assignment') {
+                add({ type: 'assignment', title: `New assignment in ${group.name}`, body: d.title || 'New assignment', groupId: group.id, groupName: group.name, at: new Date(d.created_at) });
+              } else if (d.ref_type === 'quiz') {
+                add({ type: 'quiz', title: `New quiz in ${group.name}`, body: d.title || 'New quiz', groupId: group.id, groupName: group.name, at: new Date(d.created_at) });
+              }
+            });
         } catch { /* skip */ }
 
         try {
@@ -126,7 +133,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   }, [user?.id, groups?.length]);
 
   // notification type → tab name
-  const TYPE_TO_TAB = { message: 'Chat', mention: 'Chat', announcement: 'Overview', due: 'Dues', file: 'Files' };
+  const TYPE_TO_TAB = { message: 'Chat', mention: 'Chat', announcement: 'Overview', due: 'Dues', file: 'Files', assignment: 'Submissions', quiz: 'Submissions' };
 
   const activeGroupRef2 = useRef(activeGroupId);
   useEffect(() => { activeGroupRef2.current = activeGroupId; }, [activeGroupId]);
@@ -228,6 +235,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
       const title = `New due date in ${groupName}`;
       const body  = d.title || 'New due date added';
       add({ type: 'due', title, body, groupId: d.group_id, groupName });
+
+      // Also fire a Submissions-tab notification for assignments and quizzes
+      if (d.ref_type === 'assignment') {
+        add({ type: 'assignment', title: `New assignment in ${groupName}`, body: d.title || 'New assignment', groupId: d.group_id, groupName });
+      } else if (d.ref_type === 'quiz') {
+        add({ type: 'quiz', title: `New quiz in ${groupName}`, body: d.title || 'New quiz', groupId: d.group_id, groupName });
+      }
 
       if (user?.id) setLastSeen(user.id, d.group_id, new Date().toISOString(), lastSeenDueKey);
 

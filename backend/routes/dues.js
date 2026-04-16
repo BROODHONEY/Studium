@@ -50,7 +50,7 @@ router.get('/:groupId', async (req, res) => {
     const { data, error } = await supabase
       .from('dues')
       .select(`
-        id, group_id, title, description, due_date, category, created_at,
+        id, group_id, title, description, due_date, category, ref_type, created_at,
         users!created_by (id, name)
       `)
       .eq('group_id', req.params.groupId)
