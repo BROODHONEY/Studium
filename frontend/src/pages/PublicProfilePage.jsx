@@ -73,7 +73,7 @@ export default function PublicProfilePage() {
       <div style={{ height: 52, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', padding: '0 20px', gap: 10, background: T.surface, position: 'sticky', top: 0, zIndex: 10 }}>
         <img src={logo} alt="Studi+" style={{ width: 24, height: 24, objectFit: 'contain' }} />
         <span style={{ fontSize: 15, fontWeight: 700, color: T.text1, letterSpacing: '-0.02em' }}>Studi+</span>
-        <span style={{ fontSize: 12, color: T.text3, marginLeft: 4 }}>· Public Profile</span>
+        <span style={{ fontSize: 12, color: T.text3, marginLeft: 4 }}>ÂÂ· Public Profile</span>
         <div style={{ flex: 1 }} />
         <a href="/login" style={{ padding: '6px 14px', borderRadius: 8, background: T.primaryLo, border: `1px solid ${T.primary}40`, color: T.primary, fontSize: 12, fontWeight: 500, textDecoration: 'none', transition: 'all 0.15s' }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(192,193,255,0.2)'}
@@ -113,7 +113,7 @@ export default function PublicProfilePage() {
                 </h1>
                 <p style={{ fontSize: 14, fontWeight: 300, color: T.text2, margin: 0 }}>
                   {profile.department || 'No department set'}
-                  {profile.year ? ` · ${profile.year}` : ''}
+                  {profile.year ? ` ÂÂ· ${profile.year}` : ''}
                 </p>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function PublicProfilePage() {
                   ].map(({ label, value }) => (
                     <div key={label}>
                       <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 6px' }}>{label}</p>
-                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0 }}>{value || '—'}</p>
+                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0 }}>{value || 'ââ'}</p>
                     </div>
                   ))}
                 </div>
@@ -191,7 +191,7 @@ export default function PublicProfilePage() {
                             {item.description && <p style={{ fontSize: 11, fontWeight: 300, color: T.text2, margin: '3px 0 0' }}>{item.description}</p>}
                             {item.fromDate && (
                               <p style={{ fontSize: 10, fontWeight: 500, color: T.secondary, margin: '4px 0 0' }}>
-                                {fmtDate(item.fromDate)}{item.toDate ? ` → ${fmtDate(item.toDate)}` : ' → Present'}
+                                {fmtDate(item.fromDate)}{item.toDate ? ` ââ ${fmtDate(item.toDate)}` : ' ââ Present'}
                               </p>
                             )}
                           </div>

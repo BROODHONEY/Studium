@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import logo from '../assets/logo.png';
 
-// ── Add / remove slides here ──────────────────────────
+// ââââ Add / remove slides here ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 import slide1 from '../assets/carousel/1.jpeg';
 import slide2 from '../assets/carousel/2.jpeg';
 import slide3 from '../assets/carousel/3.jpeg';
@@ -11,7 +11,7 @@ import slide5 from '../assets/carousel/5.jpeg';
 const SLIDES   = [slide1, slide2, slide3, slide4, slide5];
 const INTERVAL = 4500;
 
-// ── Carousel ───────────────────────────────────────────
+// ââââ Carousel ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // Each slide is absolutely positioned; the acti
 // ve one translates to 0,
 // the previous slides sit at -100% and incoming at +100%.
@@ -39,7 +39,7 @@ function BgCarousel({ slides, cur, prev }) {
   );
 }
 
-// ── Layout shell ──────────────────────────────────────
+// ââââ Layout shell ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 export default function AuthLayout({ children, tagline, sub }) {
   const [cur, setCur]   = useState(0);
   const [prev, setPrev] = useState(null);
@@ -74,7 +74,7 @@ export default function AuthLayout({ children, tagline, sub }) {
         border: '1px solid rgba(255,255,255,0.06)',
       }}>
 
-        {/* ── Left panel ── */}
+        {/* ââââ Left panel ââââ */}
         <div className="auth-left-panel" style={{
           position: 'relative', flexShrink: 0, overflow: 'hidden',
           borderRadius: '28px 0 0 28px',
@@ -91,7 +91,7 @@ export default function AuthLayout({ children, tagline, sub }) {
             background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.28) 0%, transparent 65%)',
           }} />
 
-          {/* Content — logo top, dots + text bottom */}
+          {/* Content ââ logo top, dots + text bottom */}
           <div style={{
             position: 'relative', zIndex: 3, height: '100%',
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -132,7 +132,7 @@ export default function AuthLayout({ children, tagline, sub }) {
           </div>
         </div>
 
-        {/* ── Right panel — scrollable ── */}
+        {/* ââââ Right panel ââ scrollable ââââ */}
         <div style={{
           flex: 1, overflowY: 'auto', backgroundColor: '#131313',
           display: 'flex', flexDirection: 'column', alignItems: 'center',

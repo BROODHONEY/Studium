@@ -1,15 +1,15 @@
-﻿import { useState, useEffect } from 'react';
+ï»¿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { groupsAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 
-// ── Helpers ────────────────────────────────────────────
+// ââââ Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 const AVATAR_COLORS = ['#C0C1FF', '#7072AC', '#FFB38E', '#22C55E', '#9E9E9E', '#db2777'];
 const avatarBg = (n) => AVATAR_COLORS[(n?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
-// ── Role badge config ──────────────────────────────────
+// ââââ Role badge config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const ROLE_BADGE = {
   admin:   { label: 'Admin',   bg: 'rgba(192,193,255,0.14)', color: '#C0C1FF', border: 'rgba(192,193,255,0.30)' },
   teacher: { label: 'Faculty', bg: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: 'rgba(255,179,142,0.30)' },
@@ -253,11 +253,11 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
           {error && (
             <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', borderRadius: 10, color: '#EF4444', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               {error}
-              <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.5)', fontSize: 16, lineHeight: 1 }}>×</button>
+              <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(239,68,68,0.5)', fontSize: 16, lineHeight: 1 }}>Ãââ</button>
             </div>
           )}
 
-          {/* ── Top two-column cards ── */}
+          {/* ââââ Top two-column cards ââââ */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 14, alignItems: 'start' }}>
 
             {/* Group description card */}
@@ -300,12 +300,12 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                   </div>
                   <div>
                     <label className="form-label">Description <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>(optional)</span></label>
-                    <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a description…" className="form-input" style={{ resize: 'none' }} />
+                    <textarea value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Add a descriptionâ¦" className="form-input" style={{ resize: 'none' }} />
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleSaveDescription} disabled={savingDesc || !editForm.name.trim() || !editForm.subject.trim()}
                       style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--primary)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: savingDesc ? 0.6 : 1 }}>
-                      {savingDesc ? 'Saving…' : 'Save'}
+                      {savingDesc ? 'Savingâ¦' : 'Save'}
                     </button>
                     <button onClick={() => { setEditingDesc(false); setEditForm({ name: group.name || '', subject: group.subject || '', description: group.description || '' }); }}
                       style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer' }}>
@@ -361,7 +361,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
             )}
           </div>
 
-          {/* ── Member sections ── */}
+          {/* ââââ Member sections ââââ */}
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
               {[1, 2, 3, 4, 5].map(i => (
@@ -385,13 +385,13 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
             </div>
           )}
 
-          {/* ── Danger zone ── */}
+          {/* ââââ Danger zone ââââ */}
           <div style={{ paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {!isCreator && (
               confirmLeave ? (
                 <DangerConfirm
                   message={`Leave "${group.name}"?`}
-                  confirmLabel={leaving ? 'Leaving…' : 'Yes, leave'}
+                  confirmLabel={leaving ? 'Leavingâ¦' : 'Yes, leave'}
                   disabled={leaving}
                   onConfirm={handleLeave}
                   onCancel={() => setConfirmLeave(false)}
@@ -404,7 +404,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               confirmDelete ? (
                 <DangerConfirm
                   message={`Delete "${group.name}"? This removes all messages and files permanently.`}
-                  confirmLabel={deleting ? 'Deleting…' : 'Yes, delete'}
+                  confirmLabel={deleting ? 'Deletingâ¦' : 'Yes, delete'}
                   disabled={deleting}
                   onConfirm={handleDeleteGroup}
                   onCancel={() => setConfirmDelete(false)}
@@ -436,7 +436,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   );
 }
 
-// ── Small helpers ──────────────────────────────────────
+// ââââ Small helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function StatItem({ value, label }) {
   return (
     <div>

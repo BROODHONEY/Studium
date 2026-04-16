@@ -145,7 +145,7 @@ export default function GroupModal({ onClose, onSuccess }) {
 
               <button type="submit" disabled={loading}
                 style={{ ...S.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
-                {loading ? 'Validating…' : 'Validate & Join'}
+                {loading ? 'Validatingâ€¦' : 'Validate & Join'}
               </button>
               <button type="button" onClick={onClose} style={S.cancelBtn}
                 onMouseEnter={e => e.currentTarget.style.color = '#9090B0'}
@@ -190,7 +190,7 @@ export default function GroupModal({ onClose, onSuccess }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
                 <button type="submit" disabled={loading}
                   style={{ ...S.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
-                  {loading ? 'Creating…' : 'Create Group'}
+                  {loading ? 'Creatingâ€¦' : 'Create Group'}
                 </button>
                 <button type="button" onClick={onClose} style={S.cancelBtn}
                   onMouseEnter={e => e.currentTarget.style.color = '#9090B0'}

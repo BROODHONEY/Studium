@@ -67,7 +67,7 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Description</label>
-              <textarea style={{ ...inp, resize: 'vertical', minHeight: 60 }} placeholder="Instructions…" value={meta.description}
+              <textarea style={{ ...inp, resize: 'vertical', minHeight: 60 }} placeholder="Instructionsâ¦" value={meta.description}
                 onChange={e => setMeta(m => ({ ...m, description: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} />
             </div>
@@ -115,7 +115,7 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 4 }}>
               <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 9, border: `1px solid ${T.border}`, background: 'none', color: T.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Cancel</button>
-              <button onClick={() => setStep('questions')} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: T.primary, color: '#131313', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Next: Questions →</button>
+              <button onClick={() => setStep('questions')} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: T.primary, color: '#131313', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Next: Questions ââ</button>
             </div>
           </>
         )}
@@ -135,7 +135,7 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
                 <input style={inp} placeholder="Question text" value={q.question} onChange={e => setQ(qi, 'question', e.target.value)}
                   onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Options — click radio to mark correct answer</label>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Options ââ click radio to mark correct answer</label>
                   {q.options.map((opt, oi) => (
                     <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <button onClick={() => setQ(qi, 'correct_index', oi)} title="Mark as correct"
@@ -159,9 +159,9 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
             </button>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 4 }}>
-              <button onClick={() => setStep('meta')} style={{ padding: '9px 18px', borderRadius: 9, border: `1px solid ${T.border}`, background: 'none', color: T.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>← Back</button>
+              <button onClick={() => setStep('meta')} style={{ padding: '9px 18px', borderRadius: 9, border: `1px solid ${T.border}`, background: 'none', color: T.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>â Back</button>
               <button onClick={handleSubmit} disabled={loading} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: T.primary, color: '#131313', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: loading ? 0.6 : 1 }}>
-                {loading ? 'Creating…' : 'Create Quiz'}
+                {loading ? 'Creatingâ¦' : 'Create Quiz'}
               </button>
             </div>
           </>

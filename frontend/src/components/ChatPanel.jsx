@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+ï»¿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
@@ -8,7 +8,7 @@ import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
 import { formatTime, getDateLabel } from '../utils/time';
 
-const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
 
 // -- Design tokens - new palette ------------------------
 const C = {
@@ -382,7 +382,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: C.raised, border: `1px solid ${C.border}`, textDecoration: 'none', maxWidth: 280, transition: 'border-color 0.15s' }}
         onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-        <span style={{ fontSize: 20 }}>{isPdf ? '📄' : '📎'}</span>
+        <span style={{ fontSize: 20 }}>{isPdf ? 'ðâ' : 'ðâ'}</span>
         <div style={{ minWidth: 0 }}>
           <p style={{ fontSize: 12, color: C.text1, fontWeight: 400, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.filename}</p>
           {sizeStr && <p style={{ fontSize: 11, color: C.text3, margin: '2px 0 0' }}>{sizeStr}</p>}
@@ -484,7 +484,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
       {adminsOnly && (
         <div style={{ margin: '10px 16px 0', padding: '8px 14px', borderRadius: 8, background: C.secondaryLo, border: `1px solid 40`, display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <svg width="12" height="12" viewBox="0 0 16 16" fill={C.secondary}><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
-          <span style={{ fontSize: 12, fontWeight: 300, color: C.secondary }}>Admins only — only admins can send messages</span>
+          <span style={{ fontSize: 12, fontWeight: 300, color: C.secondary }}>Admins only ââ only admins can send messages</span>
         </div>
       )}
 
@@ -495,7 +495,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
       )}
 
-      {/* -- Outer row: [left col] [right sidebar]  · both span full height -- */}
+      {/* -- Outer row: [left col] [right sidebar]  ÂÂ· both span full height -- */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
 
         {/* -- Left column: timeline + input -- */}
@@ -553,7 +553,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   const sender  = item.users || item.sender;
                   const isOwn   = sender?.id === user?.id;
                   const roll    = sender?.roll_no;
-                  const rollSuffix = roll ? ` · ${String(roll).slice(-3)}` : '';
+                  const rollSuffix = roll ? ` ÂÂ· ${String(roll).slice(-3)}` : '';
                   const senderName = sender?.name ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}` : 'Unknown';
                   const canDelete = isOwn || myRole === 'admin';
                   const canEdit   = isOwn && item.type !== 'system';
@@ -584,7 +584,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                       onMouseEnter={e => e.currentTarget.style.background = `${C.primary}06`}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-                      {/* Avatar — top-aligned, shown only when sender changes */}
+                      {/* Avatar ââ top-aligned, shown only when sender changes */}
                       <div style={{ flexShrink: 0, width: 34, alignSelf: 'flex-start', paddingTop: 2 }}>
                         {showSenderName ? (
                           <button onClick={() => onViewProfile?.(isOwn ? user?.id : sender?.id)}
@@ -597,7 +597,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                       {/* Bubble + meta */}
                       <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start', gap: 3 }}>
 
-                        {/* Sender name row · others only */}
+                        {/* Sender name row ÂÂ· others only */}
                         {!isOwn && showSenderName && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 4 }}>
                             <span style={{ fontSize: 12, fontWeight: 600, color: nameColor }}>{senderName}</span>
@@ -611,7 +611,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                           const raw = item.replied_message.content || '';
                           const clean = raw
                             .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
-                            .replace(/\{\{file:[^:]+:([^:]+):[^}]+\}\}/g, '📎 $1')
+                            .replace(/\{\{file:[^:]+:([^:]+):[^}]+\}\}/g, 'ðâ $1')
                             .slice(0, 80);
                           return (
                             <button onClick={() => scrollToMessage(item.replied_message.id)}
@@ -628,7 +628,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                                 {item.replied_message.users?.name || 'Unknown'}
                               </span>
                               <span style={{ fontSize: 11, color: C.text2, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4 }}>
-                                {clean}{raw.length > 80 ? '…' : ''}
+                                {clean}{raw.length > 80 ? 'â¦' : ''}
                               </span>
                             </button>
                           );
@@ -636,7 +636,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
                         {/* Bubble row: menu button sits beside the bubble */}
                         <div style={{ display: 'flex', flexDirection: isOwn ? 'row' : 'row-reverse', alignItems: 'center', gap: 4 }}>
-                          {/* Three-dot menu — beside bubble, shown on hover */}
+                          {/* Three-dot menu ââ beside bubble, shown on hover */}
                           {editingId !== item.id && (
                             <div className="opacity-0 group-hover/msg:opacity-100 transition" style={{ position: 'relative', flexShrink: 0 }}>
                               <button onClick={(e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenuRect(r); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
@@ -719,15 +719,15 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             {(replyTo || privateReply) && (() => {
               const r = replyTo || privateReply;
               const isPrivate = !!privateReply;
-              const displayContent = (r.content || '').replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, '📎 $1').slice(0, 60);
+              const displayContent = (r.content || '').replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+:([^:}]+):[^}]+\}\}/g, 'ðâ $1').slice(0, 60);
               return (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 12px', borderRadius: 9, borderLeft: `3px solid `, background: C.surface }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, color: C.secondary }}>{isPrivate ? '↩ Private reply to ' : '↩ Replying to '}</span>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: C.secondary }}>{isPrivate ? 'â© Private reply to ' : 'â© Replying to '}</span>
                     <span style={{ fontSize: 11, fontWeight: 500, color: C.text2 }}>{r.senderName}</span>
-                    <p style={{ fontSize: 11, color: C.text3, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? ' ·' : ''}</p>
+                    <p style={{ fontSize: 11, color: C.text3, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayContent}{(r.content?.length || 0) > 60 ? ' ÂÂ·' : ''}</p>
                   </div>
-                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
+                  <button onClick={() => { setReplyTo(null); setPrivateReply(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 16, lineHeight: 1, flexShrink: 0 }}>Ãââ</button>
                 </div>
               );
             })()}
@@ -741,7 +741,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <button onMouseDown={e => { e.preventDefault(); setFileRefs(prev => prev.filter(r => r.id !== f.id)); }}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, lineHeight: 1, padding: 0 }}
                       onMouseEnter={e => e.currentTarget.style.color = C.danger}
-                      onMouseLeave={e => e.currentTarget.style.color = C.text3}>×</button>
+                      onMouseLeave={e => e.currentTarget.style.color = C.text3}>Ãââ</button>
                   </span>
                 ))}
               </div>
@@ -781,11 +781,11 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
                   </button>
                   <textarea ref={textareaRef} value={text} onChange={handleTextChange} onKeyDown={handleKeyDown} rows={1}
-                    placeholder={connected ? 'Share your thoughts · use @ to mention' : 'Reconnecting ·'}
+                    placeholder={connected ? 'Share your thoughts ÂÂ· use @ to mention' : 'Reconnecting ÂÂ·'}
                     style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: C.text1, resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }}
                     onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
                     disabled={!connected} />
-                  <button style={{ flexShrink: 0, width: 36, alignSelf: 'stretch', border: 'none', background: 'none', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, opacity: 0.4 }}>😊</button>
+                  <button style={{ flexShrink: 0, width: 36, alignSelf: 'stretch', border: 'none', background: 'none', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, opacity: 0.4 }}>ð</button>
                   <div style={{ padding: '8px 8px 8px 0', flexShrink: 0, display: 'flex', alignItems: 'flex-end' }}>
                     <button onClick={privateReply ? handlePrivateReply : sendMessage}
                       disabled={(!text.trim() && fileRefs.length === 0) || (!connected && !privateReply)}
@@ -813,8 +813,8 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: 14 }}>
-                  <span style={{ fontSize: 10, color: C.text3 }}>⏎ Return to send</span>
-                  <span style={{ fontSize: 10, color: C.text3 }}>⇧⏎ New line</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>â Return to send</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>â§â New line</span>
                   <span style={{ fontSize: 10, color: C.text3 }}>@ Mention</span>
                 </div>
               )}
@@ -825,7 +825,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
         {/* end left column */}
 
-        {/* -- Right sidebar · full height -- */}
+        {/* -- Right sidebar ÂÂ· full height -- */}
         <div style={{ width: 260, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: C.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* PINNED NOTES */}
@@ -845,7 +845,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     onMouseLeave={e => { e.currentTarget.style.background = '#1A1A1A'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.borderLeftColor = C.primary; }}>
                     <div style={{ padding: '12px 14px 10px' }}>
                       <p style={{ fontSize: 13, color: C.text1, margin: '0 0 2px', lineHeight: 1.5, fontWeight: 300, fontStyle: 'italic', wordBreak: 'break-word' }}>
-                        "{pm.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+\}\}/g, '📎').slice(0, 80)}{(pm.content?.length ?? 0) > 80 ? '…' : ''}"
+                        "{pm.content?.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1').replace(/\{\{file:[^}]+\}\}/g, 'ðâ').slice(0, 80)}{(pm.content?.length ?? 0) > 80 ? 'â¦' : ''}"
                       </p>
                       {pm.pin_time && (
                         <p style={{ fontSize: 10, color: C.tertiary, margin: '4px 0 0', fontWeight: 400 }}>{formatPinLabel(pm.pin_time)}</p>
@@ -886,7 +886,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search messages ·"
+                placeholder="Search messages ÂÂ·"
                 style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, fontWeight: 300, color: C.text1, fontFamily: 'Inter, sans-serif', minWidth: 0 }}
               />
               {searchQuery && (
@@ -905,10 +905,10 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             )}
           </div>
 
-          {/* SPACER · pushes invite code to bottom */}
+          {/* SPACER ÂÂ· pushes invite code to bottom */}
           <div style={{ flex: 1 }} />
 
-          {/* INVITE CODE · pinned to bottom */}
+          {/* INVITE CODE ÂÂ· pinned to bottom */}
           {isTeacher && group.invite_code && (
             <div style={{ padding: '14px 16px', borderTop: `1px solid ${C.border}` }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 10px' }}>Invite Code</p>

@@ -43,7 +43,7 @@ const KIND_LABEL = {
 };
 
 const formatSize = (bytes) => {
-  if (!bytes) return '—';
+  if (!bytes) return 'ââ';
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -130,7 +130,7 @@ function PreviewContent({ file, kind }) {
     );
   }
 
-  // doc, ppt, unknown — no inline preview
+  // doc, ppt, unknown ââ no inline preview
   return <NoPreview file={file} kind={kind} />;
 }
 
@@ -195,7 +195,7 @@ export default function FilePreviewModal({ file, onClose, onDelete, canDelete })
     >
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', maxWidth: 1100, margin: '0 auto', padding: '20px 24px 24px' }}>
 
-        {/* ── Top bar ── */}
+        {/* ââââ Top bar ââââ */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, flexShrink: 0 }}>
 
           {/* File type badge */}
@@ -229,7 +229,7 @@ export default function FilePreviewModal({ file, onClose, onDelete, canDelete })
               ) : (
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
               )}
-              {downloaded ? 'Downloaded' : downloading ? 'Downloading…' : 'Download'}
+              {downloaded ? 'Downloaded' : downloading ? 'Downloadingâ¦' : 'Download'}
             </button>
 
             {/* Open in new tab */}
@@ -272,7 +272,7 @@ export default function FilePreviewModal({ file, onClose, onDelete, canDelete })
           </div>
         </div>
 
-        {/* ── Preview area ── */}
+        {/* ââââ Preview area ââââ */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', gap: 16 }}>
 
           {/* Main preview */}
@@ -309,7 +309,7 @@ export default function FilePreviewModal({ file, onClose, onDelete, canDelete })
                   ) : (
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
                   )}
-                  {downloading ? 'Downloading…' : downloaded ? 'Downloaded!' : 'Download'}
+                  {downloading ? 'Downloadingâ¦' : downloaded ? 'Downloaded!' : 'Download'}
                 </button>
                 <a
                   href={file.file_url}

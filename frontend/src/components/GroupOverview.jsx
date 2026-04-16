@@ -170,7 +170,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <label style={lbl}>Message</label>
               <textarea ref={contentRef}
                 style={{ ...inp, resize: 'none', lineHeight: 1.6, minHeight: 100 }}
-                rows={4} placeholder="Write your announcement ·" required
+                rows={4} placeholder="Write your announcement ÂÂ·" required
                 value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = '#C0C1FF'}
                 onBlur={e => e.target.style.borderColor = '#333333'} />
@@ -181,11 +181,11 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                   {attachedFiles.map(f => (
                     <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#252525', border: '1px solid #333333', fontSize: 11, color: '#9E9E9E', maxWidth: 220 }}>
                       <svg width="11" height="11" viewBox="0 0 16 16" fill="#555555" style={{ flexShrink: 0 }}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{f.filename.length > 24 ? f.filename.slice(0, 22) + '…' : f.filename}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{f.filename.length > 24 ? f.filename.slice(0, 22) + 'â¦' : f.filename}</span>
                       <button type="button" onClick={() => setAttachedFiles(prev => prev.filter(x => x.id !== f.id))}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555555', lineHeight: 1, padding: 0, flexShrink: 0 }}
                         onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#555555'}>×</button>
+                        onMouseLeave={e => e.currentTarget.style.color = '#555555'}>Ãââ</button>
                     </span>
                   ))}
                 </div>
@@ -246,7 +246,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
                 style={{ width: '100%', padding: '14px', background: '#C0C1FF', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
-                {loading ? 'Saving ·' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
+                {loading ? 'Saving ÂÂ·' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
               </button>
               <button type="button" onClick={handleCancel}
                 style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#555555', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
@@ -291,7 +291,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [openEmojiId, setOpenEmojiId] = useState(null);
-  const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '🔥', '👏'];
+  const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸', 'ð', 'ð®', 'ðâ¥', 'ðâ'];
 
   useEffect(() => {
     if (!group) return;
@@ -406,7 +406,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
           onConfirm={handleConfirmDelete} disabled={confirmingDelete}
         />
 
-        {/* ── Greeting + group info ── */}
+        {/* ââââ Greeting + group info ââââ */}
         <div style={{ marginBottom: 36 }}>
           <p style={{ fontSize: 11, fontWeight: 600, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>
             {group.subject}
@@ -578,7 +578,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
               )}
             </div>
 
-            {/* Scheduled  · teachers only */}
+            {/* Scheduled  ÂÂ· teachers only */}
             {isTeacher && scheduled.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -597,7 +597,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                               <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 5, background: `${P.secondary}25`, color: P.secondary, border: `1px solid ${P.secondary}40`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tag.label}</span>
                               <span style={{ fontSize: 10, color: P.text3, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
-                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}  · {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}  ÂÂ· {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                               </span>
                             </div>
                             <p style={{ fontSize: 13, fontWeight: 500, color: P.text1, margin: '0 0 2px' }}>{a.title}</p>
@@ -672,9 +672,9 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                 const dDay = new Date(d); dDay.setHours(0,0,0,0);
                 const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const dateStr = d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-                if (dDay.getTime() === today.getTime()) return { label: `Today · ${timeStr}`, date: dateStr, urgent: true };
-                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow · ${timeStr}`, date: dateStr, urgent: false };
-                return { label: `${d.toLocaleDateString([], { weekday: 'long' })} · ${timeStr}`, date: dateStr, urgent: false };
+                if (dDay.getTime() === today.getTime()) return { label: `Today ÂÂ· ${timeStr}`, date: dateStr, urgent: true };
+                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow ÂÂ· ${timeStr}`, date: dateStr, urgent: false };
+                return { label: `${d.toLocaleDateString([], { weekday: 'long' })} ÂÂ· ${timeStr}`, date: dateStr, urgent: false };
               };
               return (
                 <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column' }}>
@@ -759,7 +759,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                     <TagIcon type={a.tag || 'general'} />{tag.label}
                   </span>
                   <p style={{ fontSize: 16, fontWeight: 600, color: P.text1, margin: 0, lineHeight: 1.4 }}>{a.title}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name}  · {formatDate(a.created_at)}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name}  ÂÂ· {formatDate(a.created_at)}</p>
                 </div>
                 <button onClick={() => setSelectedAnnouncement(null)}
                   style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 2, lineHeight: 0 }}>

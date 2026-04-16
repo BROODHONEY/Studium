@@ -272,7 +272,7 @@ export default function ProfilePage({ userId, onClose }) {
         ) : (
           <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px 60px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            {/* ── Hero row: avatar + name + role ── */}
+            {/* ââââ Hero row: avatar + name + role ââââ */}
             <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '28px 32px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 28 }}>
               {/* Ambient glow */}
               <div style={{ position: 'absolute', top: 0, right: 0, width: 340, height: '100%', background: `radial-gradient(ellipse at top right, ${roleColor}10 0%, transparent 65%)`, pointerEvents: 'none' }} />
@@ -293,12 +293,12 @@ export default function ProfilePage({ userId, onClose }) {
                 </h1>
                 <p style={{ fontSize: 14, fontWeight: 300, color: T.text2, margin: 0 }}>
                   {profile?.department || 'No department set'}
-                  {profile?.year ? ` · ${profile.year}` : ''}
+                  {profile?.year ? ` ÂÂ· ${profile.year}` : ''}
                 </p>
               </div>
             </div>
 
-            {/* ── Student layout ── */}
+            {/* ââââ Student layout ââââ */}
             {isStudent && (
               <>
                 {/* Info strip: dept / year / roll */}
@@ -310,7 +310,7 @@ export default function ProfilePage({ userId, onClose }) {
                   ].map(({ label, value }) => (
                     <div key={label}>
                       <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 6px' }}>{label}</p>
-                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0, lineHeight: 1.3 }}>{value || '—'}</p>
+                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0, lineHeight: 1.3 }}>{value || 'ââ'}</p>
                     </div>
                   ))}
                 </div>
@@ -325,7 +325,7 @@ export default function ProfilePage({ userId, onClose }) {
                     <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 12px' }}>Academic Performance</p>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                       <span style={{ fontSize: 56, fontWeight: 800, color: T.primary, fontFamily: "'Manrope','Inter',sans-serif", lineHeight: 1 }}>
-                        {profile?.cgpa != null ? Number(profile.cgpa).toFixed(2) : '—'}
+                        {profile?.cgpa != null ? Number(profile.cgpa).toFixed(2) : 'ââ'}
                       </span>
                       {profile?.cgpa != null && <span style={{ fontSize: 16, color: T.text3, fontWeight: 300 }}>/ 10.0</span>}
                     </div>
@@ -428,7 +428,7 @@ export default function ProfilePage({ userId, onClose }) {
               </>
             )}
 
-            {/* ── Non-student layout ── */}
+            {/* ââââ Non-student layout ââââ */}
             {!isStudent && (
               <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '24px 28px' }}>
                 <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Account Info</p>
@@ -455,7 +455,7 @@ export default function ProfilePage({ userId, onClose }) {
               </div>
             )}
 
-            {/* ── Own-profile hint ── */}
+            {/* ââââ Own-profile hint ââââ */}
             {isOwn && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 20px', borderRadius: 12, background: 'rgba(192,193,255,0.06)', border: '1px solid rgba(192,193,255,0.12)', marginTop: 4 }}>
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#C0C1FF', flexShrink: 0 }}>
@@ -463,7 +463,7 @@ export default function ProfilePage({ userId, onClose }) {
                   <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
                 </svg>
                 <p style={{ fontSize: 12, fontWeight: 300, color: '#9E9E9E', margin: 0 }}>
-                  To update your profile, go to <span style={{ color: '#C0C1FF', fontWeight: 500 }}>Settings → Account</span>
+                  To update your profile, go to <span style={{ color: '#C0C1FF', fontWeight: 500 }}>Settings ââ Account</span>
                 </p>
               </div>
             )}

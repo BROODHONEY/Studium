@@ -101,7 +101,7 @@ export const quizzesAPI = {
   delete:  (groupId, quizId)             => api.delete(`/quizzes/${groupId}/${quizId}`),
   attempt: (groupId, quizId, data)       => api.post(`/quizzes/${groupId}/${quizId}/attempt`, data),
   report:  (groupId, quizId)             => api.get(`/quizzes/${groupId}/${quizId}/report`),
-  // Public (no auth token needed — uses separate axios call)
+  // Public (no auth token needed ââ uses separate axios call)
   getByToken:    (token)          => api.get(`/quizzes/take/${token}`),
   submitByToken: (token, data)    => api.post(`/quizzes/take/${token}/submit`, data),
 };

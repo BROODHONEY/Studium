@@ -48,7 +48,7 @@ function urgencyStyle(days) {
   return               { color: P.text3,      bg: 'transparent', label: `${days}d left` };
 }
 
-// ── Mini calendar ──────────────────────────────────────
+// ââââ Mini calendar ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function MiniCalendar({ dues, onDayClick, selectedDay }) {
   const today = new Date();
   const [viewYear, setViewYear]   = useState(today.getFullYear());
@@ -155,7 +155,7 @@ function MiniCalendar({ dues, onDayClick, selectedDay }) {
   );
 }
 
-// ── Due card ───────────────────────────────────────────
+// ââââ Due card ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function DueCard({ due, onNavigate }) {
   const [hov, setHov] = useState(false);
   const days = daysUntil(due.due_date);
@@ -180,7 +180,7 @@ function DueCard({ due, onNavigate }) {
           <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: urg.bg, color: urg.color, border: `1px solid ${urg.color}40` }}>
             {urg.label}
           </span>
-          {/* Category — always accent-colored */}
+          {/* Category ââ always accent-colored */}
           <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: cat.bg, color: cat.color, border: `1px solid ${cat.color}50` }}>
             {cat.label}
           </span>
@@ -227,7 +227,7 @@ function DueCard({ due, onNavigate }) {
   );
 }
 
-// ── Filter row (inline dropdowns) ─────────────────────
+// ââââ Filter row (inline dropdowns) ââââââââââââââââââââââââââââââââââââââââââ
 function FilterRow({ filter, setFilter, catFilter, setCatFilter }) {
   const statusOptions = [
     { key: 'upcoming', label: 'Upcoming' },
@@ -265,7 +265,7 @@ function FilterRow({ filter, setFilter, catFilter, setCatFilter }) {
   );
 }
 
-// ── Main component ─────────────────────────────────────
+// ââââ Main component ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 export default function GlobalDuesPanel({ onNavigateToGroup }) {
   const [dues, setDues]           = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -464,7 +464,7 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 13, fontWeight: 600, color: P.text1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.title}</p>
                             <p style={{ fontSize: 11, color: P.text3, margin: '3px 0 0' }}>
-                              {days === 0 ? 'Today' : `${days}d`} · {d.group?.name}
+                              {days === 0 ? 'Today' : `${days}d`} ÂÂ· {d.group?.name}
                             </p>
                           </div>
                         </button>

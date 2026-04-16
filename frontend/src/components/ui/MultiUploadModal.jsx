@@ -29,7 +29,7 @@ const FILE_ICONS = {
 const TYPE_COLOR = { pdf: '#ef4444', ppt: '#f97316', doc: '#3b82f6', img: '#10b981', file: C.text3 };
 
 const formatSize = (bytes) => {
-  if (!bytes) return '—';
+  if (!bytes) return 'ââ';
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -226,7 +226,7 @@ export default function MultiUploadModal({ onUpload, onClose }) {
               )}
               {errorCount > 0 && (
                 <span style={{ fontSize: 12, fontWeight: 500, color: C.danger }}>
-                  · {errorCount} failed
+                  ÂÂ· {errorCount} failed
                 </span>
               )}
             </div>
@@ -249,7 +249,7 @@ export default function MultiUploadModal({ onUpload, onClose }) {
                 {uploading ? (
                   <>
                     <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
-                    Uploading…
+                    Uploadingâ¦
                   </>
                 ) : (
                   <>
