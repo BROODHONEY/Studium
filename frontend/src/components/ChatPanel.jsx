@@ -1,4 +1,4 @@
-ï»¿import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
