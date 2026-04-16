@@ -1,4 +1,4 @@
-ï»¿import ReactMarkdown from 'react-markdown';
+ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const FILE_ICONS = {

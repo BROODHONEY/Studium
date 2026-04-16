@@ -1,4 +1,4 @@
-ï»¿import { useState, useRef } from 'react';
+ import { useState, useRef } from 'react';
 import FilePickerPopover from './FilePickerPopover';
 
 function wrap(textareaRef, setText, before, after = before) {
