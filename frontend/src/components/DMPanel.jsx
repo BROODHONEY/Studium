@@ -233,7 +233,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       {showPins && pinnedIds.length > 0 && (
         <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-surface)', flexShrink: 0, maxHeight: 180, overflowY: 'auto' }}>
           <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned  ÂÂ· {pinnedIds.length}/{PIN_MAX}</span>
+            <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pinned  · {pinnedIds.length}/{PIN_MAX}</span>
           </div>
           {pinnedIds.map(pid => {
             const msg = messages.find(m => m.id === pid);
@@ -308,7 +308,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                     onMouseEnter={e => e.currentTarget.style.background = `${C.primary}06`}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-                    {/* Avatar  ÂÂ· only for others */}
+                    {/* Avatar  · only for others */}
                     <div style={{ width: 32, flexShrink: 0, alignSelf: 'flex-end', paddingBottom: 2 }}>
                       {!isOwn && showAvatar ? (
                         <button onClick={() => onViewProfile?.(other?.id)}
@@ -321,7 +321,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                     {/* Bubble + meta */}
                     <div style={{ maxWidth: '68%', display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start', gap: 3 }}>
 
-                      {/* Sender name  ÂÂ· others only */}
+                      {/* Sender name  · others only */}
                       {!isOwn && showAvatar && (
                         <span style={{ fontSize: 12, fontWeight: 600, color: C.text2, paddingLeft: 4 }}>{other?.name}</span>
                       )}
@@ -332,7 +332,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                         if (pr) return (
                           <button onClick={() => pr.groupId && onNavigateToGroup?.(pr.groupId)}
                             style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 2, borderRadius: 8, borderLeft: `3px solid ${C.primary}`, background: C.primaryLo, padding: '6px 10px', cursor: 'pointer', border: 'none' }}>
-                            <p style={{ fontSize: 11, fontWeight: 600, color: C.primaryHi, margin: '0 0 2px' }}>{pr.senderName}{pr.groupName && `  ÂÂ· ${pr.groupName}`}</p>
+                            <p style={{ fontSize: 11, fontWeight: 600, color: C.primaryHi, margin: '0 0 2px' }}>{pr.senderName}{pr.groupName && `  · ${pr.groupName}`}</p>
                             <p style={{ fontSize: 11, color: C.text3, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pr.quoted}</p>
                           </button>
                         );
@@ -391,7 +391,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                           </div>
                         )}
                         <span style={{ fontSize: 10, color: C.text3, fontWeight: 300, order: isOwn ? 1 : 0 }}>{formatTime(msg.created_at)}</span>
-                        {isOwn && msg.read && <span style={{ fontSize: 10, color: C.primaryHi, order: 2 }}> ÂÂ· seen</span>}
+                        {isOwn && msg.read && <span style={{ fontSize: 10, color: C.primaryHi, order: 2 }}> · seen</span>}
                       </div>
 
                       {/* Reactions */}

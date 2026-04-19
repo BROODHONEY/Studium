@@ -57,7 +57,7 @@ function SideSection({ title, items, renderItem }) {
   if (!items?.length) return null;
   return (
     <div style={{ marginBottom: 14 }}>
-      <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px', padding: '0 2px' }}>{title} ÂÂ· {items.length}</p>
+      <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px', padding: '0 2px' }}>{title} · {items.length}</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {items.map(renderItem)}
       </div>

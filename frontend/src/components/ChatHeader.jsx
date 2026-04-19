@@ -53,7 +53,7 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
           {group.subject}
           {user?.role === 'teacher' && group.invite_code && (
             <span style={{ marginLeft: 8, color: 'var(--text-4)' }}>
-               ÂÂ· <span style={{ fontFamily: 'monospace', color: 'rgba(192,193,255,0.80)' }}>{group.invite_code}</span>
+               · <span style={{ fontFamily: 'monospace', color: 'rgba(192,193,255,0.80)' }}>{group.invite_code}</span>
             </span>
           )}
         </p>

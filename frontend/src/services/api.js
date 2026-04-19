@@ -132,4 +132,13 @@ export const searchAPI = {
   query: (q, groupId) => api.get('/search', { params: groupId ? { q, groupId } : { q } }),
 };
 
+export const teacherAPI = {
+  getStudents:          (params) => api.get('/teacher/students', { params }),
+  getStudent:           (id)     => api.get(`/teacher/students/${id}`),
+  getSelectionGroups:   ()       => api.get('/teacher/selection-groups'),
+  createSelectionGroup: (data)   => api.post('/teacher/selection-groups', data),
+  updateSelectionGroup: (id, data) => api.patch(`/teacher/selection-groups/${id}`, data),
+  deleteSelectionGroup: (id)     => api.delete(`/teacher/selection-groups/${id}`),
+};
+
 export default api;

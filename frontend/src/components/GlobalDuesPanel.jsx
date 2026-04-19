@@ -464,7 +464,7 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 13, fontWeight: 600, color: P.text1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.title}</p>
                             <p style={{ fontSize: 11, color: P.text3, margin: '3px 0 0' }}>
-                              {days === 0 ? 'Today' : `${days}d`} ÂÂ· {d.group?.name}
+                              {days === 0 ? 'Today' : `${days}d`} · {d.group?.name}
                             </p>
                           </div>
                         </button>

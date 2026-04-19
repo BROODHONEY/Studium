@@ -23,14 +23,14 @@ export const formatTime = (ts) =>
 export const formatDate = (ts) =>
   toUTC(ts).toLocaleDateString(LOC, opts({ weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
 
-/** "Wed, 25 Mar 2026 ÂÂ· 9:04 PM" ââ skips time if midnight in IST */
+/** "Wed, 25 Mar 2026 · 9:04 PM" ââ skips time if midnight in IST */
 export const formatDateTime = (ts) => {
   const dt   = toUTC(ts);
   const hm   = dt.toLocaleTimeString(LOC, opts({ hour: 'numeric', minute: '2-digit', hour12: false }));
   const date = dt.toLocaleDateString(LOC, opts({ weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
   if (hm === '00:00') return date;
   const time = dt.toLocaleTimeString(LOC, opts({ hour: 'numeric', minute: '2-digit', hour12: true }));
-  return `${date} ÂÂ· ${time}`;
+  return `${date} · ${time}`;
 };
 
 /** "Today" / "Yesterday" / "25 March 2026" ââ for date separators */

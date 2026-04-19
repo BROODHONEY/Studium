@@ -495,7 +495,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
       )}
 
-      {/* -- Outer row: [left col] [right sidebar]  ÂÂ· both span full height -- */}
+      {/* -- Outer row: [left col] [right sidebar]  · both span full height -- */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
 
         {/* -- Left column: timeline + input -- */}
@@ -553,7 +553,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                   const sender  = item.users || item.sender;
                   const isOwn   = sender?.id === user?.id;
                   const roll    = sender?.roll_no;
-                  const rollSuffix = roll ? ` ÂÂ· ${String(roll).slice(-3)}` : '';
+                  const rollSuffix = roll ? ` · ${String(roll).slice(-3)}` : '';
                   const senderName = sender?.name ? `${sender.name}${sender.role === 'student' ? rollSuffix : ''}` : 'Unknown';
                   const canDelete = isOwn || myRole === 'admin';
                   const canEdit   = isOwn && item.type !== 'system';
@@ -597,7 +597,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                       {/* Bubble + meta */}
                       <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start', gap: 3 }}>
 
-                        {/* Sender name row ÂÂ· others only */}
+                        {/* Sender name row · others only */}
                         {!isOwn && showSenderName && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 4 }}>
                             <span style={{ fontSize: 12, fontWeight: 600, color: nameColor }}>{senderName}</span>
@@ -781,7 +781,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
                   </button>
                   <textarea ref={textareaRef} value={text} onChange={handleTextChange} onKeyDown={handleKeyDown} rows={1}
-                    placeholder={connected ? 'Share your thoughts ÂÂ· use @ to mention' : 'Reconnecting ÂÂ·'}
+                    placeholder={connected ? 'Share your thoughts · use @ to mention' : 'Reconnecting ÂÂ·'}
                     style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: C.text1, resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }}
                     onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}
                     disabled={!connected} />
@@ -825,7 +825,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
         </div>
         {/* end left column */}
 
-        {/* -- Right sidebar ÂÂ· full height -- */}
+        {/* -- Right sidebar · full height -- */}
         <div style={{ width: 260, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: C.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* PINNED NOTES */}
@@ -905,10 +905,10 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
             )}
           </div>
 
-          {/* SPACER ÂÂ· pushes invite code to bottom */}
+          {/* SPACER · pushes invite code to bottom */}
           <div style={{ flex: 1 }} />
 
-          {/* INVITE CODE ÂÂ· pinned to bottom */}
+          {/* INVITE CODE · pinned to bottom */}
           {isTeacher && group.invite_code && (
             <div style={{ padding: '14px 16px', borderTop: `1px solid ${C.border}` }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 10px' }}>Invite Code</p>

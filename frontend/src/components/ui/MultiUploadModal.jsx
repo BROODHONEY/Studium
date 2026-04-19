@@ -226,7 +226,7 @@ export default function MultiUploadModal({ onUpload, onClose }) {
               )}
               {errorCount > 0 && (
                 <span style={{ fontSize: 12, fontWeight: 500, color: C.danger }}>
-                  ÂÂ· {errorCount} failed
+                  · {errorCount} failed
                 </span>
               )}
             </div>

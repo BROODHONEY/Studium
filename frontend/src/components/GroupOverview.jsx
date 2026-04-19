@@ -578,7 +578,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
               )}
             </div>
 
-            {/* Scheduled  ÂÂ· teachers only */}
+            {/* Scheduled  · teachers only */}
             {isTeacher && scheduled.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -597,7 +597,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                               <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 5, background: `${P.secondary}25`, color: P.secondary, border: `1px solid ${P.secondary}40`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tag.label}</span>
                               <span style={{ fontSize: 10, color: P.text3, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
-                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}  ÂÂ· {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                                {sendAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}  · {sendAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                               </span>
                             </div>
                             <p style={{ fontSize: 13, fontWeight: 500, color: P.text1, margin: '0 0 2px' }}>{a.title}</p>
@@ -672,9 +672,9 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                 const dDay = new Date(d); dDay.setHours(0,0,0,0);
                 const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const dateStr = d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-                if (dDay.getTime() === today.getTime()) return { label: `Today ÂÂ· ${timeStr}`, date: dateStr, urgent: true };
-                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow ÂÂ· ${timeStr}`, date: dateStr, urgent: false };
-                return { label: `${d.toLocaleDateString([], { weekday: 'long' })} ÂÂ· ${timeStr}`, date: dateStr, urgent: false };
+                if (dDay.getTime() === today.getTime()) return { label: `Today · ${timeStr}`, date: dateStr, urgent: true };
+                if (dDay.getTime() === tomorrow.getTime()) return { label: `Tomorrow · ${timeStr}`, date: dateStr, urgent: false };
+                return { label: `${d.toLocaleDateString([], { weekday: 'long' })} · ${timeStr}`, date: dateStr, urgent: false };
               };
               return (
                 <div style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column' }}>
@@ -759,7 +759,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                     <TagIcon type={a.tag || 'general'} />{tag.label}
                   </span>
                   <p style={{ fontSize: 16, fontWeight: 600, color: P.text1, margin: 0, lineHeight: 1.4 }}>{a.title}</p>
-                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name}  ÂÂ· {formatDate(a.created_at)}</p>
+                  <p style={{ fontSize: 11, fontWeight: 300, color: P.text3, marginTop: 4 }}>{a.users?.name}  · {formatDate(a.created_at)}</p>
                 </div>
                 <button onClick={() => setSelectedAnnouncement(null)}
                   style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 2, lineHeight: 0 }}>

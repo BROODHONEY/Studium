@@ -122,6 +122,7 @@ export default function DashboardPage() {
   const [highlightFileId, setHighlightFileId]       = useState(null);
 
   // Unsaved-edit guard for SettingsPanel
+  const [showTeacherConfirm, setShowTeacherConfirm] = useState(false);
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [pendingNav, setPendingNav]       = useState(null); // { type, payload }
   const [showDirtyConfirm, setShowDirtyConfirm] = useState(false);
@@ -370,6 +371,44 @@ export default function DashboardPage() {
                 guardedNav(doNav);
               }} />
           ))}
+
+          {/* Teacher dashboard button — only for teachers/admins */}
+          {(user?.role === 'teacher' || user?.role === 'admin') && (
+            <div style={{ position: 'relative' }}>
+              <button
+                title="Teacher Dashboard"
+                onClick={() => setShowTeacherConfirm(v => !v)}
+                style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: showTeacherConfirm ? 'rgba(192,193,255,0.14)' : 'none', color: showTeacherConfirm ? '#C0C1FF' : '#555555', transition: 'all 0.15s' }}
+                onMouseEnter={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#9E9E9E'; } }}
+                onMouseLeave={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; } }}
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                </svg>
+              </button>
+              {showTeacherConfirm && (
+                <>
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowTeacherConfirm(false)} />
+                  <div style={{ position: 'absolute', left: 48, top: 0, zIndex: 999, background: '#1E1E2E', border: '1px solid #2A2A3A', borderRadius: 12, padding: '14px 16px', width: 210, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', animation: 'popIn 180ms cubic-bezier(0.34,1.2,0.64,1) both' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#F0F0F0', marginBottom: 6, fontFamily: 'Manrope, Inter, sans-serif' }}>Teacher Dashboard</div>
+                    <div style={{ fontSize: 11, color: '#9E9E9E', marginBottom: 14, lineHeight: 1.5 }}>Open the teacher dashboard in a new tab?</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={() => { setShowTeacherConfirm(false); window.open('/teacher', '_blank', 'noopener,noreferrer'); }}
+                        style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', background: '#C0C1FF', color: '#131313', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                        Open
+                      </button>
+                      <button
+                        onClick={() => setShowTeacherConfirm(false)}
+                        style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1px solid #333', background: 'none', color: '#9E9E9E', fontSize: 12, cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Bottom: support + settings + notifications + avatar */}
           <div style={{ flex: 1 }} />

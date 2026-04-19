@@ -18,6 +18,7 @@ const userRoutes = require('./routes/users');
 const searchRoutes = require('./routes/search');
 const submissionRoutes   = require('./routes/submissions');
 const quizRoutes         = require('./routes/quizzes');
+const teacherRoutes      = require('./routes/teacher');
 
 
 const app = express();
@@ -68,7 +69,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/quizzes', quizRoutes);
-app.use('/api/quizzes', quizRoutes);
+app.use('/api/teacher', teacherRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studi+ API is running' });

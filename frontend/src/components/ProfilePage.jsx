@@ -293,7 +293,7 @@ export default function ProfilePage({ userId, onClose }) {
                 </h1>
                 <p style={{ fontSize: 14, fontWeight: 300, color: T.text2, margin: 0 }}>
                   {profile?.department || 'No department set'}
-                  {profile?.year ? ` ÂÂ· ${profile.year}` : ''}
+                  {profile?.year ? ` · ${profile.year}` : ''}
                 </p>
               </div>
             </div>

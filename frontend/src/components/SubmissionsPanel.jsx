@@ -419,7 +419,7 @@ function SubmitModal({ assignment, groupId, onDone, onClose }) {
               {assignment.my_submissions > 0 ? 'Resubmit' : 'Submit'}: {assignment.title}
             </h2>
             <p style={{ fontSize: 12, color: C.t3, margin: 0 }}>
-              {assignment.description && <>{assignment.description} ÂÂ· </>}
+              {assignment.description && <>{assignment.description} · </>}
               <span style={{ color: past ? C.red : C.amber }}>{dueLabel}</span>
             </p>
           </div>
@@ -460,7 +460,7 @@ function SubmitModal({ assignment, groupId, onDone, onClose }) {
                   {file ? (
                     <>
                       <p style={{ fontSize: 13, fontWeight: 600, color: C.green, margin: 0 }}>{file.name}</p>
-                      <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>{(file.size / 1024 / 1024).toFixed(2)} MB ÂÂ· Click to change</p>
+                      <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>{(file.size / 1024 / 1024).toFixed(2)} MB · Click to change</p>
                     </>
                   ) : (
                     <>
@@ -699,7 +699,7 @@ function QuizReportModal({ quiz, groupId, onClose }) {
   return (
     <Modal title={quiz.title} onClose={onClose} maxWidth={680}>
       <div style={{ padding: '12px 22px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 11, color: C.t3, flex: 1 }}>{quiz.duration_mins} min ÂÂ· Closes {fmtDate(quiz.ends_at)}</span>
+        <span style={{ fontSize: 11, color: C.t3, flex: 1 }}>{quiz.duration_mins} min · Closes {fmtDate(quiz.ends_at)}</span>
         {!loading && <Pill label={`${completed} / ${total} completed`} color={C.primary} dim={C.primaryDim} />}
         <OutlineBtn onClick={downloadCSV} hoverColor={C.green}>
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
@@ -944,7 +944,7 @@ function QuizRow({ item, isTeacher, groupId, onDelete, onReport, onEdit, onClose
     inProgress
       ? <PrimaryBtn onClick={openQuiz} color={C.amber} style={{ width: 200, justifyContent: 'center', gap: 8 }}>
           <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.amber, boxShadow: `0 0 6px ${C.amber}`, display: 'inline-block', flexShrink: 0 }} />
-          Quiz in Progress ÂÂ· {remainingMins}m left
+          Quiz in Progress · {remainingMins}m left
         </PrimaryBtn>
       : <PrimaryBtn onClick={openQuiz} color={C.green} style={{ width: 140, justifyContent: 'center' }}>Start Quiz ââ</PrimaryBtn>
   ) : attempted ? (
