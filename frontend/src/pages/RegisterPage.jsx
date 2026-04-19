@@ -7,7 +7,7 @@ import AuthLayout from '../components/AuthLayout';
 const DEPARTMENTS = [
   'B. Tech Artificial Intelligence and Machine Learning',
   'B. Tech Artificial Intelligence and Data Science',
-  'B. Tech Computer Science',
+  'B. Sc Computer Science',
 ];
 
 export default function RegisterPage() {

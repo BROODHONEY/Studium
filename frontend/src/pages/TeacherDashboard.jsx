@@ -350,99 +350,261 @@ function SelectionGroupsModal({ groups, selectedIds, onApplyGroup, onSaveGroup, 
 }
 
 // ── Message Modal ─────────────────────────────────────────
-function MessageModal({ students, onClose, onSend }) {
+// ── Markdown → HTML (for Gmail body) ─────────────────────
+function mdToHtml(md) {
+  return md
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // headings
+    .replace(/^### (.+)$/gm, '<h3 style="margin:16px 0 6px;font-size:15px;font-weight:700;">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 style="margin:18px 0 8px;font-size:18px;font-weight:700;">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 style="margin:20px 0 10px;font-size:22px;font-weight:800;">$1</h1>')
+    // bold / italic
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    // inline code
+    .replace(/`(.+?)`/g, '<code style="background:#f3f4f6;padding:2px 5px;border-radius:4px;font-family:monospace;font-size:13px;">$1</code>')
+    // blockquote
+    .replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid #c0c1ff;margin:8px 0;padding:4px 12px;color:#555;">$1</blockquote>')
+    // hr
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">')
+    // unordered list items
+    .replace(/^- (.+)$/gm, '<li style="margin:3px 0;">$1</li>')
+    // ordered list items
+    .replace(/^\d+\. (.+)$/gm, '<li style="margin:3px 0;">$1</li>')
+    // links
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color:#6366f1;">$1</a>')
+    // line breaks
+    .replace(/\n\n/g, '</p><p style="margin:8px 0;">')
+    .replace(/\n/g, '<br>');
+}
+
+// ── Format toolbar button (outside component) ────────────
+function FmtBtn({ label, title, onClick }) {
+  return (
+    <button title={title} onClick={onClick}
+      style={{ padding: '3px 8px', borderRadius: 5, border: `1px solid ${C.border}`, background: 'none', color: C.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'monospace', lineHeight: 1.4 }}
+      onMouseEnter={e => { e.currentTarget.style.background = C.primaryLo; e.currentTarget.style.color = C.primary; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text2; }}>
+      {label}
+    </button>
+  );
+}
+
+// ── Email Composer Modal ──────────────────────────────────
+function EmailComposerModal({ students, selectionGroups, onClose }) {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
-  const [mode, setMode] = useState('message');
-  const [sending, setSending] = useState(false);
-  const [done, setDone] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [attachments, setAttachments] = useState([]); // { name, file, url }
+  const [extraEmails, setExtraEmails] = useState(''); // comma-separated manual emails
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [recipients, setRecipients] = useState(students.map(s => ({ ...s, included: true })));
 
-  const handleSend = async () => {
-    if (!body.trim()) return;
-    setSending(true);
-    await onSend({ mode, subject, body, students });
-    setSending(false); setDone(true);
-    setTimeout(onClose, 1500);
+  // When a group is selected, merge its students in
+  const handleGroupSelect = (gid) => {
+    setSelectedGroupId(gid);
+    if (!gid) { setRecipients(students.map(s => ({ ...s, included: true }))); return; }
+    const g = selectionGroups.find(g => g.id === gid);
+    if (!g) return;
+    const groupIds = new Set(g.student_ids || []);
+    const merged = students.map(s => ({ ...s, included: groupIds.has(s.id) }));
+    setRecipients(merged);
+  };
+
+  const toggleRecipient = (id) => setRecipients(r => r.map(s => s.id === id ? { ...s, included: !s.included } : s));
+
+  const includedStudents = recipients.filter(s => s.included);
+  const toEmails = [
+    ...includedStudents.map(s => s.email).filter(Boolean),
+    ...extraEmails.split(',').map(e => e.trim()).filter(e => e.includes('@')),
+  ];
+
+  const insertFormat = (before, after = '') => {
+    const ta = document.getElementById('email-body-ta');
+    if (!ta) return;
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const sel = body.slice(start, end);
+    const newBody = body.slice(0, start) + before + (sel || 'text') + after + body.slice(end);
+    setBody(newBody);
+    setTimeout(() => { ta.focus(); ta.setSelectionRange(start + before.length, start + before.length + (sel || 'text').length); }, 0);
+  };
+
+  const handleAttach = (e) => {
+    const files = Array.from(e.target.files || []);
+    const newAtts = files.map(f => ({ name: f.name, file: f, url: URL.createObjectURL(f) }));
+    setAttachments(prev => [...prev, ...newAtts]);
+    e.target.value = '';
+  };
+
+  const removeAttachment = (i) => {
+    URL.revokeObjectURL(attachments[i].url);
+    setAttachments(prev => prev.filter((_, idx) => idx !== i));
+  };
+
+  const openInGmail = () => {
+    const html = `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;"><p style="margin:8px 0;">${mdToHtml(body)}</p></div>`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1`
+      + `&to=${encodeURIComponent(toEmails.join(','))}`
+      + `&su=${encodeURIComponent(subject)}`
+      + `&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    void html; // html preview used in preview tab
+  };
+
+  const openMailto = () => {
+    window.location.href = `mailto:${toEmails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const inputStyle = {
     width: '100%', background: C.raised, border: `1px solid ${C.border}`,
-    borderRadius: 8, padding: '10px 14px', color: C.text1, fontSize: 13,
+    borderRadius: 8, padding: '9px 12px', color: C.text1, fontSize: 13,
     fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box',
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 950, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 950, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
       onClick={onClose}>
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 32, width: '100%', maxWidth: 560, animation: 'popIn 220ms cubic-bezier(0.34,1.2,0.64,1) both' }}
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 18, width: '100%', maxWidth: 720, maxHeight: '92vh', display: 'flex', flexDirection: 'column', animation: 'popIn 220ms cubic-bezier(0.34,1.2,0.64,1) both', overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
-          <div>
-            <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.10em', fontWeight: 600, marginBottom: 4 }}>Bulk Actions</div>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.text1, fontFamily: 'Manrope, Inter, sans-serif' }}>
-              Contact {students.length} Student{students.length !== 1 ? 's' : ''}
-            </h3>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 20, lineHeight: 1 }}>✕</button>
-        </div>
 
-        {/* Mode tabs */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 20, background: C.raised, borderRadius: 9, padding: 4, border: `1px solid ${C.border}` }}>
-          {['message', 'email'].map(m => (
-            <button key={m} onClick={() => setMode(m)} style={{
-              flex: 1, padding: '7px 0', borderRadius: 7, border: 'none', cursor: 'pointer',
-              background: mode === m ? C.primary : 'none',
-              color: mode === m ? '#131313' : C.text2,
-              fontSize: 12, fontWeight: mode === m ? 700 : 400,
-              fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
-            }}>
-              {m === 'email' ? '✉ Email' : '💬 Message'}
-            </button>
-          ))}
-        </div>
-
-        {/* Recipients */}
-        <div style={{ background: C.raised, borderRadius: 9, padding: '10px 14px', marginBottom: 16, border: `1px solid ${C.border}`, maxHeight: 72, overflowY: 'auto' }}>
-          <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, fontWeight: 600 }}>To</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-            {students.map(s => (
-              <span key={s.id} style={{ fontSize: 11, background: C.primaryLo, color: C.primary, borderRadius: 6, padding: '2px 9px', border: `1px solid ${C.primaryMid}`, fontWeight: 500 }}>
-                {s.name}
-              </span>
-            ))}
+        {/* Header */}
+        <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div>
+              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.10em', fontWeight: 600, marginBottom: 4 }}>Bulk Actions</div>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.text1, fontFamily: 'Manrope, Inter, sans-serif' }}>Compose Email</h3>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button onClick={() => setPreview(v => !v)}
+                style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${preview ? C.primary : C.border}`, background: preview ? C.primaryLo : 'none', color: preview ? C.primary : C.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: preview ? 600 : 400 }}>
+                {preview ? 'Edit' : 'Preview'}
+              </button>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 20, lineHeight: 1 }}>✕</button>
+            </div>
           </div>
         </div>
 
-        {mode === 'email' && (
+        {/* Scrollable body */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 24px' }}>
+
+          {/* Recipients section */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Recipients</div>
+              {/* Group selector */}
+              <div style={{ position: 'relative', marginLeft: 'auto' }}>
+                <select value={selectedGroupId} onChange={e => handleGroupSelect(e.target.value)}
+                  style={{ ...inputStyle, width: 'auto', padding: '5px 28px 5px 10px', fontSize: 11, appearance: 'none', cursor: 'pointer' }}>
+                  <option value="">From selection ({students.length})</option>
+                  {selectionGroups.map(g => <option key={g.id} value={g.id}>Group: {g.name} ({g.student_ids?.length || 0})</option>)}
+                </select>
+                <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: C.text3, pointerEvents: 'none', fontSize: 10 }}>▾</span>
+              </div>
+            </div>
+
+            {/* Student chips */}
+            <div style={{ background: C.raised, borderRadius: 9, padding: '10px 12px', border: `1px solid ${C.border}`, maxHeight: 90, overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {recipients.map(s => (
+                <button key={s.id} onClick={() => toggleRecipient(s.id)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, border: `1px solid ${s.included ? C.primaryMid : C.border}`, background: s.included ? C.primaryLo : 'transparent', color: s.included ? C.primary : C.text3, fontSize: 11, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: s.included ? 600 : 400, transition: 'all 0.12s' }}>
+                  {s.included ? '✓' : '+'} {s.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Manual email input */}
+            <div style={{ marginTop: 8 }}>
+              <input style={{ ...inputStyle, fontSize: 12 }}
+                placeholder="Add more emails (comma-separated)…"
+                value={extraEmails} onChange={e => setExtraEmails(e.target.value)}
+                onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.border} />
+            </div>
+
+            {toEmails.length > 0 && (
+              <div style={{ fontSize: 11, color: C.text3, marginTop: 6 }}>
+                Sending to <span style={{ color: C.primary, fontWeight: 600 }}>{toEmails.length}</span> address{toEmails.length !== 1 ? 'es' : ''}
+              </div>
+            )}
+          </div>
+
+          {/* Subject */}
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>Subject</div>
+            <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6 }}>Subject</div>
             <input style={inputStyle} placeholder="Email subject…" value={subject} onChange={e => setSubject(e.target.value)}
               onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.border} />
           </div>
-        )}
 
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
-            {mode === 'email' ? 'Body' : 'Message'}
+          {/* Body */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginRight: 4 }}>Body</div>
+              <FmtBtn label="B" title="Bold (**text**)" onClick={() => insertFormat('**', '**')} />
+              <FmtBtn label="I" title="Italic (*text*)" onClick={() => insertFormat('*', '*')} />
+              <FmtBtn label="H1" title="Heading 1" onClick={() => insertFormat('# ')} />
+              <FmtBtn label="H2" title="Heading 2" onClick={() => insertFormat('## ')} />
+              <FmtBtn label="H3" title="Heading 3" onClick={() => insertFormat('### ')} />
+              <FmtBtn label="—" title="Divider" onClick={() => setBody(b => b + '\n---\n')} />
+              <FmtBtn label="• List" title="Bullet list" onClick={() => insertFormat('- ')} />
+              <FmtBtn label="&gt;" title="Blockquote" onClick={() => insertFormat('> ')} />
+              <FmtBtn label="`code`" title="Inline code" onClick={() => insertFormat('`', '`')} />
+              <FmtBtn label="Link" title="Link [text](url)" onClick={() => insertFormat('[', '](url)')} />
+            </div>
+
+            {preview ? (
+              <div style={{ minHeight: 200, background: '#fff', borderRadius: 9, padding: '16px 20px', border: `1px solid ${C.border}`, color: '#222', fontSize: 14, lineHeight: 1.7, fontFamily: 'Arial, sans-serif' }}
+                dangerouslySetInnerHTML={{ __html: `<p style="margin:8px 0;">${mdToHtml(body || '_Nothing written yet…_')}</p>` }} />
+            ) : (
+              <textarea id="email-body-ta" style={{ ...inputStyle, resize: 'vertical', minHeight: 200, fontFamily: 'monospace', fontSize: 13, lineHeight: 1.7 }}
+                placeholder={'Write your email in Markdown…\n\n**Bold**, *italic*, # Heading, - list item, > quote, `code`, [link](url)'}
+                value={body} onChange={e => setBody(e.target.value)}
+                onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.border} />
+            )}
           </div>
-          <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: 110 }}
-            placeholder={mode === 'email' ? 'Write your email…' : 'Write your message…'}
-            value={body} onChange={e => setBody(e.target.value)}
-            onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.border} />
+
+          {/* Attachments */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Attachments</div>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 7, border: `1px solid ${C.border}`, background: 'none', color: C.text2, fontSize: 11, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text2; }}>
+                📎 Attach files
+                <input type="file" multiple style={{ display: 'none' }} onChange={handleAttach} />
+              </label>
+              <span style={{ fontSize: 11, color: C.text3 }}>Files will be attached when you open in Gmail</span>
+            </div>
+            {attachments.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {attachments.map((att, i) => (
+                  <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 7, background: C.raised, border: `1px solid ${C.border}`, fontSize: 11, color: C.text2 }}>
+                    📄 {att.name}
+                    <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {done
-          ? <div style={{ textAlign: 'center', color: C.success, fontWeight: 600, fontSize: 14 }}>✓ Sent successfully</div>
-          : (
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={onClose} style={{ padding: '9px 20px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'none', color: C.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Cancel</button>
-              <button onClick={handleSend} disabled={sending || !body.trim()}
-                style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: C.primary, color: '#131313', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: (sending || !body.trim()) ? 0.4 : 1, fontFamily: 'Inter, sans-serif' }}>
-                {sending ? 'Sending…' : mode === 'email' ? 'Send Email' : 'Send Message'}
-              </button>
-            </div>
-          )
-        }
+        {/* Footer actions */}
+        <div style={{ padding: '14px 24px', borderTop: `1px solid ${C.border}`, flexShrink: 0, display: 'flex', gap: 10, alignItems: 'center', background: C.surface }}>
+          <div style={{ fontSize: 11, color: C.text3, flex: 1 }}>
+            Opens in your email client with all recipients pre-filled
+          </div>
+          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'none', color: C.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            Cancel
+          </button>
+          <button onClick={openMailto} disabled={!subject.trim() || !body.trim() || toEmails.length === 0}
+            style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.raised, color: C.text1, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: (!subject.trim() || !body.trim() || toEmails.length === 0) ? 0.4 : 1 }}>
+            Open in Mail App
+          </button>
+          <button onClick={openInGmail} disabled={!subject.trim() || !body.trim() || toEmails.length === 0}
+            style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: C.primary, color: '#131313', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 7, opacity: (!subject.trim() || !body.trim() || toEmails.length === 0) ? 0.4 : 1 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            Open in Gmail
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -727,7 +889,6 @@ export default function TeacherDashboard() {
   const applyGroup = (g) => { setSelectedIds(new Set(g.student_ids||[])); setShowGroupsModal(false); };
   const saveGroup = async (name) => { try { await teacherAPI.createSelectionGroup({ name, student_ids: Array.from(selectedIds) }); await fetchGroups(); } catch(e){console.error(e);} };
   const deleteGroup = async (id) => { try { await teacherAPI.deleteSelectionGroup(id); await fetchGroups(); } catch(e){console.error(e);} };
-  const sendMessage = async ({ mode, subject, body, students: t }) => { console.log('Send', mode, 'to', t.length, { subject, body }); };
 
   const selectedStudents = students.filter(s => selectedIds.has(s.id));
   const wc = students.filter(s => s.cgpa);
@@ -834,9 +995,9 @@ export default function TeacherDashboard() {
                 style={{ padding:'10px 20px', borderRadius:9, border:`1px solid ${C.borderHi}`, background: C.raised, color: C.text1, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif', marginLeft:'auto' }}>
                 Save Current Selection
               </button>
-              <button onClick={() => { if (selectedIds.size > 0) setShowMessageModal(true); }}
-                style={{ padding:'10px 20px', borderRadius:9, border:`1px solid ${C.primaryMid}`, background: C.primaryLo, color: C.primary, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif', opacity: selectedIds.size===0 ? 0.4 : 1 }}>
-                💬 Message ({selectedIds.size})
+              <button onClick={() => setShowMessageModal(true)}
+                style={{ padding:'10px 20px', borderRadius:9, border:`1px solid ${C.primaryMid}`, background: C.primaryLo, color: C.primary, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif' }}>
+                ✉ Compose Email
               </button>
             </div>
           </div>
@@ -920,7 +1081,7 @@ export default function TeacherDashboard() {
           {/* Student table */}
           <div style={{ background: C.surface, border:`1px solid ${C.border}`, borderRadius:12, overflow:'hidden' }}>
             {/* Table header */}
-            <div style={{ display:'grid', gridTemplateColumns:'44px 1fr 160px 80px 90px', alignItems:'center', padding:'10px 20px', borderBottom:`1px solid ${C.border}`, background: C.raised }}>
+            <div style={{ display:'grid', gridTemplateColumns:'44px 1fr 160px 80px 90px 70px', alignItems:'center', padding:'10px 20px', borderBottom:`1px solid ${C.border}`, background: C.raised }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <div onClick={toggleAll} style={{
                   width:16, height:16, borderRadius:4, cursor:'pointer',
@@ -935,6 +1096,7 @@ export default function TeacherDashboard() {
               <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.10em', fontWeight:700 }}>ID / Roll No</div>
               <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.10em', fontWeight:700 }}>Year</div>
               <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.10em', fontWeight:700, textAlign:'right' }}>CGPA</div>
+              <div></div>
             </div>
 
             {/* Rows */}
@@ -948,7 +1110,7 @@ export default function TeacherDashboard() {
                 const cgpaColor = s.cgpa >= 8 ? C.success : s.cgpa >= 6 ? C.primary : s.cgpa ? C.secondary : C.text3;
                 return (
                   <div key={s.id} onClick={() => toggleStudent(s.id)} style={{
-                    display:'grid', gridTemplateColumns:'44px 1fr 160px 80px 90px',
+                    display:'grid', gridTemplateColumns:'44px 1fr 160px 80px 90px 70px',
                     alignItems:'center', padding:'12px 20px',
                     borderBottom: idx < students.length-1 ? `1px solid ${C.border}` : 'none',
                     background: sel ? 'rgba(192,193,255,0.05)' : 'transparent',
@@ -969,7 +1131,7 @@ export default function TeacherDashboard() {
                       </div>
                     </div>
 
-                    {/* Student info — name + dept only, no year here */}
+                    {/* Student info — name + dept only */}
                     <div style={{ display:'flex', alignItems:'center', gap:12, minWidth:0 }}>
                       <Avatar name={s.name} size={34} />
                       <div style={{ minWidth:0 }}>
@@ -978,12 +1140,6 @@ export default function TeacherDashboard() {
                           {s.department || '—'}
                         </div>
                       </div>
-                      <button onClick={e => { e.stopPropagation(); setViewProfile(s); }}
-                        style={{ marginLeft:'auto', flexShrink:0, padding:'4px 10px', borderRadius:6, border:`1px solid ${C.border}`, background:'none', color: C.text3, fontSize:11, cursor:'pointer', fontFamily:'Inter, sans-serif' }}
-                        onMouseEnter={e => { e.currentTarget.style.color=C.primary; e.currentTarget.style.borderColor=C.primary; }}
-                        onMouseLeave={e => { e.currentTarget.style.color=C.text3; e.currentTarget.style.borderColor=C.border; }}>
-                        View
-                      </button>
                     </div>
 
                     {/* Roll no */}
@@ -1001,6 +1157,16 @@ export default function TeacherDashboard() {
                       <span style={{ display:'inline-block', padding:'4px 10px', borderRadius:7, background:`${cgpaColor}18`, color: cgpaColor, fontSize:13, fontWeight:700, fontFamily:'Manrope, Inter, sans-serif' }}>
                         {s.cgpa ?? '—'}
                       </span>
+                    </div>
+
+                    {/* View button — own column */}
+                    <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                      <button onClick={e => { e.stopPropagation(); setViewProfile(s); }}
+                        style={{ padding:'4px 10px', borderRadius:6, border:`1px solid ${C.border}`, background:'none', color: C.text3, fontSize:11, cursor:'pointer', fontFamily:'Inter, sans-serif' }}
+                        onMouseEnter={e => { e.currentTarget.style.color=C.primary; e.currentTarget.style.borderColor=C.primary; }}
+                        onMouseLeave={e => { e.currentTarget.style.color=C.text3; e.currentTarget.style.borderColor=C.border; }}>
+                        View
+                      </button>
                     </div>
                   </div>
                 );
@@ -1042,7 +1208,7 @@ export default function TeacherDashboard() {
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {[
               { icon:'↓', label:'Export Data (.csv)', action: () => { if(selectedIds.size>0) setShowReportModal(true); } },
-              { icon:'✉', label:'Send Message', action: () => { if(selectedIds.size>0) setShowMessageModal(true); } },
+              { icon:'✉', label:'Compose Email', action: () => setShowMessageModal(true) },
               { icon:'📁', label:'Manage Groups', action: () => setShowGroupsModal(true) },
             ].map(item => (
               <button key={item.label} onClick={item.action}
@@ -1087,7 +1253,7 @@ export default function TeacherDashboard() {
       {viewProfile && <StudentProfileModal student={viewProfile} onClose={() => setViewProfile(null)} onViewFullProfile={(id) => { setViewProfile(null); setFullProfileUserId(id); }} />}
       {fullProfileUserId && <ProfilePage userId={fullProfileUserId} onClose={() => setFullProfileUserId(null)} />}
       {showGroupsModal && <SelectionGroupsModal groups={selectionGroups} selectedIds={selectedIds} onApplyGroup={applyGroup} onSaveGroup={saveGroup} onDeleteGroup={deleteGroup} onClose={() => setShowGroupsModal(false)} />}
-      {showMessageModal && <MessageModal students={selectedStudents} onClose={() => setShowMessageModal(false)} onSend={sendMessage} />}
+      {showMessageModal && <EmailComposerModal students={selectedStudents} selectionGroups={selectionGroups} onClose={() => setShowMessageModal(false)} />}
       {showReportModal && <ReportModal students={selectedStudents} onClose={() => setShowReportModal(false)} />}
       {showAdvancedFilters && <AdvancedFiltersModal filters={filters} onChange={setFilters} onApply={(f) => handleSearch(f)} onClose={() => setShowAdvancedFilters(false)} />}
     </div>
