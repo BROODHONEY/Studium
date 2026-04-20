@@ -210,4 +210,296 @@ router.patch('/:id/plan', async (req, res) => {
   }
 });
 
+// Check if institution code is available
+router.post('/check-code', async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code || code.length !== 6) {
+      return res.status(400).json({ error: 'Code must be exactly 6 characters' });
+    }
+
+    const { data: existing, error } = await db
+      .from('institutions')
+      .select('id')
+      .eq('subdomain', code.toLowerCase())
+      .limit(1);
+
+    if (error) throw error;
+
+    if (existing && existing.length > 0) {
+      return res.status(409).json({ error: 'Code already taken' });
+    }
+
+    res.json({ available: true });
+  } catch (error) {
+    console.error('Error checking code:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Onboard new institution with payment
+router.post('/onboard', async (req, res) => {
+  try {
+    const {
+      name,
+      code,
+      adminEmail,
+      adminName,
+      adminPassword,
+      phone,
+      address,
+      studentCount,
+      plan,
+      billingCycle
+    } = req.body;
+
+    console.log('Onboarding request received:', { name, code, adminEmail, adminName, plan, billingCycle });
+
+    // Validate required fields
+    if (!name || !code || !adminEmail || !adminName || !adminPassword || !plan || !billingCycle) {
+      console.error('Missing required fields:', { name, code, adminEmail, adminName, adminPassword: !!adminPassword, plan, billingCycle });
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (code.length !== 6) {
+      return res.status(400).json({ error: 'Code must be exactly 6 characters' });
+    }
+
+    if (adminPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    // Check if code is still available
+    const { data: existing, error: checkError } = await db
+      .from('institutions')
+      .select('id')
+      .eq('subdomain', code.toLowerCase())
+      .limit(1);
+
+    if (checkError) {
+      console.error('Error checking code:', checkError);
+      throw checkError;
+    }
+
+    if (existing && existing.length > 0) {
+      return res.status(409).json({ error: 'Code already taken' });
+    }
+
+    // Check if admin email already exists
+    const { data: existingUser, error: userCheckError } = await db
+      .from('users')
+      .select('id')
+      .eq('email', adminEmail)
+      .limit(1);
+
+    if (userCheckError) {
+      console.error('Error checking user:', userCheckError);
+      throw userCheckError;
+    }
+
+    if (existingUser && existingUser.length > 0) {
+      return res.status(409).json({ error: 'Admin email already exists' });
+    }
+
+    console.log('Creating institution...');
+
+    // Create institution
+    const { data: institution, error: createError } = await db
+      .from('institutions')
+      .insert({
+        name,
+        subdomain: code.toLowerCase(),
+        contact_email: adminEmail,
+        contact_name: adminName,
+        phone: phone || null,
+        address: address || null,
+        student_count: studentCount ? parseInt(studentCount) : null,
+        plan,
+        billing_cycle: billingCycle,
+        status: 'active'
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error('Error creating institution:', createError);
+      throw createError;
+    }
+
+    console.log('Institution created:', institution.id);
+    console.log('Creating admin user...');
+
+    // Hash password and create admin user
+    const bcrypt = require('bcryptjs');
+    const password_hash = await bcrypt.hash(adminPassword, 10);
+
+    const { data: adminUser, error: adminError } = await db
+      .from('users')
+      .insert({
+        name: adminName,
+        email: adminEmail,
+        password_hash,
+        role: 'admin',
+        institution_id: institution.id
+      })
+      .select('id, name, email, role, institution_id')
+      .single();
+
+    if (adminError) {
+      console.error('Error creating admin user:', adminError);
+      throw adminError;
+    }
+
+    console.log('Admin user created:', adminUser.id);
+
+    // Send welcome email (optional)
+    try {
+      await sendEmail('institutionWelcome', {
+        institutionName: name,
+        contactName: adminName,
+        email: adminEmail,
+        code: code.toUpperCase(),
+        plan,
+        billingCycle
+      });
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    console.log('Onboarding completed successfully');
+
+    res.status(201).json({
+      success: true,
+      institutionId: institution.id,
+      code: code.toLowerCase(),
+      adminUserId: adminUser.id,
+      message: 'Institution and admin account created successfully'
+    });
+  } catch (error) {
+    console.error('Error onboarding institution:', error);
+    console.error('Error details:', error.message, error.stack);
+    res.status(500).json({ 
+      error: 'Server error', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
+  }
+});
+
+// Delete demo request
+router.delete('/demo-requests/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await db
+      .from('demo_requests')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Demo request deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting demo request:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete institution (cascade delete all related data)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify institution exists
+    const { data: institution, error: fetchError } = await db
+      .from('institutions')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !institution) {
+      return res.status(404).json({ error: 'Institution not found' });
+    }
+
+    // Delete in order (respecting foreign key constraints)
+    // Note: If you have ON DELETE CASCADE set up in your database, 
+    // you only need to delete the institution and everything else will cascade.
+    // Otherwise, delete in this order:
+
+    // 1. Delete all reactions (depends on messages/announcements)
+    await db.from('reactions').delete().eq('institution_id', id);
+
+    // 2. Delete all submissions
+    await db.from('assignment_submissions').delete().eq('institution_id', id);
+
+    // 3. Delete all assignments
+    await db.from('assignments').delete().eq('institution_id', id);
+
+    // 4. Delete all quiz attempts
+    await db.from('quiz_attempts').delete().eq('institution_id', id);
+
+    // 5. Delete all quizzes
+    await db.from('quizzes').delete().eq('institution_id', id);
+
+    // 6. Delete all dues
+    await db.from('dues').delete().eq('institution_id', id);
+
+    // 7. Delete all files
+    await db.from('files').delete().eq('institution_id', id);
+
+    // 8. Delete all messages
+    await db.from('messages').delete().eq('institution_id', id);
+
+    // 9. Delete all announcements
+    await db.from('announcements').delete().eq('institution_id', id);
+
+    // 10. Delete all group members
+    await db.from('group_members').delete().eq('institution_id', id);
+
+    // 11. Delete all groups
+    await db.from('groups').delete().eq('institution_id', id);
+
+    // 12. Delete all DM messages
+    await db.from('dm_messages').delete().eq('institution_id', id);
+
+    // 13. Delete all DM conversations
+    await db.from('dm_conversations').delete().eq('institution_id', id);
+
+    // 14. Delete all teacher resources
+    await db.from('teacher_resources').delete().eq('institution_id', id);
+
+    // 15. Delete all resource folders
+    await db.from('resource_folders').delete().eq('institution_id', id);
+
+    // 16. Delete all selection groups
+    await db.from('teacher_selection_groups').delete().eq('institution_id', id);
+
+    // 17. Delete all departments
+    await db.from('departments').delete().eq('institution_id', id);
+
+    // 18. Delete all users
+    await db.from('users').delete().eq('institution_id', id);
+
+    // 19. Finally, delete the institution
+    const { error: deleteError } = await db
+      .from('institutions')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) throw deleteError;
+
+    res.json({
+      success: true,
+      message: `Institution "${institution.name}" and all related data deleted successfully`
+    });
+  } catch (error) {
+    console.error('Error deleting institution:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

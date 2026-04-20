@@ -45,7 +45,20 @@ export default function LoginPage() {
       }
       const res = await authAPI.login(loginData);
       login(res.data.token, res.data.user);
-      navigate('/dashboard');
+      
+      // Redirect based on role and institution
+      if (res.data.user.role === 'admin') {
+        // Check if it's a super admin (no institution) or institution admin
+        if (res.data.user.institution_id) {
+          navigate('/admin/dashboard'); // Institution admin - simplified dashboard
+        } else {
+          navigate('/superadmin'); // Super admin (Studi+ admin)
+        }
+      } else if (res.data.user.role === 'teacher') {
+        navigate('/teacher');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {

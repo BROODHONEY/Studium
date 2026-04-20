@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -7,6 +8,7 @@ export default function SuperAdminDashboard() {
   const [institutions, setInstitutions] = useState([]);
   const [demoRequests, setDemoRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, type: null, item: null });
   const [stats, setStats] = useState({
     totalInstitutions: 0,
     activeInstitutions: 0,
@@ -63,6 +65,56 @@ export default function SuperAdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating status:', error);
+    }
+  };
+
+  const handleDeleteInstitution = (institution) => {
+    setDeleteModal({
+      isOpen: true,
+      type: 'institution',
+      item: institution
+    });
+  };
+
+  const handleDeleteDemoRequest = (request) => {
+    setDeleteModal({
+      isOpen: true,
+      type: 'demoRequest',
+      item: request
+    });
+  };
+
+  const confirmDelete = async () => {
+    const { type, item } = deleteModal;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+    try {
+      if (type === 'institution') {
+        const response = await fetch(`${apiUrl}/institutions/${item.id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete');
+        }
+      } else if (type === 'demoRequest') {
+        const response = await fetch(`${apiUrl}/institutions/demo-requests/${item.id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete');
+        }
+      }
+
+      await fetchData();
+      setDeleteModal({ isOpen: false, type: null, item: null });
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert(`Failed to delete: ${error.message}`);
+      throw error;
     }
   };
 
@@ -178,6 +230,7 @@ export default function SuperAdminDashboard() {
             institutions={institutions}
             onStatusChange={handleStatusChange}
             onPlanChange={handlePlanChange}
+            onDelete={handleDeleteInstitution}
           />
         )}
         
@@ -185,9 +238,44 @@ export default function SuperAdminDashboard() {
           <DemoRequestsTable
             requests={demoRequests}
             onRefresh={fetchData}
+            onDelete={handleDeleteDemoRequest}
           />
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, type: null, item: null })}
+        onConfirm={confirmDelete}
+        title={
+          deleteModal.type === 'institution' 
+            ? `Delete Institution "${deleteModal.item?.name}"?`
+            : `Delete Demo Request from "${deleteModal.item?.institution_name}"?`
+        }
+        itemName={
+          deleteModal.type === 'institution'
+            ? deleteModal.item?.name || ''
+            : deleteModal.item?.institution_name || ''
+        }
+        warningItems={
+          deleteModal.type === 'institution'
+            ? [
+                'All users and admin accounts',
+                'All groups and channels',
+                'All messages and files',
+                'All assignments and submissions',
+                'All quizzes and attempts',
+                'All departments and resources',
+                'All institution data'
+              ]
+            : [
+                'This demo request',
+                'Contact information',
+                'Request history'
+              ]
+        }
+      />
     </div>
   );
 }
@@ -213,7 +301,7 @@ function StatCard({ title, value, icon, color }) {
   );
 }
 
-function InstitutionsTable({ institutions, onStatusChange, onPlanChange }) {
+function InstitutionsTable({ institutions, onStatusChange, onPlanChange, onDelete }) {
   return (
     <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1e] rounded-2xl border border-white/5 overflow-hidden">
       <div className="overflow-x-auto">
@@ -261,15 +349,24 @@ function InstitutionsTable({ institutions, onStatusChange, onPlanChange }) {
                     {new Date(inst.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
-                    <select
-                      value={inst.status}
-                      onChange={(e) => onStatusChange(inst.id, e.target.value)}
-                      className="bg-[#0A0A0A] border border-white/10 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-[#A5A6F6]"
-                    >
-                      <option value="active">Active</option>
-                      <option value="suspended">Suspend</option>
-                      <option value="inactive">Deactivate</option>
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={inst.status}
+                        onChange={(e) => onStatusChange(inst.id, e.target.value)}
+                        className="bg-[#0A0A0A] border border-white/10 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-[#A5A6F6]"
+                      >
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspend</option>
+                        <option value="inactive">Deactivate</option>
+                      </select>
+                      <button
+                        onClick={() => onDelete(inst)}
+                        className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm font-medium hover:bg-red-500/30 transition-colors border border-red-500/30"
+                        title="Delete institution"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -281,7 +378,7 @@ function InstitutionsTable({ institutions, onStatusChange, onPlanChange }) {
   );
 }
 
-function DemoRequestsTable({ requests, onRefresh }) {
+function DemoRequestsTable({ requests, onRefresh, onDelete }) {
   const navigate = useNavigate();
 
   return (
@@ -325,18 +422,27 @@ function DemoRequestsTable({ requests, onRefresh }) {
                     {new Date(req.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
-                    {req.status === 'pending' && (
+                    <div className="flex items-center gap-2">
+                      {req.status === 'pending' && (
+                        <button
+                          onClick={() => {
+                            // Generate token and navigate
+                            const token = btoa(JSON.stringify({ demoRequestId: req.id }));
+                            navigate(`/admin/review?token=${token}`);
+                          }}
+                          className="px-3 py-1 bg-[#A5A6F6] text-black rounded text-sm font-medium hover:bg-[#9394E8] transition-colors"
+                        >
+                          Review
+                        </button>
+                      )}
                       <button
-                        onClick={() => {
-                          // Generate token and navigate
-                          const token = btoa(JSON.stringify({ demoRequestId: req.id }));
-                          navigate(`/admin/review?token=${token}`);
-                        }}
-                        className="px-3 py-1 bg-[#A5A6F6] text-black rounded text-sm font-medium hover:bg-[#9394E8] transition-colors"
+                        onClick={() => onDelete(req)}
+                        className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm font-medium hover:bg-red-500/30 transition-colors border border-red-500/30"
+                        title="Delete request"
                       >
-                        Review
+                        Delete
                       </button>
-                    )}
+                    </div>
                   </td>
                 </tr>
               ))

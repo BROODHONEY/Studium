@@ -85,7 +85,7 @@ const emailTemplates = {
         <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3>Choose Your Package</h3>
           <p>Click the link below to select your package and complete the setup:</p>
-          <a href="${process.env.FRONTEND_URL}/onboarding?token=${data.token}" 
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/institution-onboarding?email=${encodeURIComponent(data.email)}" 
              style="display: inline-block; background: #A5A6F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0;">
             Select Package & Continue
           </a>
@@ -170,7 +170,7 @@ const emailTemplates = {
         <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3>Next Steps</h3>
           <p>Click the link below to select your package and complete the setup:</p>
-          <a href="${process.env.FRONTEND_URL}/onboarding?token=${data.token}" 
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/institution-onboarding?email=${encodeURIComponent(data.email)}" 
              style="display: inline-block; background: #A5A6F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0;">
             Select Package & Continue
           </a>

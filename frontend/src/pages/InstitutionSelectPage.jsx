@@ -93,37 +93,6 @@ export default function InstitutionSelectPage() {
             {loading ? 'Verifying…' : 'Continue'}
           </button>
         </form>
-
-        <div style={{ textAlign: 'center', paddingTop: 8 }}>
-          <p style={{ fontSize: 13, fontWeight: 300, color: '#666', margin: '0 0 12px' }}>
-            Don't have an institution account?
-          </p>
-          <button
-            onClick={() => navigate('/demo-request')}
-            style={{
-              background: 'transparent',
-              border: '1px solid #2E2E2E',
-              borderRadius: 10,
-              padding: '8px 16px',
-              color: '#C0C1FF',
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: 'pointer',
-              fontFamily: 'Inter, sans-serif',
-              transition: 'all 0.15s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.borderColor = '#6366F1';
-              e.target.style.background = 'rgba(99,102,241,0.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.borderColor = '#2E2E2E';
-              e.target.style.background = 'transparent';
-            }}
-          >
-            Request a Demo
-          </button>
-        </div>
       </div>
     </AuthLayout>
   );

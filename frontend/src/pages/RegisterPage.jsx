@@ -62,7 +62,20 @@ export default function RegisterPage() {
       };
       const res = await authAPI.register(payload);
       login(res.data.token, res.data.user);
-      navigate('/dashboard');
+      
+      // Redirect based on role and institution
+      if (res.data.user.role === 'admin') {
+        // Check if it's a super admin (no institution) or institution admin
+        if (res.data.user.institution_id) {
+          navigate('/admin/dashboard'); // Institution admin
+        } else {
+          navigate('/superadmin'); // Super admin (Studi+ admin)
+        }
+      } else if (res.data.user.role === 'teacher') {
+        navigate('/teacher');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
     } finally {

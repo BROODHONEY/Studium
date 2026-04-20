@@ -66,6 +66,7 @@ app.use(express.json());
 app.use('/api/demo-requests', demoRequestRoutes);
 app.use('/api/institutions', institutionRoutes);
 app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/departments', departmentRoutes);
 app.use('/api/teacher-resources', teacherResourceRoutes);
 app.use('/api/auth', authRoutes);

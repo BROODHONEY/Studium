@@ -442,6 +442,16 @@ export default function DashboardPage() {
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_META.settings.icon}/></svg>
           </button>
 
+          {/* Admin Panel button (only for admins) */}
+          {user?.role === 'admin' && (
+            <button onClick={() => window.location.href = '/admin/dashboard'} title="Admin Panel"
+              style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(192,193,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#C0C1FF', border: 'none', cursor: 'pointer', flexShrink: 0, marginTop: 8, transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.20)'; e.currentTarget.style.color = '#D4D5FF'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.12)'; e.currentTarget.style.color = '#C0C1FF'; }}>
+              👑
+            </button>
+          )}
+
           {/* User avatar */}
           <button onClick={() => guardedNav(() => setFullProfileUserId(user?.id))} title={user?.name}
             style={{ width: 34, height: 34, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}>

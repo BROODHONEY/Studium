@@ -934,6 +934,10 @@ export default function TeacherDashboard() {
     { id:'analytics', icon:'▲', label:'Analytics' },
     { id:'reporting', icon:'▤', label:'Reporting Hub' },
     { id:'students',  icon:'◉', label:'Student Manager' },
+    ...(user?.role === 'admin' ? [
+      { id:'faculty', icon:'👥', label:'Faculty Manager' },
+      { id:'departments', icon:'🏢', label:'Departments' },
+    ] : []),
     { id:'resources', icon:'▣', label:'Resources' },
   ];
 
