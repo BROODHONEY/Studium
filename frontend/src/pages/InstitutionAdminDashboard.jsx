@@ -56,7 +56,7 @@ function NavItem({ icon, label, active, onClick }) {
       onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.primaryLo; e.currentTarget.style.color = C.text1; } }}
       onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text2; } }}
     >
-      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
+      <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{icon}</span>
       {label}
     </button>
   );
@@ -145,9 +145,9 @@ export default function InstitutionAdminDashboard() {
   }
 
   const NAV = [
-    { id: 'messages', icon: '💬', label: 'Messages' },
-    { id: 'faculty', icon: '👥', label: 'Faculty Manager' },
-    { id: 'departments', icon: '🏢', label: 'Departments' },
+    { id: 'messages', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: 'Messages' },
+    { id: 'faculty', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: 'Faculty Manager' },
+    { id: 'departments', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: 'Departments' },
   ];
 
   return (
@@ -171,6 +171,45 @@ export default function InstitutionAdminDashboard() {
         {/* Nav */}
         <div style={{ flex: 1, padding: '0 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {NAV.map(n => <NavItem key={n.id} icon={n.icon} label={n.label} active={activeTab === n.id} onClick={() => setActiveTab(n.id)} />)}
+        </div>
+
+        {/* Go Back Button */}
+        <div style={{ padding: '0 10px', marginBottom: 12 }}>
+          <button
+            onClick={() => navigate('/dashboard')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: `1px solid ${C.border}`,
+              background: C.raised,
+              color: C.text2,
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = C.primaryLo;
+              e.currentTarget.style.borderColor = C.primary;
+              e.currentTarget.style.color = C.primary;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = C.raised;
+              e.currentTarget.style.borderColor = C.border;
+              e.currentTarget.style.color = C.text2;
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Main
+          </button>
         </div>
 
         {/* User card at bottom */}
@@ -198,10 +237,10 @@ export default function InstitutionAdminDashboard() {
         {/* Stats Grid */}
         <div style={{ padding: '24px 32px', borderBottom: `1px solid ${C.border}`, background: C.surface }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-            <StatCard title="Total Students" value={stats.totalStudents} icon="👨‍🎓" color="blue" />
-            <StatCard title="Total Teachers" value={stats.totalTeachers} icon="👨‍🏫" color="green" />
-            <StatCard title="Departments" value={stats.totalDepartments} icon="🏢" color="purple" />
-            <StatCard title="Active Groups" value={stats.activeGroups} icon="👥" color="yellow" />
+            <StatCard title="Total Students" value={stats.totalStudents} icon={<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>} color="blue" />
+            <StatCard title="Total Teachers" value={stats.totalTeachers} icon={<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>} color="green" />
+            <StatCard title="Departments" value={stats.totalDepartments} icon={<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>} color="purple" />
+            <StatCard title="Active Groups" value={stats.activeGroups} icon={<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>} color="yellow" />
           </div>
         </div>
 
@@ -245,7 +284,7 @@ function StatCard({ title, value, icon, color }) {
 
   return (
     <div style={{ background: colors.bg, borderRadius: 12, padding: '20px', border: `1px solid ${C.border}`, position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 60, opacity: 0.1 }}>{icon}</div>
+      <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 60, opacity: 0.1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
       <div style={{ position: 'relative' }}>
         <div style={{ fontSize: 11, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 8 }}>{title}</div>
         <div style={{ fontSize: 32, fontWeight: 800, color: colors.from, fontFamily: 'Manrope, Inter, sans-serif', lineHeight: 1 }}>{value}</div>
@@ -258,7 +297,11 @@ function MessagesTab() {
   return (
     <div style={{ background: C.surface, borderRadius: 16, border: `1px solid ${C.border}`, padding: '48px', textAlign: 'center' }}>
       <div style={{ maxWidth: 400, margin: '0 auto' }}>
-        <div style={{ fontSize: 64, marginBottom: 20 }}>💬</div>
+        <div style={{ fontSize: 64, marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.5">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
         <h3 style={{ fontSize: 20, fontWeight: 700, color: C.text1, marginBottom: 12, fontFamily: 'Manrope, Inter, sans-serif' }}>Direct Messages</h3>
         <p style={{ fontSize: 14, color: C.text2, marginBottom: 24, lineHeight: 1.6 }}>Message faculty and students directly through the messaging system</p>
         <button
@@ -326,7 +369,11 @@ function FacultyTab({ users, departments, onRefresh }) {
           onMouseEnter={e => e.currentTarget.style.background = '#D4D5FF'}
           onMouseLeave={e => e.currentTarget.style.background = C.primary}
         >
-          <span>✉</span> Email All Faculty
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email All Faculty
         </button>
       </div>
 
@@ -334,7 +381,14 @@ function FacultyTab({ users, departments, onRefresh }) {
       <div style={{ padding: '28px' }}>
         {users.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0', color: C.text3, fontSize: 14 }}>
-            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>👥</div>
+            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5, display: 'flex', justifyContent: 'center' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
             <p>No faculty members yet. Add teachers to get started.</p>
           </div>
         ) : (
@@ -388,7 +442,11 @@ function FacultyTab({ users, departments, onRefresh }) {
                           onMouseEnter={e => { e.currentTarget.style.background = C.raised; e.currentTarget.style.color = C.text1; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text2; }}
                         >
-                          ✉ Email
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                          </svg>
+                          Email
                         </button>
                       </div>
                     </td>
@@ -501,7 +559,11 @@ function DepartmentsTab({ departments, users, onAdd, onEdit, onRefresh }) {
           onMouseEnter={e => e.currentTarget.style.background = '#D4D5FF'}
           onMouseLeave={e => e.currentTarget.style.background = C.primary}
         >
-          <span>+</span> Add Department
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Department
         </button>
       </div>
 
@@ -509,7 +571,12 @@ function DepartmentsTab({ departments, users, onAdd, onEdit, onRefresh }) {
       <div style={{ padding: '28px' }}>
         {departments.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0', color: C.text3, fontSize: 14 }}>
-            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>🏢</div>
+            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5, display: 'flex', justifyContent: 'center' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
             <p>No departments yet. Create your first department to get started.</p>
           </div>
         ) : (

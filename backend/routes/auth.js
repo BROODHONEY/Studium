@@ -34,6 +34,13 @@ router.post('/register', async (req, res) => {
     }
   }
 
+  // Teachers must provide department
+  if (role === 'teacher') {
+    if (!department || !department.trim()) {
+      return res.status(400).json({ error: 'Department is required for teachers' });
+    }
+  }
+
   try {
     const query = email
       ? supabase.from('users').select('id').eq('email', email)
@@ -51,7 +58,7 @@ router.post('/register', async (req, res) => {
       .insert({
         name, email, phone, password_hash, role,
         institution_id: institutionId,
-        ...(role === 'student' ? { roll_no, department, year: Number(year) } : {})
+        ...(role === 'student' ? { roll_no, department, year: Number(year) } : { department })
       })
       .select('id, name, email, phone, role, roll_no, department, year, institution_id, created_at')
       .single();

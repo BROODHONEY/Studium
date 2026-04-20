@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { teacherAPI } from '../services/api';
 import logo from '../assets/logo.png';
@@ -56,7 +57,7 @@ function NavItem({ icon, label, active, onClick }) {
       onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.primaryLo; e.currentTarget.style.color = C.text1; } }}
       onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.text2; } }}
     >
-      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
+      <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{icon}</span>
       {label}
     </button>
   );
@@ -152,7 +153,10 @@ function StudentProfileModal({ student, onClose, onViewFullProfile }) {
                   </a>
                 : <a key={i} href={att.url} target="_blank" rel="noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, background: C.surface, border: `1px solid ${C.border}`, textDecoration: 'none', color: C.text2, fontSize: 11 }}>
-                    📎 {att.name}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    {att.name}
                   </a>
             ))}
           </div>
@@ -604,7 +608,10 @@ function EmailComposerModal({ students, selectionGroups, onClose }) {
               <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 7, border: `1px solid ${C.border}`, background: 'none', color: C.text2, fontSize: 11, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text2; }}>
-                📎 Attach files
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+                Attach files
                 <input type="file" multiple style={{ display: 'none' }} onChange={handleAttach} />
               </label>
               <span style={{ fontSize: 11, color: C.text3 }}>Files will be attached when you open in Gmail</span>
@@ -613,7 +620,11 @@ function EmailComposerModal({ students, selectionGroups, onClose }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {attachments.map((att, i) => (
                   <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 7, background: C.raised, border: `1px solid ${C.border}`, fontSize: 11, color: C.text2 }}>
-                    📄 {att.name}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                      <polyline points="13 2 13 9 20 9"/>
+                    </svg>
+                    {att.name}
                     <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                   </div>
                 ))}
@@ -858,6 +869,7 @@ function AdvancedFiltersModal({ filters, onChange, onApply, onClose }) {
 // ══════════════════════════════════════════════════════════
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [activeNav, setActiveNav] = useState('students');
   const [students, setStudents] = useState([]);
@@ -930,15 +942,10 @@ export default function TeacherDashboard() {
   const avgCgpa = wc.length ? (wc.reduce((a,s)=>a+s.cgpa,0)/wc.length).toFixed(2) : '—';
 
   const NAV = [
-    { id:'overview',  icon:'▦', label:'Overview' },
-    { id:'analytics', icon:'▲', label:'Analytics' },
-    { id:'reporting', icon:'▤', label:'Reporting Hub' },
-    { id:'students',  icon:'◉', label:'Student Manager' },
-    ...(user?.role === 'admin' ? [
-      { id:'faculty', icon:'👥', label:'Faculty Manager' },
-      { id:'departments', icon:'🏢', label:'Departments' },
-    ] : []),
-    { id:'resources', icon:'▣', label:'Resources' },
+    { id:'overview',  icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>, label:'Overview' },
+    { id:'students',  icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label:'Student Manager' },
+    { id:'faculty', icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label:'Faculty Manager' },
+    { id:'resources', icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>, label:'Resources' },
   ];
 
   const inputBase = { background: C.raised, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', color: C.text1, fontSize: 12, fontFamily: 'Inter, sans-serif', outline: 'none' };
@@ -964,6 +971,45 @@ export default function TeacherDashboard() {
         {/* Nav */}
         <div style={{ flex:1, padding:'0 10px', display:'flex', flexDirection:'column', gap:2 }}>
           {NAV.map(n => <NavItem key={n.id} icon={n.icon} label={n.label} active={activeNav===n.id} onClick={() => setActiveNav(n.id)} />)}
+        </div>
+
+        {/* Go Back Button */}
+        <div style={{ padding: '0 10px', marginBottom: 12 }}>
+          <button
+            onClick={() => navigate('/dashboard')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: `1px solid ${C.border}`,
+              background: C.raised,
+              color: C.text2,
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = C.primaryLo;
+              e.currentTarget.style.borderColor = C.primary;
+              e.currentTarget.style.color = C.primary;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = C.raised;
+              e.currentTarget.style.borderColor = C.border;
+              e.currentTarget.style.color = C.text2;
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Main
+          </button>
         </div>
 
         {/* User card at bottom */}
@@ -1010,7 +1056,12 @@ export default function TeacherDashboard() {
 
           {/* Actions */}
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <button style={{ background:'none', border:'none', cursor:'pointer', color: C.text2, fontSize:18, padding:4 }}>🔔</button>
+            <button style={{ background:'none', border:'none', cursor:'pointer', color: C.text2, fontSize:18, padding:4, display: 'flex', alignItems: 'center' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </button>
             <button onClick={() => { if (selectedIds.size > 0) setShowReportModal(true); }}
               style={{ padding:'8px 18px', borderRadius:9, border:`1px solid ${C.borderHi}`, background: C.raised, color: C.text1, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif', opacity: selectedIds.size===0 ? 0.5 : 1 }}>
               Generate Report
@@ -1035,8 +1086,12 @@ export default function TeacherDashboard() {
                 Save Current Selection
               </button>
               <button onClick={() => setShowMessageModal(true)}
-                style={{ padding:'10px 20px', borderRadius:9, border:`1px solid ${C.primaryMid}`, background: C.primaryLo, color: C.primary, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif' }}>
-                ✉ Compose Email
+                style={{ padding:'10px 20px', borderRadius:9, border:`1px solid ${C.primaryMid}`, background: C.primaryLo, color: C.primary, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Compose Email
               </button>
             </div>
           </div>
@@ -1246,15 +1301,15 @@ export default function TeacherDashboard() {
           <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600, marginBottom:10 }}>Bulk Actions</div>
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {[
-              { icon:'↓', label:'Export Data (.csv)', action: () => { if(selectedIds.size>0) setShowReportModal(true); } },
-              { icon:'✉', label:'Compose Email', action: () => setShowMessageModal(true) },
-              { icon:'📁', label:'Manage Groups', action: () => setShowGroupsModal(true) },
+              { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>, label:'Export Data (.csv)', action: () => { if(selectedIds.size>0) setShowReportModal(true); } },
+              { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, label:'Compose Email', action: () => setShowMessageModal(true) },
+              { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label:'Manage Groups', action: () => setShowGroupsModal(true) },
             ].map(item => (
               <button key={item.label} onClick={item.action}
                 style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:8, border:`1px solid ${C.border}`, background:'none', color: selectedIds.size>0||item.label==='Manage Groups' ? C.text1 : C.text3, fontSize:12, cursor:'pointer', fontFamily:'Inter, sans-serif', textAlign:'left', opacity: selectedIds.size===0 && item.label!=='Manage Groups' ? 0.4 : 1, transition:'all 0.12s' }}
                 onMouseEnter={e => { e.currentTarget.style.background=C.raised; e.currentTarget.style.borderColor=C.borderHi; }}
                 onMouseLeave={e => { e.currentTarget.style.background='none'; e.currentTarget.style.borderColor=C.border; }}>
-                <span style={{ fontSize:14 }}>{item.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center' }}>{item.icon}</span>
                 {item.label}
               </button>
             ))}
@@ -1279,7 +1334,13 @@ export default function TeacherDashboard() {
         {/* Info card */}
         <div style={{ background: C.raised, borderRadius:10, padding:'12px 14px', border:`1px solid ${C.border}`, marginTop:'auto' }}>
           <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
-            <span style={{ fontSize:14, color: C.primary, flexShrink:0 }}>ℹ</span>
+            <span style={{ fontSize:14, color: C.primary, flexShrink:0, display: 'flex', alignItems: 'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </span>
             <div>
               <div style={{ fontSize:12, fontWeight:600, color: C.text1, marginBottom:4 }}>Deep Focus Mode</div>
               <div style={{ fontSize:11, color: C.text3, lineHeight:1.5 }}>Multi-pane selection is optimised for bulk academic reporting.</div>

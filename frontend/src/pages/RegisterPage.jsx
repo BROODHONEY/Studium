@@ -4,12 +4,6 @@ import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 
-const DEPARTMENTS = [
-  'B. Tech Artificial Intelligence and Machine Learning',
-  'B. Tech Artificial Intelligence and Data Science',
-  'B. Sc Computer Science',
-];
-
 export default function RegisterPage() {
   const { login }   = useAuth();
   const navigate    = useNavigate();
@@ -22,6 +16,8 @@ export default function RegisterPage() {
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
   const [institution, setInstitution] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepts, setLoadingDepts] = useState(false);
   const isStudent = form.role === 'student';
 
   useEffect(() => {
@@ -41,6 +37,29 @@ export default function RegisterPage() {
       name: instName, 
       subdomain: instSubdomain 
     });
+
+    // Fetch departments for this institution
+    const fetchDepartments = async () => {
+      setLoadingDepts(true);
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const response = await fetch(`${apiUrl}/departments`, {
+          headers: {
+            'X-Institution-ID': instId
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setDepartments(data);
+        }
+      } catch (err) {
+        console.error('Error fetching departments:', err);
+      } finally {
+        setLoadingDepts(false);
+      }
+    };
+
+    fetchDepartments();
   }, [navigate]);
 
   const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -51,6 +70,7 @@ export default function RegisterPage() {
     if (isStudent && !form.roll_no.trim()) return setError('Roll number is required');
     if (isStudent && !form.department)     return setError('Please select your department');
     if (isStudent && !form.year)           return setError('Please select your year');
+    if (!isStudent && !form.department)    return setError('Please select your department');
     setLoading(true);
     try {
       const payload = {
@@ -58,7 +78,7 @@ export default function RegisterPage() {
         institutionId: institution?.id,
         ...(form.email ? { email: form.email } : {}),
         ...(form.phone ? { phone: form.phone } : {}),
-        ...(isStudent  ? { roll_no: form.roll_no, department: form.department, year: Number(form.year) } : {})
+        ...(isStudent  ? { roll_no: form.roll_no, department: form.department, year: Number(form.year) } : { department: form.department })
       };
       const res = await authAPI.register(payload);
       login(res.data.token, res.data.user);
@@ -149,6 +169,16 @@ export default function RegisterPage() {
               onFocus={focus} onBlur={blur} />
           </div>
 
+          <div>
+            <label style={lbl}>Department</label>
+            <select style={{ ...inp, colorScheme: 'dark' }} name="department"
+              value={form.department} onChange={handleChange} required
+              onFocus={focus} onBlur={blur} disabled={loadingDepts}>
+              <option value="" disabled>{loadingDepts ? 'Loading departments...' : 'Select your department'}</option>
+              {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+            </select>
+          </div>
+
           {isStudent && (
             <>
               <div>
@@ -156,15 +186,6 @@ export default function RegisterPage() {
                 <input style={inp} type="text" name="roll_no" value={form.roll_no}
                   onChange={handleChange} placeholder="eg. 21BD1A0512" required
                   onFocus={focus} onBlur={blur} />
-              </div>
-              <div>
-                <label style={lbl}>Department</label>
-                <select style={{ ...inp, colorScheme: 'dark' }} name="department"
-                  value={form.department} onChange={handleChange} required
-                  onFocus={focus} onBlur={blur}>
-                  <option value="" disabled>Select your department</option>
-                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
               </div>
               <div>
                 <label style={lbl}>Year</label>
