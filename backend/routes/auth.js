@@ -7,10 +7,14 @@ const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { name, email, phone, password, role, roll_no, department, year } = req.body;
+  const { name, email, phone, password, role, roll_no, department, year, institutionId } = req.body;
 
   if (!name || !password || !email) {
     return res.status(400).json({ error: 'Name, password, and email are required' });
+  }
+
+  if (!institutionId) {
+    return res.status(400).json({ error: 'Institution is required' });
   }
 
   if (!['teacher', 'student'].includes(role)) {
@@ -46,15 +50,16 @@ router.post('/register', async (req, res) => {
       .from('users')
       .insert({
         name, email, phone, password_hash, role,
+        institution_id: institutionId,
         ...(role === 'student' ? { roll_no, department, year: Number(year) } : {})
       })
-      .select('id, name, email, phone, role, roll_no, department, year, created_at')
+      .select('id, name, email, phone, role, roll_no, department, year, institution_id, created_at')
       .single();
 
     if (error) throw error;
 
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, institutionId: user.institution_id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -68,17 +73,27 @@ router.post('/register', async (req, res) => {
 
 // ── Login ─────────────────────────────────────────────
 router.post('/login', async (req, res) => {
-  const { email, phone, password } = req.body;
+  const { email, phone, password, institutionId } = req.body;
 
   if (!password || (!email && !phone)) {
     return res.status(400).json({ error: 'Password and email or phone are required' });
   }
 
+  if (!institutionId) {
+    return res.status(400).json({ error: 'Institution is required' });
+  }
+
   try {
-    // Find user by email or phone
-    const { data: user, error } = email
-      ? await supabase.from('users').select('*').eq('email', email).single()
-      : await supabase.from('users').select('*').eq('phone', phone).single();
+    // Find user by email or phone and institution
+    let query = supabase.from('users').select('*').eq('institution_id', institutionId);
+    
+    if (email) {
+      query = query.eq('email', email);
+    } else {
+      query = query.eq('phone', phone);
+    }
+
+    const { data: user, error } = await query.single();
 
     if (error || !user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -92,7 +107,7 @@ router.post('/login', async (req, res) => {
 
     // Sign a JWT
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, institutionId: user.institution_id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );

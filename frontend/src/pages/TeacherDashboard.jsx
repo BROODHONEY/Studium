@@ -237,6 +237,41 @@ function StudentProfileModal({ student, onClose, onViewFullProfile }) {
           {!student.achievements?.length && !student.certificates?.length && !student.internships?.length && (
             <div style={{ textAlign: 'center', padding: '20px 0', color: C.text3, fontSize: 13, fontStyle: 'italic' }}>No academic records added yet</div>
           )}
+
+          {/* Semester Marks — teacher only */}
+          {student.semester_marks?.length > 0 && (
+            <div style={{ marginTop: 20, paddingTop: 20, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.09em', fontWeight: 700, marginBottom: 14 }}>
+                Semester Marks ({student.semester_marks.length} semesters)
+              </div>
+              {student.semester_marks.map((sem) => (
+                <div key={sem.semester} style={{ marginBottom: 14, background: C.raised, borderRadius: 10, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: sem.courses?.length ? `1px solid ${C.border}` : 'none' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: C.text1 }}>Semester {sem.semester}</span>
+                    {sem.gpa && <span style={{ fontSize: 13, fontWeight: 700, color: C.primary, background: C.primaryLo, padding: '3px 10px', borderRadius: 7, border: `1px solid ${C.primaryMid}` }}>GPA: {sem.gpa}</span>}
+                  </div>
+                  {sem.courses?.length > 0 && (
+                    <div style={{ padding: '8px 14px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr 50px 50px 60px', gap: 6, marginBottom: 6 }}>
+                        {['Code', 'Course', 'Cr', 'Grade', 'Marks'].map(h => (
+                          <div key={h} style={{ fontSize: 9, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{h}</div>
+                        ))}
+                      </div>
+                      {sem.courses.map((c, ci) => (
+                        <div key={ci} style={{ display: 'grid', gridTemplateColumns: '70px 1fr 50px 50px 60px', gap: 6, padding: '5px 0', borderTop: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 11, color: C.text2, fontFamily: 'monospace' }}>{c.code || '—'}</div>
+                          <div style={{ fontSize: 11, color: C.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name || '—'}</div>
+                          <div style={{ fontSize: 11, color: C.text2, textAlign: 'center' }}>{c.credits}</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: c.grade === 'F' ? C.danger : c.grade === 'O' ? C.success : C.primary, textAlign: 'center' }}>{c.grade}</div>
+                          <div style={{ fontSize: 11, color: C.text2, textAlign: 'center' }}>{c.marks ?? '—'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

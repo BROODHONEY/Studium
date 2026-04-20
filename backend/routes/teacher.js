@@ -19,7 +19,7 @@ router.get('/students', auth, teacherOnly, async (req, res) => {
 
     let query = supabase
       .from('users')
-      .select('id, name, email, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
+      .select('id, name, email, roll_no, department, year, cgpa, achievements, internships, certificates, semester_marks, created_at')
       .eq('role', 'student');
 
     if (name)        query = query.ilike('name', `%${name}%`);
@@ -53,7 +53,7 @@ router.get('/students/:id', auth, teacherOnly, async (req, res) => {
   try {
     const { data: student, error } = await supabase
       .from('users')
-      .select('id, name, email, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
+      .select('id, name, email, roll_no, department, year, cgpa, achievements, internships, certificates, semester_marks, created_at')
       .eq('id', req.params.id)
       .eq('role', 'student')
       .single();

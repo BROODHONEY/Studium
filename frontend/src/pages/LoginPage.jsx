@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,26 @@ export default function LoginPage() {
   const [showPw, setShowPw]   = useState(false);
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
+  const [institution, setInstitution] = useState(null);
+
+  useEffect(() => {
+    // Check if institution is selected
+    const instId = localStorage.getItem('institutionId');
+    const instName = localStorage.getItem('institutionName');
+    const instSubdomain = localStorage.getItem('institutionSubdomain');
+    
+    if (!instId || !instName || !instSubdomain) {
+      // Redirect to institution select if not set
+      navigate('/institution-select');
+      return;
+    }
+    
+    setInstitution({ 
+      id: instId, 
+      name: instName, 
+      subdomain: instSubdomain 
+    });
+  }, [navigate]);
 
   const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -19,7 +39,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await authAPI.login(form);
+      const loginData = { ...form };
+      if (institution) {
+        loginData.institutionId = institution.id;
+      }
+      const res = await authAPI.login(loginData);
       login(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err) {
@@ -44,6 +68,7 @@ export default function LoginPage() {
     <AuthLayout
       tagline="Elevate your academic ecosystem."
       sub="Sign in to continue where you left off."
+      institution={institution}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
@@ -94,12 +119,35 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>
-            Sign up
-          </Link>
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>
+              Sign up
+            </Link>
+          </p>
+          <button
+            onClick={() => {
+              localStorage.removeItem('institutionId');
+              localStorage.removeItem('institutionName');
+              localStorage.removeItem('institutionSubdomain');
+              navigate('/institution-select');
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#555',
+              fontSize: 12,
+              fontWeight: 400,
+              cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              textDecoration: 'underline',
+              padding: 0
+            }}
+          >
+            Change institution
+          </button>
+        </div>
       </div>
     </AuthLayout>
   );

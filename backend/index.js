@@ -19,6 +19,11 @@ const searchRoutes = require('./routes/search');
 const submissionRoutes   = require('./routes/submissions');
 const quizRoutes         = require('./routes/quizzes');
 const teacherRoutes      = require('./routes/teacher');
+const institutionRoutes  = require('./routes/institutions');
+const departmentRoutes   = require('./routes/departments');
+const teacherResourceRoutes = require('./routes/teacherResources');
+const onboardingRoutes   = require('./routes/onboarding');
+const demoRequestRoutes  = require('./routes/demo-requests');
 
 
 const app = express();
@@ -58,6 +63,11 @@ app.use(
 
 app.use(express.json());
 
+app.use('/api/demo-requests', demoRequestRoutes);
+app.use('/api/institutions', institutionRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/teacher-resources', teacherResourceRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);

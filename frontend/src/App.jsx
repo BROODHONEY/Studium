@@ -1,5 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import LandingPage from './pages/LandingPage';
+import OnboardingPage from './pages/OnboardingPage';
+import AdminReviewPage from './pages/AdminReviewPage';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import InstitutionSelectPage from './pages/InstitutionSelectPage';
+import DemoRequestPage from './pages/DemoRequestPage';
 import LoginPage    from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -31,7 +37,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/institution-select" element={<InstitutionSelectPage />} />
+        <Route path="/demo-request" element={<DemoRequestPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/admin/review" element={<AdminReviewPage />} />
+        <Route path="/admin/dashboard" element={<SuperAdminDashboard />} />
         <Route path="/login"    element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

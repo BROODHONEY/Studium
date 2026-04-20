@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function Modal({ open, onClose, children, className }) {
+export default function Modal({ open = true, onClose, children, className }) {
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
 
@@ -22,7 +22,7 @@ export default function Modal({ open, onClose, children, className }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 modal-backdrop"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 modal-backdrop"
       role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose?.();
@@ -30,7 +30,7 @@ export default function Modal({ open, onClose, children, className }) {
     >
       <div
         ref={dialogRef}
-        className={`modal-content ${className || 'bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm'}`}
+        className={className || 'bg-[#1a1a2e] border border-white/10 rounded-2xl p-8 w-full max-w-md shadow-2xl'}
         role="dialog"
         aria-modal="true"
       >

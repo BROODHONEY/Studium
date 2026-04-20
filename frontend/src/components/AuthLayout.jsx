@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import logo from '../assets/logo.png';
 
-// ââââ Add / remove slides here ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ââââ Add / remove slides here ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 import slide1 from '../assets/carousel/1.jpeg';
 import slide2 from '../assets/carousel/2.jpeg';
 import slide3 from '../assets/carousel/3.jpeg';
@@ -11,9 +11,8 @@ import slide5 from '../assets/carousel/5.jpeg';
 const SLIDES   = [slide1, slide2, slide3, slide4, slide5];
 const INTERVAL = 4500;
 
-// ââââ Carousel ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// Each slide is absolutely positioned; the acti
-// ve one translates to 0,
+// ââââ Carousel ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Each slide is absolutely positioned; the active one translates to 0,
 // the previous slides sit at -100% and incoming at +100%.
 function BgCarousel({ slides, cur, prev }) {
   return (
@@ -39,8 +38,8 @@ function BgCarousel({ slides, cur, prev }) {
   );
 }
 
-// ââââ Layout shell ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-export default function AuthLayout({ children, tagline, sub }) {
+// ââââ Layout shell ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+export default function AuthLayout({ children, tagline, sub, institution }) {
   const [cur, setCur]   = useState(0);
   const [prev, setPrev] = useState(null);
   const curRef = useRef(0);
@@ -74,7 +73,7 @@ export default function AuthLayout({ children, tagline, sub }) {
         border: '1px solid rgba(255,255,255,0.06)',
       }}>
 
-        {/* ââââ Left panel ââââ */}
+        {/* ââââ Left panel ââââ */}
         <div className="auth-left-panel" style={{
           position: 'relative', flexShrink: 0, overflow: 'hidden',
           borderRadius: '28px 0 0 28px',
@@ -91,7 +90,7 @@ export default function AuthLayout({ children, tagline, sub }) {
             background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.28) 0%, transparent 65%)',
           }} />
 
-          {/* Content ââ logo top, dots + text bottom */}
+          {/* Content ââ logo top, dots + text bottom */}
           <div style={{
             position: 'relative', zIndex: 3, height: '100%',
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -132,12 +131,37 @@ export default function AuthLayout({ children, tagline, sub }) {
           </div>
         </div>
 
-        {/* ââââ Right panel ââ scrollable ââââ */}
+        {/* ââââ Right panel ââ scrollable ââââ */}
         <div style={{
           flex: 1, overflowY: 'auto', backgroundColor: '#131313',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           padding: '40px 48px',
+          position: 'relative'
         }}>
+          {/* Institution badge in top right */}
+          {institution && (
+            <div style={{
+              position: 'absolute',
+              top: 24,
+              right: 24,
+              background: 'rgba(99,102,241,0.1)',
+              border: '1px solid rgba(99,102,241,0.2)',
+              borderRadius: 8,
+              padding: '6px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span style={{ fontSize: 12, fontWeight: 500, color: '#C0C1FF' }}>
+                {institution.name}
+              </span>
+            </div>
+          )}
+          
           <div style={{ width: '100%', maxWidth: 360, margin: 'auto 0' }} className="anim-slide-up">
             {children}
           </div>

@@ -26,6 +26,7 @@ import GlobalDuesPanel from '../components/GlobalDuesPanel';
 import { useSearch } from '../components/SearchPanel';
 import SupportPanel from '../components/SupportPanel';
 import SubmissionsPanel from '../components/SubmissionsPanel';
+import OnboardingWizard from '../components/OnboardingWizard';
 
 const NAV_MAIN = ['groups', 'dms', 'dues'];
 const NAV_ALL  = ['groups', 'dms', 'dues', 'notifications', 'settings'];
@@ -124,6 +125,10 @@ export default function DashboardPage() {
   // Unsaved-edit guard for SettingsPanel
   const [showTeacherConfirm, setShowTeacherConfirm] = useState(false);
   const [settingsDirty, setSettingsDirty] = useState(false);
+
+  // Show onboarding wizard for new students who haven't completed it
+  const needsOnboarding = user?.role === 'student' && !localStorage.getItem(`onboarded_${user?.id}`);
+  const [showOnboarding, setShowOnboarding] = useState(needsOnboarding);
   const [pendingNav, setPendingNav]       = useState(null); // { type, payload }
   const [showDirtyConfirm, setShowDirtyConfirm] = useState(false);
 
@@ -583,6 +588,7 @@ export default function DashboardPage() {
         onConfirm={confirmLeave}
         onCancel={cancelLeave}
       />
+      {showOnboarding && <OnboardingWizard onComplete={() => setShowOnboarding(false)} />}
     </NotificationProvider>
   );
 }

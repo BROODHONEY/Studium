@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,27 @@ export default function RegisterPage() {
   const [showPw, setShowPw]   = useState(false);
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
+  const [institution, setInstitution] = useState(null);
   const isStudent = form.role === 'student';
+
+  useEffect(() => {
+    // Check if institution is selected
+    const instId = localStorage.getItem('institutionId');
+    const instName = localStorage.getItem('institutionName');
+    const instSubdomain = localStorage.getItem('institutionSubdomain');
+    
+    if (!instId || !instName || !instSubdomain) {
+      // Redirect to institution select if not set
+      navigate('/institution-select');
+      return;
+    }
+    
+    setInstitution({ 
+      id: instId, 
+      name: instName, 
+      subdomain: instSubdomain 
+    });
+  }, [navigate]);
 
   const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -35,6 +55,7 @@ export default function RegisterPage() {
     try {
       const payload = {
         name: form.name, password: form.password, role: form.role,
+        institutionId: institution?.id,
         ...(form.email ? { email: form.email } : {}),
         ...(form.phone ? { phone: form.phone } : {}),
         ...(isStudent  ? { roll_no: form.roll_no, department: form.department, year: Number(form.year) } : {})
@@ -66,6 +87,7 @@ export default function RegisterPage() {
     <AuthLayout
       tagline="Elevate your academic ecosystem."
       sub="Complete the form to register your account."
+      institution={institution}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
@@ -181,12 +203,35 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0, paddingBottom: 8 }}>
-          Already have an account?{' '}
-          <Link to="/login" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>
-            Log in
-          </Link>
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', paddingBottom: 8 }}>
+          <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>
+              Log in
+            </Link>
+          </p>
+          <button
+            onClick={() => {
+              localStorage.removeItem('institutionId');
+              localStorage.removeItem('institutionName');
+              localStorage.removeItem('institutionSubdomain');
+              navigate('/institution-select');
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#555',
+              fontSize: 12,
+              fontWeight: 400,
+              cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              textDecoration: 'underline',
+              padding: 0
+            }}
+          >
+            Change institution
+          </button>
+        </div>
       </div>
     </AuthLayout>
   );

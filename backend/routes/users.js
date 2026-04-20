@@ -42,16 +42,17 @@ router.post('/me/attachments', auth, upload.single('file'), async (req, res) => 
 
 // PATCH /api/users/me — must be before GET /:id
 router.patch('/me', auth, async (req, res) => {
-  const { name, department, year, cgpa, achievements, internships, certificates } = req.body;
+  const { name, department, year, cgpa, achievements, internships, certificates, semester_marks } = req.body;
   const updates = {};
 
-  if (name !== undefined)         updates.name         = name.trim();
-  if (department !== undefined)   updates.department   = department.trim();
-  if (year !== undefined)         updates.year         = year;
-  if (cgpa !== undefined)         updates.cgpa         = cgpa === '' ? null : Number(cgpa);
-  if (achievements !== undefined) updates.achievements = achievements;
-  if (internships !== undefined)  updates.internships  = internships;
-  if (certificates !== undefined) updates.certificates = certificates;
+  if (name !== undefined)            updates.name            = name.trim();
+  if (department !== undefined)      updates.department      = department.trim();
+  if (year !== undefined)            updates.year            = year;
+  if (cgpa !== undefined)            updates.cgpa            = cgpa === '' ? null : Number(cgpa);
+  if (achievements !== undefined)    updates.achievements    = achievements;
+  if (internships !== undefined)     updates.internships     = internships;
+  if (certificates !== undefined)    updates.certificates    = certificates;
+  if (semester_marks !== undefined)  updates.semester_marks  = semester_marks;
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: 'No valid fields to update' });
@@ -62,13 +63,27 @@ router.patch('/me', auth, async (req, res) => {
       .from('users')
       .update(updates)
       .eq('id', req.user.id)
-      .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
+      .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, semester_marks, created_at')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // If semester_marks column doesn't exist yet, retry without it
+      if (error.message?.includes('semester_marks') && updates.semester_marks !== undefined) {
+        const { semester_marks: _sm, ...safeUpdates } = updates;
+        const { data: user2, error: err2 } = await supabase
+          .from('users')
+          .update(safeUpdates)
+          .eq('id', req.user.id)
+          .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
+          .single();
+        if (err2) throw err2;
+        return res.json(user2);
+      }
+      throw error;
+    }
     res.json(user);
   } catch (err) {
-    console.error(err);
+    console.error('PATCH /me error:', err);
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
