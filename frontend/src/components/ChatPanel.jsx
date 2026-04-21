@@ -8,7 +8,7 @@ import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
 import { formatTime, getDateLabel } from '../utils/time';
 
-const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
+const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸ ', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
 
 // -- Design tokens - new palette ------------------------
 const C = {
@@ -813,8 +813,8 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: 14 }}>
-                  <span style={{ fontSize: 10, color: C.text3 }}>â Return to send</span>
-                  <span style={{ fontSize: 10, color: C.text3 }}>â§â New line</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>â  Return to send</span>
+                  <span style={{ fontSize: 10, color: C.text3 }}>â§â  New line</span>
                   <span style={{ fontSize: 10, color: C.text3 }}>@ Mention</span>
                 </div>
               )}

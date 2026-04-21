@@ -38,16 +38,12 @@ export default function RegisterPage() {
       subdomain: instSubdomain 
     });
 
-    // Fetch departments for this institution
+    // Fetch departments for this institution (public endpoint, no auth needed)
     const fetchDepartments = async () => {
       setLoadingDepts(true);
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        const response = await fetch(`${apiUrl}/departments`, {
-          headers: {
-            'X-Institution-ID': instId
-          }
-        });
+        const response = await fetch(`${apiUrl}/departments/public?institutionId=${instId}`);
         if (response.ok) {
           const data = await response.json();
           setDepartments(data);

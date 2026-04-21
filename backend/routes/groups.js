@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Keep generating until we get a unique code
+    // Keep generating until we get a unique code within this institution
     let invite_code;
     let isUnique = false;
     while (!isUnique) {
@@ -29,14 +29,22 @@ router.post('/', async (req, res) => {
         .from('groups')
         .select('id')
         .eq('invite_code', invite_code)
+        .eq('institution_id', req.user.institutionId)
         .single();
       if (!data) isUnique = true;
     }
 
-    // Create the group
+    // Create the group with institution_id
     const { data: group, error } = await supabase
       .from('groups')
-      .insert({ name, subject, description, created_by: req.user.id, invite_code })
+      .insert({ 
+        name, 
+        subject, 
+        description, 
+        created_by: req.user.id, 
+        invite_code,
+        institution_id: req.user.institutionId 
+      })
       .select()
       .single();
 
@@ -64,15 +72,16 @@ router.post('/join', async (req, res) => {
   }
 
   try {
-    // Find the group
+    // Find the group - MUST be in the same institution
     const { data: group, error: groupError } = await supabase
       .from('groups')
       .select('*')
       .eq('invite_code', invite_code.toUpperCase())
+      .eq('institution_id', req.user.institutionId)
       .single();
 
     if (groupError || !group) {
-      return res.status(404).json({ error: 'Invalid invite code' });
+      return res.status(404).json({ error: 'Invalid invite code or group not found in your institution' });
     }
 
     // Check if already a member

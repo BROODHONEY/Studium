@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 const FILE_ICONS = {
   'pdf': 'ðâ', 'ppt': 'ðâ', 'pptx': 'ðâ',
   'doc': 'ðâ', 'docx': 'ðâ', 'xls': 'ðâ', 'xlsx': 'ðâ',
-  'jpg': 'ðââ¼ï¸', 'jpeg': 'ðââ¼ï¸', 'png': 'ðââ¼ï¸',
+  'jpg': 'ðââ¼ï¸ ', 'jpeg': 'ðââ¼ï¸ ', 'png': 'ðââ¼ï¸ ',
 };
 const fileIcon = (name = '') => {
   const ext = name.split('.').pop()?.toLowerCase();

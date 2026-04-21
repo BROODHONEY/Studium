@@ -9,6 +9,8 @@ const requireAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
+  // Normalize institution_id from JWT (stored as institutionId)
+  req.user.institution_id = req.user.institution_id || req.user.institutionId;
   next();
 };
 

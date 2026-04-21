@@ -45,32 +45,6 @@ const AVATAR_COLORS = ['#4f46e5','#0d9488','#C0C1FF','#db2777','#d97706','#16a34
 const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
-// -- Desktop icon rail button ---------------------------
-function RailBtn({ id, active, onClick, badge }) {
-  const { icon } = NAV_META[id];
-  return (
-    <button onClick={onClick} title={NAV_META[id].label}
-      style={{
-        width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.15s', position: 'relative',
-        background: active ? 'rgba(192,193,255,0.14)' : 'none',
-        color: active ? '#C0C1FF' : '#555555',
-      }}
-      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#9E9E9E'; } }}
-      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; } }}
-    >
-      {active && <div style={{ position: 'absolute', left: 0, top: '22%', bottom: '22%', width: 3, borderRadius: '0 3px 3px 0', background: '#C0C1FF' }}/>}
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={icon}/></svg>
-      {badge > 0 && (
-        <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 7, background: '#FFB38E', color: '#131313', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
-          {badge > 99 ? '99+' : badge}
-        </span>
-      )}
-    </button>
-  );
-}
-
 // -- Mobile bottom-tab button ---------------------------
 function TabBtn({ id, active, onClick, badge }) {
   return (
@@ -100,7 +74,7 @@ function MobileTabBar({ activeNav, onNav }) {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { socket } = useSocket();
 
   const [activeNav, setActiveNav]   = useState('groups');
@@ -357,108 +331,195 @@ export default function DashboardPage() {
       {/* ââââ Desktop layout ââââ */}
       <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--void)', flexDirection: 'row' }}>
 
-        {/* ââââ Icon rail ââ full height, no top header ââââ */}
-        <div style={{ width: 56, flexShrink: 0, borderRight: '1px solid #2A2A3A', background: '#131313', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 10, paddingBottom: 12, gap: 4 }}>
+        {/* Left Sidebar */}
+        <div style={{ width: 210, flexShrink: 0, borderRight: '1px solid #2A2A2A', background: '#141414', display: 'flex', flexDirection: 'column', padding: '0 0 16px' }}>
 
-          {/* Logo at top */}
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(192,193,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, flexShrink: 0 }}>
-            <img src={logo} alt="logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          {/* Brand */}
+          <div style={{ padding: '24px 20px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(192,193,255,0.10)', border: '1px solid rgba(192,193,255,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <img src={logo} alt="logo" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#F0F0F0', fontFamily: 'Manrope, Inter, sans-serif', letterSpacing: '-0.01em', lineHeight: 1.1 }}>Studi+</div>
+                <div style={{ fontSize: 9, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.10em', fontWeight: 600 }}>
+                  {user?.role === 'admin' ? 'Admin' : user?.role === 'teacher' ? 'Educator' : 'Student'}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Nav buttons */}
-          {NAV_MAIN.map(id => (
-            <RailBtn key={id} id={id} active={activeNav === id && panelOpen && !settingsOpen && !supportOpen}
-              onClick={() => {
-                const doNav = () => {
-                  if (activeNav === id && !settingsOpen && !supportOpen) { setPanelOpen(v => !v); }
-                  else { setActiveNav(id); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }
-                };
-                guardedNav(doNav);
-              }} />
-          ))}
+          {/* Main nav */}
+          <div style={{ flex: 1, padding: '0 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {NAV_MAIN.map(id => {
+              const isActive = activeNav === id && panelOpen && !settingsOpen && !supportOpen;
+              const navIcons = {
+                groups: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+                dms:    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+                dues:   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+              };
+              return (
+                <button key={id} onClick={() => {
+                  const doNav = () => {
+                    if (activeNav === id && !settingsOpen && !supportOpen) { setPanelOpen(v => !v); }
+                    else { setActiveNav(id); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }
+                  };
+                  guardedNav(doNav);
+                }} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: isActive ? 'rgba(192,193,255,0.10)' : 'none',
+                  color: isActive ? '#C0C1FF' : '#9E9E9E',
+                  borderLeft: `2px solid ${isActive ? '#C0C1FF' : 'transparent'}`,
+                  fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: isActive ? 600 : 400,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  transition: 'all 0.15s', textAlign: 'left',
+                }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#F0F0F0'; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; } }}
+                >
+                  <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{navIcons[id]}</span>
+                  {NAV_META[id].label}
+                </button>
+              );
+            })}
 
-          {/* Teacher dashboard button — only for teachers/admins */}
-          {(user?.role === 'teacher' || user?.role === 'admin') && (
-            <div style={{ position: 'relative' }}>
-              <button
-                title="Teacher Dashboard"
-                onClick={() => setShowTeacherConfirm(v => !v)}
-                style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: showTeacherConfirm ? 'rgba(192,193,255,0.14)' : 'none', color: showTeacherConfirm ? '#C0C1FF' : '#555555', transition: 'all 0.15s' }}
-                onMouseEnter={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#9E9E9E'; } }}
-                onMouseLeave={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; } }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-                </svg>
-              </button>
-              {showTeacherConfirm && (
-                <>
-                  <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowTeacherConfirm(false)} />
-                  <div style={{ position: 'absolute', left: 48, top: 0, zIndex: 999, background: '#1E1E2E', border: '1px solid #2A2A3A', borderRadius: 12, padding: '14px 16px', width: 210, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', animation: 'popIn 180ms cubic-bezier(0.34,1.2,0.64,1) both' }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#F0F0F0', marginBottom: 6, fontFamily: 'Manrope, Inter, sans-serif' }}>Teacher Dashboard</div>
-                    <div style={{ fontSize: 11, color: '#9E9E9E', marginBottom: 14, lineHeight: 1.5 }}>Open the teacher dashboard in a new tab?</div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => { setShowTeacherConfirm(false); window.open('/teacher', '_blank', 'noopener,noreferrer'); }}
-                        style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', background: '#C0C1FF', color: '#131313', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                        Open
-                      </button>
-                      <button
-                        onClick={() => setShowTeacherConfirm(false)}
-                        style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1px solid #333', background: 'none', color: '#9E9E9E', fontSize: 12, cursor: 'pointer' }}>
-                        Cancel
-                      </button>
+            {/* Educator / Admin Panel link */}
+            {(user?.role === 'teacher' || user?.role === 'admin') && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowTeacherConfirm(v => !v)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    background: showTeacherConfirm ? 'rgba(192,193,255,0.10)' : 'none',
+                    color: showTeacherConfirm ? '#C0C1FF' : '#9E9E9E',
+                    borderLeft: `2px solid ${showTeacherConfirm ? '#C0C1FF' : 'transparent'}`,
+                    fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400,
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                    transition: 'all 0.15s', textAlign: 'left',
+                  }}
+                  onMouseEnter={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#F0F0F0'; } }}
+                  onMouseLeave={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; } }}
+                >
+                  <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  </span>
+                  {user?.role === 'admin' ? 'Admin Panel' : 'Educator Panel'}
+                </button>
+                {showTeacherConfirm && (
+                  <>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowTeacherConfirm(false)} />
+                    <div style={{ position: 'absolute', left: 16, top: 44, zIndex: 999, background: '#1E1E2E', border: '1px solid #2A2A3A', borderRadius: 12, padding: '14px 16px', width: 178, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', animation: 'popIn 180ms cubic-bezier(0.34,1.2,0.64,1) both' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#F0F0F0', marginBottom: 6, fontFamily: 'Manrope, Inter, sans-serif' }}>{user?.role === 'admin' ? 'Admin Panel' : 'Teacher Dashboard'}</div>
+                      <div style={{ fontSize: 11, color: '#9E9E9E', marginBottom: 14, lineHeight: 1.5 }}>Open in a new tab?</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => { setShowTeacherConfirm(false); window.open(user?.role === 'admin' ? '/admin/dashboard' : '/teacher', '_blank', 'noopener,noreferrer'); }}
+                          style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', background: '#C0C1FF', color: '#131313', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                          Open
+                        </button>
+                        <button onClick={() => setShowTeacherConfirm(false)}
+                          style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1px solid #333', background: 'none', color: '#9E9E9E', fontSize: 12, cursor: 'pointer' }}>
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
-          {/* Bottom: support + settings + notifications + avatar */}
-          <div style={{ flex: 1 }} />
+          {/* Bottom section */}
+          <div style={{ padding: '0 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-          <NotificationBell
-            onNavigate={handleNotificationNavigate}
-            onOpenPanel={() => { setActiveNav('notifications'); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }}
-          />
-
-          <button title="Support"
-            onClick={() => guardedNav(() => { setSupportOpen(true); setSettingsOpen(false); setPanelOpen(true); })}
-            style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: '#555555', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#9E9E9E'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555555'; }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-              <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
-            </svg>
-          </button>
-
-          <button onClick={() => guardedNav(() => { setSettingsOpen(true); setPanelOpen(true); setSupportOpen(false); })}
-            title="Settings"
-            style={{ width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: settingsOpen ? 'rgba(192,193,255,0.12)' : 'none', color: settingsOpen ? '#C0C1FF' : '#555555', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.10)'; e.currentTarget.style.color = '#D4D5FF'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = settingsOpen ? 'rgba(192,193,255,0.12)' : 'none'; e.currentTarget.style.color = settingsOpen ? '#C0C1FF' : '#555555'; }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d={NAV_META.settings.icon}/></svg>
-          </button>
-
-          {/* Admin Panel button (only for admins) */}
-          {user?.role === 'admin' && (
-            <button onClick={() => window.location.href = '/admin/dashboard'} title="Admin Panel"
-              style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(192,193,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#C0C1FF', border: 'none', cursor: 'pointer', flexShrink: 0, marginTop: 8, transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.20)'; e.currentTarget.style.color = '#D4D5FF'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.12)'; e.currentTarget.style.color = '#C0C1FF'; }}>
-              👑
+            {/* Notifications */}
+            <button onClick={() => { setActiveNav('notifications'); setPanelOpen(true); setSettingsOpen(false); setSupportOpen(false); }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                background: 'none', color: '#9E9E9E',
+                fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                transition: 'all 0.15s', textAlign: 'left',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#F0F0F0'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; }}
+            >
+              <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </span>
+              Notifications
             </button>
-          )}
 
-          {/* User avatar */}
-          <button onClick={() => guardedNav(() => setFullProfileUserId(user?.id))} title={user?.name}
-            style={{ width: 34, height: 34, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}>
-            {ini(user?.name)}
-          </button>
+            {/* Support */}
+            <button onClick={() => guardedNav(() => { setSupportOpen(true); setSettingsOpen(false); setPanelOpen(true); })}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                background: 'none', color: '#9E9E9E',
+                fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                transition: 'all 0.15s', textAlign: 'left',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#F0F0F0'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; }}
+            >
+              <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+              Support
+            </button>
+
+            {/* Settings */}
+            <button onClick={() => guardedNav(() => { setSettingsOpen(true); setPanelOpen(true); setSupportOpen(false); })}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                background: settingsOpen ? 'rgba(192,193,255,0.10)' : 'none',
+                color: settingsOpen ? '#C0C1FF' : '#9E9E9E',
+                borderLeft: `2px solid ${settingsOpen ? '#C0C1FF' : 'transparent'}`,
+                fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: settingsOpen ? 600 : 400,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                transition: 'all 0.15s', textAlign: 'left',
+              }}
+              onMouseEnter={e => { if (!settingsOpen) { e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; e.currentTarget.style.color = '#F0F0F0'; } }}
+              onMouseLeave={e => { if (!settingsOpen) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; } }}
+            >
+              <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </span>
+              Settings
+            </button>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: '#2A2A2A', margin: '6px 6px' }} />
+
+            {/* User card */}
+            <button onClick={() => guardedNav(() => setFullProfileUserId(user?.id))}
+              style={{ padding: '10px 12px', borderRadius: 10, background: '#222222', border: '1px solid #2A2A2A', display: 'flex', alignItems: 'center', gap: 10, width: '100%', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#2A2A2A'; e.currentTarget.style.borderColor = '#383838'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#222222'; e.currentTarget.style.borderColor = '#2A2A2A'; }}
+            >
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                {ini(user?.name)}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#F0F0F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</div>
+                <div style={{ fontSize: 10, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
+              </div>
+              <div onClick={e => { e.stopPropagation(); logout(); }} title="Sign out"
+                style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555555', transition: 'all 0.15s', cursor: 'pointer' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.12)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#555555'; e.currentTarget.style.background = 'transparent'; }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+              </div>
+            </button>
+          </div>
         </div>
-
         {/* ââââ Body: sliding panel + main ââââ */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
           <div style={{

@@ -30,7 +30,7 @@ function StartAlertModal({ quiz, onConfirm, onCancel }) {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
             {[
-              { icon: 'â±', text: `You have ${quiz?.duration_mins} minute${quiz?.duration_mins !== 1 ? 's' : ''} to complete this quiz.` },
+              { icon: 'â ±', text: `You have ${quiz?.duration_mins} minute${quiz?.duration_mins !== 1 ? 's' : ''} to complete this quiz.` },
               { icon: 'ð«', text: 'The quiz cannot be paused or stopped once started.' },
               { icon: 'ðââ', text: 'Closing or refreshing the tab will not stop the timer.' },
               { icon: 'ðâ', text: `${quiz?.questions?.length} question${quiz?.questions?.length !== 1 ? 's' : ''} ââ answer all before submitting.` },

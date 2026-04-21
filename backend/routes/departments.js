@@ -3,7 +3,28 @@ const router = express.Router();
 const db = require('../config/db');
 const authenticate = require('../middleware/auth');
 
-// Get all departments for institution
+// PUBLIC: Get departments by institution ID (used on signup page, no auth required)
+router.get('/public', async (req, res) => {
+  const { institutionId } = req.query;
+  if (!institutionId) {
+    return res.status(400).json({ error: 'institutionId is required' });
+  }
+  try {
+    const { data: departments, error } = await db
+      .from('departments')
+      .select('id, name, code')
+      .eq('institution_id', institutionId)
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+    res.json(departments || []);
+  } catch (error) {
+    console.error('Error fetching public departments:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all departments for institution (authenticated)
 router.get('/', authenticate, async (req, res) => {
   try {
     const { data: departments, error } = await db

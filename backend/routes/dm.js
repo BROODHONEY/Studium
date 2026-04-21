@@ -18,6 +18,7 @@ router.get('/search', async (req, res) => {
       .select('id, name, email, role, department')
       .ilike('email', `%${email.trim()}%`)
       .neq('id', req.user.id)
+      .eq('institution_id', req.user.institutionId) // CRITICAL: Only search within same institution
       .limit(8);
 
     if (error) throw error;
@@ -37,6 +38,21 @@ router.post('/conversations', async (req, res) => {
   }
 
   try {
+    // CRITICAL: Verify the target user is in the same institution
+    const { data: targetUser, error: targetError } = await supabase
+      .from('users')
+      .select('id, institution_id')
+      .eq('id', userId)
+      .single();
+
+    if (targetError || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (targetUser.institution_id !== req.user.institutionId) {
+      return res.status(403).json({ error: 'Cannot message users from other institutions' });
+    }
+
     // Ensure consistent ordering so we never create duplicates
     const [user1_id, user2_id] = [req.user.id, userId].sort();
 

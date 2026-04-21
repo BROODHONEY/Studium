@@ -291,7 +291,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [openEmojiId, setOpenEmojiId] = useState(null);
-  const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸', 'ð', 'ð®', 'ðâ¥', 'ðâ'];
+  const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸ ', 'ð', 'ð®', 'ðâ¥', 'ðâ '];
 
   useEffect(() => {
     if (!group) return;

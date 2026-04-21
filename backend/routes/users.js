@@ -129,6 +129,7 @@ router.get('/:id', auth, async (req, res) => {
       .from('users')
       .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
       .eq('id', req.params.id)
+      .eq('institution_id', req.user.institutionId) // CRITICAL: Only access users from same institution
       .single();
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });

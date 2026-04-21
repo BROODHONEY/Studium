@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
+const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸ ', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
 
 function MenuItem({ icon, label, onClick, danger, disabled }) {
   const [hov, setHov] = useState(false);

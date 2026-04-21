@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthLayout from '../components/AuthLayout';
@@ -8,13 +8,15 @@ export default function InstitutionSelectPage() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    if (!code.trim()) {
-      setError('Please enter your institution code');
+
+    if (code.length < 6) {
+      setError('Please enter the full 6-character institution code');
       return;
     }
 
@@ -22,13 +24,11 @@ export default function InstitutionSelectPage() {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
       const res = await axios.get(`${apiUrl}/institutions/verify/${code.trim().toLowerCase()}`);
-      
-      // Store institution info in localStorage
+
       localStorage.setItem('institutionId', res.data.institutionId);
       localStorage.setItem('institutionName', res.data.name);
       localStorage.setItem('institutionSubdomain', res.data.subdomain);
-      
-      // Navigate to login page
+
       navigate('/login');
     } catch (err) {
       if (err.response?.status === 404) {
@@ -41,11 +41,9 @@ export default function InstitutionSelectPage() {
     }
   };
 
-  const inp = {
-    width: '100%', background: '#1E1E1E', border: '1px solid #2E2E2E',
-    borderRadius: 12, padding: '11px 14px', fontSize: 13, fontWeight: 300,
-    color: '#F0F0F0', outline: 'none', fontFamily: 'Inter, sans-serif',
-    boxSizing: 'border-box', transition: 'border-color 0.15s',
+  const handleChange = (e) => {
+    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    setCode(val);
   };
 
   return (
@@ -59,7 +57,7 @@ export default function InstitutionSelectPage() {
             Select Institution
           </h2>
           <p style={{ fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
-            Enter your institution's unique code to access your account.
+            Enter your institution's unique 6-character code to continue.
           </p>
         </div>
 
@@ -71,25 +69,78 @@ export default function InstitutionSelectPage() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 500, color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 500, color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 10 }}>
               Institution Code
             </label>
-            <input 
-              style={inp}
-              type="text" 
+
+            {/* Character boxes display */}
+            <div
+              onClick={() => inputRef.current?.focus()}
+              style={{ display: 'flex', gap: 8, cursor: 'text' }}
+            >
+              {Array.from({ length: 6 }).map((_, i) => {
+                const isActive = focused && i === code.length;
+                const filled = !!code[i];
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      aspectRatio: '1',
+                      background: filled ? 'rgba(99,102,241,0.1)' : '#1A1A1A',
+                      border: `1.5px solid ${isActive ? '#6366F1' : filled ? 'rgba(99,102,241,0.5)' : '#2A2A2A'}`,
+                      borderRadius: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 22,
+                      fontWeight: 700,
+                      color: '#F0F0F0',
+                      fontFamily: "'Manrope','Inter',monospace",
+                      transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+                      boxShadow: isActive ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
+                    }}
+                  >
+                    {code[i] ?? <span style={{ color: '#2E2E2E', fontSize: 18 }}>—</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Hidden real input */}
+            <input
+              ref={inputRef}
+              type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-              placeholder="Enter your institution code"
+              onChange={handleChange}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              maxLength={6}
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
               required
-              onFocus={e => e.target.style.borderColor = '#6366F1'}
-              onBlur={e => e.target.style.borderColor = '#2E2E2E'}
+              style={{
+                position: 'absolute',
+                opacity: 0,
+                pointerEvents: 'none',
+                width: 1,
+                height: 1,
+              }}
             />
-            <p style={{ fontSize: 11, color: '#555', margin: '6px 0 0', fontWeight: 300 }}>
+
+            <p style={{ fontSize: 11, color: '#555', margin: '8px 0 0', fontWeight: 300, textAlign: 'center' }}>
+              {code.length < 6
+                ? `${6 - code.length} character${6 - code.length !== 1 ? 's' : ''} remaining`
+                : <span style={{ color: '#6366F1' }}>✓ Code complete</span>
+              }
+            </p>
+            <p style={{ fontSize: 11, color: '#444', margin: '4px 0 0', fontWeight: 300, textAlign: 'center' }}>
               Contact your institution admin if you don't have this code
             </p>
           </div>
 
-          <button type="submit" disabled={loading} className="btn-auth" style={{ marginTop: 4 }}>
+          <button type="submit" disabled={loading || code.length < 6} className="btn-auth" style={{ marginTop: 4 }}>
             {loading ? 'Verifying…' : 'Continue'}
           </button>
         </form>
