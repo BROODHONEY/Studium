@@ -32,6 +32,11 @@ export default function InstitutionSelectPage() {
       localStorage.setItem('institutionId', res.data.institutionId);
       localStorage.setItem('institutionName', res.data.name);
       localStorage.setItem('institutionSubdomain', res.data.subdomain);
+      if (res.data.allowedEmailDomain) {
+        localStorage.setItem('institutionEmailDomain', res.data.allowedEmailDomain);
+      } else {
+        localStorage.removeItem('institutionEmailDomain');
+      }
 
       navigate('/login');
     } catch (err) {

@@ -10,7 +10,7 @@ router.get('/verify/:subdomain', async (req, res) => {
     
     const { data: institutions, error } = await db
       .from('institutions')
-      .select('id, name, subdomain, status')
+      .select('id, name, subdomain, status, allowed_email_domain')
       .eq('subdomain', subdomain)
       .eq('status', 'active')
       .limit(1);
@@ -24,7 +24,8 @@ router.get('/verify/:subdomain', async (req, res) => {
     res.json({
       institutionId: institutions[0].id,
       name: institutions[0].name,
-      subdomain: institutions[0].subdomain
+      subdomain: institutions[0].subdomain,
+      allowedEmailDomain: institutions[0].allowed_email_domain || null
     });
   } catch (error) {
     console.error('Error verifying institution:', error);
@@ -251,7 +252,8 @@ router.post('/onboard', async (req, res) => {
       address,
       studentCount,
       plan,
-      billingCycle
+      billingCycle,
+      allowedEmailDomain
     } = req.body;
 
     console.log('Onboarding request received:', { name, code, adminEmail, adminName, plan, billingCycle });
@@ -260,6 +262,25 @@ router.post('/onboard', async (req, res) => {
     if (!name || !code || !adminEmail || !adminName || !adminPassword || !plan || !billingCycle) {
       console.error('Missing required fields:', { name, code, adminEmail, adminName, adminPassword: !!adminPassword, plan, billingCycle });
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Validate and normalize email domain
+    let normalizedDomain = null;
+    if (allowedEmailDomain && allowedEmailDomain.trim()) {
+      normalizedDomain = allowedEmailDomain.trim().toLowerCase();
+      if (!normalizedDomain.startsWith('@')) normalizedDomain = `@${normalizedDomain}`;
+      if (!/^@[a-z0-9.-]+\.[a-z]{2,}$/.test(normalizedDomain)) {
+        return res.status(400).json({ error: 'Invalid email domain format (e.g. @xyz.edu.in)' });
+      }
+      // Check domain uniqueness
+      const { data: domainExists } = await db
+        .from('institutions')
+        .select('id')
+        .eq('allowed_email_domain', normalizedDomain)
+        .limit(1);
+      if (domainExists && domainExists.length > 0) {
+        return res.status(409).json({ error: 'This email domain is already registered to another institution' });
+      }
     }
 
     if (code.length !== 6) {
@@ -317,7 +338,8 @@ router.post('/onboard', async (req, res) => {
         student_count: studentCount ? parseInt(studentCount) : null,
         plan,
         billing_cycle: billingCycle,
-        status: 'active'
+        status: 'active',
+        allowed_email_domain: normalizedDomain
       })
       .select()
       .single();
@@ -341,7 +363,8 @@ router.post('/onboard', async (req, res) => {
         email: adminEmail,
         password_hash,
         role: 'admin',
-        institution_id: institution.id
+        institution_id: institution.id,
+        email_verified: true
       })
       .select('id, name, email, role, institution_id')
       .single();

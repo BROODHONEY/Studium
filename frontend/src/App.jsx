@@ -15,7 +15,7 @@ import PublicProfilePage from './pages/PublicProfilePage';
 import QuizPage from './pages/QuizPage';
 import TeacherDashboard from './pages/TeacherDashboard';
 
-const ProtectedRoute = ({ children }) => {
+import VerifyEmailPage from './pages/VerifyEmailPage';
   const { user, loading } = useAuth();
   if (loading) return <div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>;
   return user ? children : <Navigate to="/login" replace />;
@@ -64,6 +64,7 @@ export default function App() {
         <Route path="/admin/review" element={<AdminReviewPage />} />
         <Route path="/admin/dashboard" element={<AdminRoute><InstitutionAdminDashboard /></AdminRoute>} />
         <Route path="/superadmin" element={<SuperAdminRoute><SuperAdminDashboard /></SuperAdminRoute>} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/login"    element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

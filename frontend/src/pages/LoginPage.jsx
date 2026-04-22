@@ -144,6 +144,7 @@ export default function LoginPage() {
               localStorage.removeItem('institutionId');
               localStorage.removeItem('institutionName');
               localStorage.removeItem('institutionSubdomain');
+              localStorage.removeItem('institutionEmailDomain');
               navigate('/institution-select');
             }}
             style={{
@@ -160,6 +161,22 @@ export default function LoginPage() {
           >
             Change institution
           </button>
+
+          {/* DEV ONLY: info about bypassing email verification */}
+          {import.meta.env.DEV && (
+            <div style={{
+              marginTop: 4,
+              padding: '5px 12px',
+              borderRadius: 6,
+              border: '1px dashed #333',
+              color: '#444',
+              fontSize: 11,
+              fontFamily: 'monospace',
+              textAlign: 'center',
+            }}>
+              🔧 DEV: use /verify-email?token=... to verify accounts
+            </div>
+          )}
         </div>
       </div>
     </AuthLayout>

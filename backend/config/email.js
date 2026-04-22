@@ -194,6 +194,22 @@ const emailTemplates = {
     `
   }),
 
+  emailVerification: (data) => ({
+    to: data.email,
+    subject: 'Verify your Studi+ account',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0A0A0A; color: #F0F0F0; padding: 40px; border-radius: 12px;">
+        <h2 style="color: #A5A6F6; margin-bottom: 8px;">Verify your email</h2>
+        <p style="color: #888; margin-bottom: 24px;">Hi ${data.name}, click the button below to verify your account for <strong style="color: #F0F0F0;">${data.institutionName}</strong>.</p>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${data.token}"
+           style="display: inline-block; background: #6366F1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">
+          Verify Email
+        </a>
+        <p style="color: #555; font-size: 12px; margin-top: 24px;">This link expires in 24 hours. If you didn't create this account, you can ignore this email.</p>
+      </div>
+    `
+  }),
+
   demoRejected: (data) => ({
     to: data.email,
     subject: 'Update on Your Studi+ Demo Request',

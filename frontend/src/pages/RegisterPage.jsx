@@ -1,60 +1,50 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 
 export default function RegisterPage() {
-  const { login }   = useAuth();
-  const navigate    = useNavigate();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
     password: '', role: 'student',
     roll_no: '', department: '', year: ''
   });
-  const [showPw, setShowPw]   = useState(false);
-  const [error, setError]     = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [institution, setInstitution] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [loadingDepts, setLoadingDepts] = useState(false);
+  const [devBypass, setDevBypass] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const isStudent = form.role === 'student';
 
   useEffect(() => {
-    // Check if institution is selected
     const instId = localStorage.getItem('institutionId');
     const instName = localStorage.getItem('institutionName');
     const instSubdomain = localStorage.getItem('institutionSubdomain');
-    
+    const instDomain = localStorage.getItem('institutionEmailDomain');
+
     if (!instId || !instName || !instSubdomain) {
-      // Redirect to institution select if not set
       navigate('/institution-select');
       return;
     }
-    
-    setInstitution({ 
-      id: instId, 
-      name: instName, 
-      subdomain: instSubdomain 
-    });
 
-    // Fetch departments for this institution (public endpoint, no auth needed)
+    setInstitution({ id: instId, name: instName, subdomain: instSubdomain, emailDomain: instDomain });
+
     const fetchDepartments = async () => {
       setLoadingDepts(true);
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
         const response = await fetch(`${apiUrl}/departments/public?institutionId=${instId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setDepartments(data);
-        }
+        if (response.ok) setDepartments(await response.json());
       } catch (err) {
         console.error('Error fetching departments:', err);
       } finally {
         setLoadingDepts(false);
       }
     };
-
     fetchDepartments();
   }, [navigate]);
 
@@ -63,34 +53,34 @@ export default function RegisterPage() {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+
     if (isStudent && !form.roll_no.trim()) return setError('Roll number is required');
-    if (isStudent && !form.department)     return setError('Please select your department');
-    if (isStudent && !form.year)           return setError('Please select your year');
-    if (!isStudent && !form.department)    return setError('Please select your department');
+    if (isStudent && !form.department) return setError('Please select your department');
+    if (isStudent && !form.year) return setError('Please select your year');
+    if (!isStudent && !form.department) return setError('Please select your department');
+
+    // Client-side domain check
+    if (institution?.emailDomain && !devBypass) {
+      const domain = institution.emailDomain.startsWith('@') ? institution.emailDomain : `@${institution.emailDomain}`;
+      if (!form.email.toLowerCase().endsWith(domain.toLowerCase())) {
+        return setError(`Only ${domain} email addresses are allowed for ${institution.name}`);
+      }
+    }
+
     setLoading(true);
     try {
       const payload = {
         name: form.name, password: form.password, role: form.role,
         institutionId: institution?.id,
+        devBypass,
         ...(form.email ? { email: form.email } : {}),
         ...(form.phone ? { phone: form.phone } : {}),
-        ...(isStudent  ? { roll_no: form.roll_no, department: form.department, year: Number(form.year) } : { department: form.department })
+        ...(isStudent ? { roll_no: form.roll_no, department: form.department, year: Number(form.year) } : { department: form.department })
       };
       const res = await authAPI.register(payload);
-      login(res.data.token, res.data.user);
-      
-      // Redirect based on role and institution
-      if (res.data.user.role === 'admin') {
-        // Check if it's a super admin (no institution) or institution admin
-        if (res.data.user.institution_id) {
-          navigate('/admin/dashboard'); // Institution admin
-        } else {
-          navigate('/superadmin'); // Super admin (Studi+ admin)
-        }
-      } else if (res.data.user.role === 'teacher') {
-        navigate('/teacher');
-      } else {
-        navigate('/dashboard');
+
+      if (res.data.requiresVerification) {
+        setRegistered(true);
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
@@ -110,7 +100,29 @@ export default function RegisterPage() {
     letterSpacing: '0.08em', display: 'block', marginBottom: 6,
   };
   const focus = e => e.target.style.borderColor = '#6366F1';
-  const blur  = e => e.target.style.borderColor = '#2E2E2E';
+  const blur = e => e.target.style.borderColor = '#2E2E2E';
+
+  // Email sent screen
+  if (registered) {
+    return (
+      <AuthLayout tagline="Check your inbox." sub="">
+        <div style={{ textAlign: 'center', padding: '32px 0' }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>📬</div>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', margin: '0 0 10px' }}>Verify your email</h2>
+          <p style={{ color: '#888', fontSize: 13, lineHeight: 1.6, margin: '0 0 24px' }}>
+            We sent a verification link to <span style={{ color: '#C0C1FF' }}>{form.email}</span>.<br />
+            Click the link in the email to activate your account.
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            style={{ background: '#6366F1', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+          >
+            Back to Login
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
@@ -119,13 +131,17 @@ export default function RegisterPage() {
       institution={institution}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-
         <div>
           <h2 style={{ fontSize: 24, fontWeight: 700, color: '#F0F0F0', margin: '0 0 6px', letterSpacing: '-0.02em', fontFamily: "'Manrope','Inter',sans-serif" }}>
             Create Account
           </h2>
           <p style={{ fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
             Enter your details to get started.
+            {institution?.emailDomain && !devBypass && (
+              <span style={{ color: '#6366F1', marginLeft: 4 }}>
+                Requires {institution.emailDomain} email.
+              </span>
+            )}
           </p>
         </div>
 
@@ -136,8 +152,6 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Role toggle */}
           <div>
             <label style={lbl}>I am a</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -189,7 +203,7 @@ export default function RegisterPage() {
                   value={form.year} onChange={handleChange} required
                   onFocus={focus} onBlur={blur}>
                   <option value="" disabled>Select your year</option>
-                  {[1,2,3,4].map(y => (
+                  {[1, 2, 3, 4].map(y => (
                     <option key={y} value={y}>{y === 1 ? '1st' : y === 2 ? '2nd' : y === 3 ? '3rd' : '4th'} Year</option>
                   ))}
                 </select>
@@ -200,8 +214,8 @@ export default function RegisterPage() {
           <div>
             <label style={lbl}>Email</label>
             <input style={inp} type="email" name="email" value={form.email}
-              onChange={handleChange} placeholder="you@example.com"
-              onFocus={focus} onBlur={blur} />
+              onChange={handleChange} placeholder={institution?.emailDomain ? `you${institution.emailDomain}` : 'you@example.com'}
+              required onFocus={focus} onBlur={blur} />
           </div>
 
           <div>
@@ -233,34 +247,44 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', paddingBottom: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', paddingBottom: 8 }}>
           <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>
-              Log in
-            </Link>
+            <Link to="/login" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
           </p>
           <button
             onClick={() => {
               localStorage.removeItem('institutionId');
               localStorage.removeItem('institutionName');
               localStorage.removeItem('institutionSubdomain');
+              localStorage.removeItem('institutionEmailDomain');
               navigate('/institution-select');
             }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#555',
-              fontSize: 12,
-              fontWeight: 400,
-              cursor: 'pointer',
-              fontFamily: 'Inter, sans-serif',
-              textDecoration: 'underline',
-              padding: 0
-            }}
+            style={{ background: 'transparent', border: 'none', color: '#555', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', textDecoration: 'underline', padding: 0 }}
           >
             Change institution
           </button>
+
+          {/* DEV ONLY: bypass domain + email verification */}
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              onClick={() => setDevBypass(v => !v)}
+              style={{
+                marginTop: 4,
+                padding: '5px 12px',
+                borderRadius: 6,
+                border: `1px dashed ${devBypass ? '#f59e0b' : '#333'}`,
+                background: devBypass ? 'rgba(245,158,11,0.08)' : 'transparent',
+                color: devBypass ? '#f59e0b' : '#444',
+                fontSize: 11,
+                cursor: 'pointer',
+                fontFamily: 'monospace',
+              }}
+            >
+              {devBypass ? '⚠ DEV BYPASS ON' : '🔧 DEV: bypass domain check'}
+            </button>
+          )}
         </div>
       </div>
     </AuthLayout>

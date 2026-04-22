@@ -18,7 +18,8 @@ export default function InstitutionOnboardingPage() {
     adminPassword: '',
     phone: '',
     address: '',
-    studentCount: ''
+    studentCount: '',
+    allowedEmailDomain: ''
   });
 
   const [packageData, setPackageData] = useState({
@@ -212,6 +213,23 @@ export default function InstitutionOnboardingPage() {
               />
               <p style={{ fontSize: 11, color: '#555', margin: '6px 0 0', fontWeight: 300 }}>
                 This will be your master admin account for managing the institution
+              </p>
+            </div>
+
+            <div>
+              <label style={lbl}>Allowed Email Domain</label>
+              <input
+                style={inp}
+                type="text"
+                name="allowedEmailDomain"
+                value={institutionData.allowedEmailDomain}
+                onChange={handleInstitutionChange}
+                placeholder="@xyz.edu.in"
+                onFocus={e => e.target.style.borderColor = '#6366F1'}
+                onBlur={e => e.target.style.borderColor = '#2E2E2E'}
+              />
+              <p style={{ fontSize: 11, color: '#555', margin: '6px 0 0', fontWeight: 300 }}>
+                Only emails ending with this domain can register. Leave blank to allow any email. Each domain can only be used by one institution.
               </p>
             </div>
 
