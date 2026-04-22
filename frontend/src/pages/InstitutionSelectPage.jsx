@@ -2,9 +2,11 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthLayout from '../components/AuthLayout';
+import { useAuth } from '../context/AuthContext';
 
 export default function InstitutionSelectPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +27,8 @@ export default function InstitutionSelectPage() {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
       const res = await axios.get(`${apiUrl}/institutions/verify/${code.trim().toLowerCase()}`);
 
+      // Clear any existing session before switching institution
+      logout();
       localStorage.setItem('institutionId', res.data.institutionId);
       localStorage.setItem('institutionName', res.data.name);
       localStorage.setItem('institutionSubdomain', res.data.subdomain);
