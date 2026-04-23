@@ -2,6 +2,8 @@ const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
 const generateInviteCode = require('../config/generateCode');
+const { validate, schemas } = require('../middleware/validate');
+const { emitSystemMessage } = require('../services/groupService');
 
 const router = express.Router();
 
@@ -9,15 +11,12 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // ── Create a group (teacher only) ─────────────────────
-router.post('/', async (req, res) => {
+router.post('/', validate(schemas.createGroup), async (req, res) => {
   if (req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Only teachers can create groups' });
   }
 
   const { name, subject, description } = req.body;
-  if (!name || !subject) {
-    return res.status(400).json({ error: 'Name and subject are required' });
-  }
 
   try {
     // Keep generating until we get a unique code within this institution
@@ -108,25 +107,7 @@ router.post('/join', async (req, res) => {
     if (io) {
       const { data: userData } = await supabase
         .from('users').select('name').eq('id', req.user.id).single();
-
-      const { data: savedMsg } = await supabase
-        .from('messages')
-        .insert({
-          group_id: group.id,
-          sender_id: null,
-          content: `${userData?.name} joined the group`,
-          type: 'system'
-        })
-        .select('id, content, type, created_at')
-        .single();
-
-      io.to(group.id).emit('system_message', {
-        id: savedMsg.id,
-        type: 'system',
-        subtype: 'join',
-        text: savedMsg.content,
-        timestamp: savedMsg.created_at
-      });
+      await emitSystemMessage(io, group.id, `${userData?.name} joined the group`, 'join');
     }
 
     res.json({ message: 'Joined successfully', group });
@@ -202,24 +183,7 @@ router.delete('/:id/members/me', async (req, res) => {
       .from('users').select('name').eq('id', req.user.id).single();
 
     if (io) {
-      const { data: savedMsg } = await supabase
-        .from('messages')
-        .insert({
-          group_id: req.params.id,
-          sender_id: null,
-          content: `${userData?.name} left the group`,
-          type: 'system'
-        })
-        .select('id, content, type, created_at')
-        .single();
-
-      io.to(req.params.id).emit('system_message', {
-        id: savedMsg.id,
-        type: 'system',
-        subtype: 'leave',
-        text: savedMsg.content,
-        timestamp: savedMsg.created_at
-      });
+      await emitSystemMessage(io, req.params.id, `${userData?.name} left the group`, 'leave');
     }
 
     res.json({ message: 'Left group successfully' });
@@ -277,28 +241,9 @@ router.delete('/:id/members/:userId', async (req, res) => {
 
     // Emit system message to the room
     const io = req.app.get('io');
-    // Inside the kick route, after deleting the member
-    const { data: savedMsg } = await supabase
-      .from('messages')
-      .insert({
-        group_id: req.params.id,
-        sender_id: null,
-        content: `${targetUser?.name} was removed from the group`,
-        type: 'system'
-      })
-      .select('id, content, type, created_at')
-      .single();
+    await emitSystemMessage(io, req.params.id, `${targetUser?.name} was removed from the group`, 'kick');
 
     if (io) {
-      io.to(req.params.id).emit('system_message', {
-        id: savedMsg.id,
-        type: 'system',
-        subtype: 'kick',
-        text: savedMsg.content,
-        timestamp: savedMsg.created_at
-      });
-
-      // Emit directly to the kicked user's socket so they get it regardless of which room they're in
       const kickedSocketId = io.userSockets?.get(req.params.userId);
       const kickPayload = {
         kickedUserId: req.params.userId,

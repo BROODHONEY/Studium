@@ -45,9 +45,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   const [loading, setLoading]       = useState(true);
   const [adminsOnly, setAdminsOnly] = useState(false);
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
-  const [showPinned, setShowPinned] = useState(false); void showPinned; void setShowPinned;
+  const [showPinned, setShowPinned] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch]   = useState(false); void showSearch; void setShowSearch;
+  const [showSearch, setShowSearch]   = useState(false);
   const [typingUsers, setTypingUsers] = useState({});
 
   const [members, setMembers]           = useState([]);
@@ -58,7 +58,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   const [fileRefs, setFileRefs] = useState([]);
 
-  const [highlightedMessageId, setHighlightedMessageId] = useState(null); void highlightedMessageId;
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const highlightTimeoutRef = useRef(null);
   const messageRefs = useRef(new Map());
 

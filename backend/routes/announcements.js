@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -71,10 +72,8 @@ router.get('/:groupId/scheduled', async (req, res) => {
 });
 
 // ── Create an announcement ─────────────────────────────
-router.post('/:groupId', async (req, res) => {
+router.post('/:groupId', validate(schemas.createAnnouncement), async (req, res) => {
   const { title, content, tag, scheduled_at } = req.body;
-
-  if (!title || !content) return res.status(400).json({ error: 'Title and content are required' });
 
   try {
     const { data: membership } = await supabase
@@ -127,10 +126,8 @@ router.post('/:groupId', async (req, res) => {
 });
 
 // ── Update an announcement ─────────────────────────────
-router.put('/:groupId/:id', async (req, res) => {
+router.put('/:groupId/:id', validate(schemas.createAnnouncement), async (req, res) => {
   const { title, content, tag, scheduled_at } = req.body;
-
-  if (!title || !content) return res.status(400).json({ error: 'Title and content are required' });
 
   try {
     const { data: announcement } = await supabase
@@ -206,8 +203,6 @@ router.delete('/:groupId/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // ── Toggle a reaction on an announcement ──────────────
 router.post('/:groupId/:id/reactions', async (req, res) => {
   const { emoji } = req.body;
@@ -255,3 +250,5 @@ router.post('/:groupId/:id/reactions', async (req, res) => {
     res.status(500).json({ error: 'Could not react' });
   }
 });
+
+module.exports = router;

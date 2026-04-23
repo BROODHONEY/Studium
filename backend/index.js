@@ -28,12 +28,10 @@ const demoRequestRoutes  = require('./routes/demo-requests');
 
 const app = express();
 const server = http.createServer(app);
-const FRONTEND_ORIGINS = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL.replace(/\/$/, '')]
-  : ['http://localhost:5173', 'http://localhost:5174'];
 
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5174',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -63,6 +61,12 @@ app.use(
 
 app.use(express.json());
 
+// Basic request logger
+app.use((req, _res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
 app.use('/api/demo-requests', demoRequestRoutes);
 app.use('/api/institutions', institutionRoutes);
 app.use('/api/onboarding', onboardingRoutes);
@@ -84,6 +88,13 @@ app.use('/api/teacher', teacherRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Studi+ API is running' });
+});
+
+// Centralized error handler
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, _next) => {
+  console.error(`[ERROR] ${req.method} ${req.path}:`, err.message);
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
 // Initialize Socket.io

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { sendEmail } = require('../config/email');
 
@@ -353,7 +354,6 @@ router.post('/onboard', async (req, res) => {
     console.log('Creating admin user...');
 
     // Hash password and create admin user
-    const bcrypt = require('bcryptjs');
     const password_hash = await bcrypt.hash(adminPassword, 10);
 
     const { data: adminUser, error: adminError } = await db

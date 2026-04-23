@@ -3,6 +3,7 @@ const bcrypt  = require('bcryptjs');
 const multer  = require('multer');
 const supabase = require('../config/db');
 const auth = require('../middleware/auth');
+const { uploadAndSign, buildStoragePath } = require('../services/storageService');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -20,20 +21,9 @@ router.post('/me/attachments', auth, upload.single('file'), async (req, res) => 
   if (!req.file) return res.status(400).json({ error: 'No file provided' });
   try {
     const { originalname, mimetype, buffer } = req.file;
-    const safeName    = originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const storagePath = `profile-attachments/${req.user.id}/${Date.now()}-${safeName}`;
-
-    const { error: uploadErr } = await supabase.storage
-      .from('studium-files')
-      .upload(storagePath, buffer, { contentType: mimetype, upsert: false });
-    if (uploadErr) throw uploadErr;
-
-    const { data: signed, error: signErr } = await supabase.storage
-      .from('studium-files')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
-    if (signErr) throw signErr;
-
-    res.json({ url: signed.signedUrl, name: originalname, type: mimetype });
+    const storagePath = buildStoragePath(`profile-attachments/${req.user.id}`, originalname);
+    const signedUrl = await uploadAndSign(storagePath, buffer, mimetype);
+    res.json({ url: signedUrl, name: originalname, type: mimetype });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Upload failed' });

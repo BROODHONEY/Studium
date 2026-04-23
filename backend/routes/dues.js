@@ -1,6 +1,8 @@
 const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
+const { getMembership } = require('../services/groupService');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -66,20 +68,11 @@ router.get('/:groupId', async (req, res) => {
 });
 
 // ── Create a due (admin/teacher only) ─────────────────
-router.post('/:groupId', async (req, res) => {
+router.post('/:groupId', validate(schemas.createDue), async (req, res) => {
   const { title, description, due_date, category } = req.body;
 
-  if (!title || !due_date) {
-    return res.status(400).json({ error: 'Title and due date are required' });
-  }
-
   try {
-    const { data: membership } = await supabase
-      .from('group_members')
-      .select('role')
-      .eq('group_id', req.params.groupId)
-      .eq('user_id', req.user.id)
-      .single();
+    const membership = await getMembership(req.params.groupId, req.user.id);
 
     if (!membership) {
       return res.status(403).json({ error: 'Not a member of this group' });
@@ -120,12 +113,8 @@ router.post('/:groupId', async (req, res) => {
 });
 
 // ── Update a due (admin/creator only) ─────────────────
-router.put('/:groupId/:id', async (req, res) => {
+router.put('/:groupId/:id', validate(schemas.createDue), async (req, res) => {
   const { title, description, due_date, category } = req.body;
-
-  if (!title || !due_date) {
-    return res.status(400).json({ error: 'Title and due date are required' });
-  }
 
   try {
     const { data: due } = await supabase

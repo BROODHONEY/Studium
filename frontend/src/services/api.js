@@ -132,6 +132,15 @@ export const searchAPI = {
   query: (q, groupId) => api.get('/search', { params: groupId ? { q, groupId } : { q } }),
 };
 
+export const institutionsAPI = {
+  verify:      (code)        => api.get(`/institutions/verify/${code}`),
+  departments: (institutionId) => api.get('/departments/public', { params: { institutionId } }),
+};
+
+export const demoRequestsAPI = {
+  create: (data) => api.post('/demo-requests', data),
+};
+
 export const teacherAPI = {
   getStudents:          (params) => api.get('/teacher/students', { params }),
   getStudent:           (id)     => api.get(`/teacher/students/${id}`),

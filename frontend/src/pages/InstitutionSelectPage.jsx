@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../context/AuthContext';
+import { institutionsAPI } from '../services/api';
+import { storeInstitution } from '../utils/institution';
 
 export default function InstitutionSelectPage() {
   const navigate = useNavigate();
@@ -24,19 +25,16 @@ export default function InstitutionSelectPage() {
 
     setLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const res = await axios.get(`${apiUrl}/institutions/verify/${code.trim().toLowerCase()}`);
+      const res = await institutionsAPI.verify(code.trim().toLowerCase());
 
       // Clear any existing session before switching institution
       logout();
-      localStorage.setItem('institutionId', res.data.institutionId);
-      localStorage.setItem('institutionName', res.data.name);
-      localStorage.setItem('institutionSubdomain', res.data.subdomain);
-      if (res.data.allowedEmailDomain) {
-        localStorage.setItem('institutionEmailDomain', res.data.allowedEmailDomain);
-      } else {
-        localStorage.removeItem('institutionEmailDomain');
-      }
+      storeInstitution({
+        id:          res.data.institutionId,
+        name:        res.data.name,
+        subdomain:   res.data.subdomain,
+        emailDomain: res.data.allowedEmailDomain || null,
+      });
 
       navigate('/login');
     } catch (err) {

@@ -2,6 +2,9 @@ const express = require('express');
 const multer  = require('multer');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
+const { getMembership } = require('../services/groupService');
+const { uploadAndSign, buildStoragePath } = require('../services/storageService');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -10,17 +13,6 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
-
-// Helper: verify membership and return role
-async function getMembership(groupId, userId) {
-  const { data } = await supabase
-    .from('group_members')
-    .select('role')
-    .eq('group_id', groupId)
-    .eq('user_id', userId)
-    .single();
-  return data;
-}
 
 // ── List assignments for a group ──────────────────────
 router.get('/:groupId', async (req, res) => {
@@ -80,14 +72,14 @@ router.get('/:groupId', async (req, res) => {
 });
 
 // ── Create assignment (teacher/admin only) ────────────
-router.post('/:groupId', async (req, res) => {
+router.post('/:groupId', validate(schemas.createAssignment), async (req, res) => {
   try {
     const membership = await getMembership(req.params.groupId, req.user.id);
     if (!membership) return res.status(403).json({ error: 'Not a member' });
     if (membership.role === 'student') return res.status(403).json({ error: 'Only teachers can create assignments' });
 
     const { title, description, due_date, allow_offline } = req.body;
-    if (!title || !due_date) return res.status(400).json({ error: 'title and due_date are required' });
+    // Validation already handled by middleware
 
     console.log('[create assignment] allow_offline received:', allow_offline, '→ stored as:', !!allow_offline);
 
@@ -147,8 +139,6 @@ router.put('/:groupId/:assignmentId', async (req, res) => {
 
     if (error) throw error;
     console.log('[update assignment] returned allow_offline:', data.allow_offline);
-
-    if (error) throw error;
 
     // Sync the linked due entry
     await supabase.from('dues')
@@ -273,20 +263,13 @@ router.post('/:groupId/:assignmentId/upload', upload.single('file'), async (req,
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
 
     const { originalname, mimetype, buffer, size } = req.file;
-    const safeName = originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const storagePath = `submissions/${req.params.assignmentId}/${req.user.id}-${Date.now()}-${safeName}`;
+    const storagePath = buildStoragePath(
+      `submissions/${req.params.assignmentId}/${req.user.id}`,
+      originalname
+    );
 
-    const { error: uploadError } = await supabase.storage
-      .from('studium-files')
-      .upload(storagePath, buffer, { contentType: mimetype, upsert: false });
-    if (uploadError) throw uploadError;
-
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from('studium-files')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
-    if (signedError) throw signedError;
-
-    res.json({ file_url: signedData.signedUrl, file_name: originalname, file_type: mimetype, file_size: size });
+    const signedUrl = await uploadAndSign(storagePath, buffer, mimetype);
+    res.json({ file_url: signedUrl, file_name: originalname, file_type: mimetype, file_size: size });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Upload failed' });

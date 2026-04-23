@@ -31,7 +31,6 @@ const DEFAULT_ACCENTS = ['bg-indigo-500', 'bg-teal-500', 'bg-purple-500', 'bg-am
 
 // -- Helpers --------------------------------------------
 const initials = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const roleColor = () => 'text-[var(--text-3)]';
 
 // -- GroupItem ------------------------------------------
 function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOver, onDrop, dragging, pinned, color, label, isArchived, noColorBorder, hasUnread }) {

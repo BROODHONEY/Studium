@@ -1,16 +1,11 @@
 const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
+const { getMembership } = require('../services/groupService');
 
 const router = express.Router();
 router.use(authMiddleware);
-
-async function getMembership(groupId, userId) {
-  const { data } = await supabase
-    .from('group_members').select('role')
-    .eq('group_id', groupId).eq('user_id', userId).single();
-  return data;
-}
 
 // ── List quizzes for a group ──────────────────────────
 router.get('/:groupId', async (req, res) => {
@@ -81,18 +76,13 @@ router.get('/:groupId/:quizId', async (req, res) => {
 });
 
 // ── Create quiz (teacher/admin) ───────────────────────
-router.post('/:groupId', async (req, res) => {
+router.post('/:groupId', validate(schemas.createQuiz), async (req, res) => {
   try {
     const m = await getMembership(req.params.groupId, req.user.id);
     if (!m || m.role === 'student') return res.status(403).json({ error: 'Forbidden' });
 
     const { title, description, duration_mins, starts_at, ends_at, questions, show_score } = req.body;
-    if (!title || !duration_mins || !starts_at || !ends_at) {
-      return res.status(400).json({ error: 'title, duration_mins, starts_at, ends_at required' });
-    }
-    if (new Date(ends_at) <= new Date(starts_at)) {
-      return res.status(400).json({ error: 'ends_at must be after starts_at' });
-    }
+    // Validation already handled by middleware
 
     const { data: quiz, error } = await supabase
       .from('quizzes')

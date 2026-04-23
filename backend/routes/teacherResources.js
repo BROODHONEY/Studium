@@ -1,316 +1,165 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
+const supabase = require('../config/db');
 const authenticate = require('../middleware/auth');
-const { tenantMiddleware, requireTenant } = require('../middleware/tenant');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs').promises;
+const { uploadAndSign, removeFile, buildStoragePath } = require('../services/storageService');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/resources');
-    await fs.mkdir(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
+const BUCKET_FOLDER = 'teacher-resources';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
-});
-
-// Get all folders for a department
-router.get('/folders', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
-  try {
-    const { departmentId } = req.query;
-    
-    let query = `
-      SELECT rf.*, u.name as creator_name
-      FROM resource_folders rf
-      LEFT JOIN users u ON rf.created_by = u.id
-      WHERE rf.institution_id = ?
-    `;
-    const params = [req.institutionId];
-    
-    if (departmentId) {
-      query += ' AND rf.department_id = ?';
-      params.push(departmentId);
-    }
-    
-    query += ' ORDER BY rf.name ASC';
-    
-    const [folders] = await db.query(query, params);
-    res.json(folders);
-  } catch (error) {
-    console.error('Error fetching folders:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Create folder
-router.post('/folders', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
-  try {
-    const { name, description, departmentId, parentFolderId } = req.body;
-    
-    const [result] = await db.query(
-      `INSERT INTO resource_folders 
-       (institution_id, department_id, parent_folder_id, name, description, created_by) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [req.institutionId, departmentId || null, parentFolderId || null, name, description, req.user.id]
-    );
-    
-    res.status(201).json({ folderId: result.insertId, message: 'Folder created' });
-  } catch (error) {
-    console.error('Error creating folder:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get all resources
-router.get('/resources', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
+// ── Get all resources for the institution ─────────────
+router.get('/resources', authenticate, async (req, res) => {
   try {
     const { departmentId, folderId, resourceType, category } = req.query;
-    
-    let query = `
-      SELECT tr.*, u.name as uploader_name, d.name as department_name
-      FROM teacher_resources tr
-      LEFT JOIN users u ON tr.uploaded_by = u.id
-      LEFT JOIN departments d ON tr.department_id = d.id
-      WHERE tr.institution_id = ?
-    `;
-    const params = [req.institutionId];
-    
-    if (departmentId) {
-      query += ' AND tr.department_id = ?';
-      params.push(departmentId);
-    }
-    
-    if (folderId) {
-      query += ' AND tr.folder_id = ?';
-      params.push(folderId);
-    }
-    
-    if (resourceType) {
-      query += ' AND tr.resource_type = ?';
-      params.push(resourceType);
-    }
-    
-    if (category) {
-      query += ' AND tr.category = ?';
-      params.push(category);
-    }
-    
-    query += ' ORDER BY tr.created_at DESC';
-    
-    const [resources] = await db.query(query, params);
-    res.json(resources);
-  } catch (error) {
-    console.error('Error fetching resources:', error);
-    res.status(500).json({ error: 'Server error' });
+
+    let query = supabase
+      .from('teacher_resources')
+      .select(`
+        id, title, description, resource_type, category, file_url, file_type,
+        file_size, is_public, created_at,
+        uploader:uploaded_by (id, name),
+        department:department_id (id, name),
+        folder:folder_id (id, name)
+      `)
+      .eq('institution_id', req.user.institutionId)
+      .order('created_at', { ascending: false });
+
+    if (departmentId) query = query.eq('department_id', departmentId);
+    if (folderId)     query = query.eq('folder_id', folderId);
+    if (resourceType) query = query.eq('resource_type', resourceType);
+    if (category)     query = query.eq('category', category);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not fetch resources' });
   }
 });
 
-// Upload resource
-router.post('/resources', authenticate, tenantMiddleware, requireTenant, upload.single('file'), async (req, res) => {
+// ── Upload a resource ─────────────────────────────────
+router.post('/resources', authenticate, upload.single('file'), async (req, res) => {
   try {
-    const { title, description, departmentId, folderId, resourceType, category, tags, isPublic } = req.body;
-    
-    const filePath = req.file ? `/uploads/resources/${req.file.filename}` : null;
-    const fileType = req.file ? req.file.mimetype : null;
-    const fileSize = req.file ? req.file.size : null;
-    
-    const [result] = await db.query(
-      `INSERT INTO teacher_resources 
-       (institution_id, department_id, uploaded_by, title, description, file_path, 
-        file_type, file_size, resource_type, category, tags, folder_id, is_public) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        req.institutionId,
-        departmentId || null,
-        req.user.id,
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    const { title, description, departmentId, folderId, resourceType, category, isPublic } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    const storagePath = buildStoragePath(
+      `${BUCKET_FOLDER}/${req.user.institutionId}`,
+      req.file.originalname
+    );
+    const fileUrl = await uploadAndSign(storagePath, req.file.buffer, req.file.mimetype);
+
+    const { data, error } = await supabase
+      .from('teacher_resources')
+      .insert({
+        institution_id: req.user.institutionId,
+        uploaded_by: req.user.id,
+        department_id: departmentId || null,
+        folder_id: folderId || null,
         title,
-        description,
-        filePath,
-        fileType,
-        fileSize,
-        resourceType || 'other',
-        category || null,
-        tags ? JSON.stringify(tags) : null,
-        folderId || null,
-        isPublic === 'true' || isPublic === true
-      ]
-    );
-    
-    res.status(201).json({ resourceId: result.insertId, message: 'Resource uploaded' });
-  } catch (error) {
-    console.error('Error uploading resource:', error);
-    res.status(500).json({ error: 'Server error' });
+        description: description || null,
+        resource_type: resourceType || 'document',
+        category: category || null,
+        file_url: fileUrl,
+        file_type: req.file.mimetype,
+        file_size: req.file.size,
+        storage_path: storagePath,
+        is_public: isPublic === 'true' || isPublic === true,
+      })
+      .select('id, title, file_url, created_at')
+      .single();
+
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not upload resource' });
   }
 });
 
-// Download resource
-router.get('/resources/:id/download', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
+// ── Delete a resource (uploader only) ────────────────
+router.delete('/resources/:id', authenticate, async (req, res) => {
   try {
-    const [resources] = await db.query(
-      'SELECT * FROM teacher_resources WHERE id = ? AND institution_id = ?',
-      [req.params.id, req.institutionId]
-    );
-    
-    if (resources.length === 0) {
-      return res.status(404).json({ error: 'Resource not found' });
-    }
-    
-    const resource = resources[0];
-    
-    // Increment download count
-    await db.query(
-      'UPDATE teacher_resources SET download_count = download_count + 1 WHERE id = ?',
-      [req.params.id]
-    );
-    
-    const filePath = path.join(__dirname, '..', resource.file_path);
-    res.download(filePath);
-  } catch (error) {
-    console.error('Error downloading resource:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+    const { data: resource, error: fetchErr } = await supabase
+      .from('teacher_resources')
+      .select('id, uploaded_by, storage_path, institution_id')
+      .eq('id', req.params.id)
+      .single();
 
-// Delete resource
-router.delete('/resources/:id', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
-  try {
-    const [resources] = await db.query(
-      'SELECT * FROM teacher_resources WHERE id = ? AND institution_id = ? AND uploaded_by = ?',
-      [req.params.id, req.institutionId, req.user.id]
-    );
-    
-    if (resources.length === 0) {
-      return res.status(404).json({ error: 'Resource not found or unauthorized' });
+    if (fetchErr || !resource) return res.status(404).json({ error: 'Resource not found' });
+    if (resource.institution_id !== req.user.institutionId) return res.status(403).json({ error: 'Forbidden' });
+    if (resource.uploaded_by !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorised' });
     }
-    
-    // Delete file from filesystem
-    if (resources[0].file_path) {
-      const filePath = path.join(__dirname, '..', resources[0].file_path);
-      await fs.unlink(filePath).catch(() => {});
-    }
-    
-    await db.query('DELETE FROM teacher_resources WHERE id = ?', [req.params.id]);
-    
+
+    if (resource.storage_path) await removeFile(resource.storage_path);
+
+    const { error } = await supabase.from('teacher_resources').delete().eq('id', req.params.id);
+    if (error) throw error;
+
     res.json({ message: 'Resource deleted' });
-  } catch (error) {
-    console.error('Error deleting resource:', error);
-    res.status(500).json({ error: 'Server error' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not delete resource' });
   }
 });
 
-// Get department curriculum
-router.get('/curriculum', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
+// ── Get folders ───────────────────────────────────────
+router.get('/folders', authenticate, async (req, res) => {
   try {
-    const { departmentId } = req.query;
-    
-    if (!departmentId) {
-      return res.status(400).json({ error: 'Department ID required' });
-    }
-    
-    const [curriculum] = await db.query(
-      `SELECT * FROM department_curriculum 
-       WHERE department_id = ? 
-       ORDER BY academic_year DESC, semester DESC`,
-      [departmentId]
-    );
-    
-    res.json(curriculum);
-  } catch (error) {
-    console.error('Error fetching curriculum:', error);
-    res.status(500).json({ error: 'Server error' });
+    const { departmentId, parentFolderId } = req.query;
+
+    let query = supabase
+      .from('resource_folders')
+      .select(`id, name, description, created_at, creator:created_by (id, name), department:department_id (id, name)`)
+      .eq('institution_id', req.user.institutionId)
+      .order('name', { ascending: true });
+
+    if (departmentId)   query = query.eq('department_id', departmentId);
+    if (parentFolderId) query = query.eq('parent_folder_id', parentFolderId);
+    else                query = query.is('parent_folder_id', null);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not fetch folders' });
   }
 });
 
-// Get department info
-router.get('/department-info', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
+// ── Create a folder ───────────────────────────────────
+router.post('/folders', authenticate, async (req, res) => {
   try {
-    const { departmentId } = req.query;
-    
-    if (!departmentId) {
-      return res.status(400).json({ error: 'Department ID required' });
-    }
-    
-    const [info] = await db.query(
-      `SELECT di.*, u.name as creator_name
-       FROM department_info di
-       LEFT JOIN users u ON di.created_by = u.id
-       WHERE di.department_id = ?
-       ORDER BY di.is_pinned DESC, di.created_at DESC`,
-      [departmentId]
-    );
-    
-    res.json(info);
-  } catch (error) {
-    console.error('Error fetching department info:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+    const { name, description, departmentId, parentFolderId } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name is required' });
 
-// Get department members (teachers)
-router.get('/department-members', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
-  try {
-    const { departmentId } = req.query;
-    
-    if (!departmentId) {
-      return res.status(400).json({ error: 'Department ID required' });
-    }
-    
-    const [members] = await db.query(
-      `SELECT id, name, email, role, profile_picture, created_at
-       FROM users
-       WHERE department_id = ? AND institution_id = ? AND role IN ('teacher', 'admin')
-       ORDER BY name ASC`,
-      [departmentId, req.institutionId]
-    );
-    
-    res.json(members);
-  } catch (error) {
-    console.error('Error fetching department members:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+    const { data, error } = await supabase
+      .from('resource_folders')
+      .insert({
+        institution_id: req.user.institutionId,
+        created_by: req.user.id,
+        name,
+        description: description || null,
+        department_id: departmentId || null,
+        parent_folder_id: parentFolderId || null,
+      })
+      .select('id, name, created_at')
+      .single();
 
-// Get report templates
-router.get('/templates', authenticate, tenantMiddleware, requireTenant, async (req, res) => {
-  try {
-    const { departmentId, templateType } = req.query;
-    
-    let query = `
-      SELECT rt.*, u.name as creator_name
-      FROM report_templates rt
-      LEFT JOIN users u ON rt.created_by = u.id
-      WHERE rt.institution_id = ? AND rt.is_active = TRUE
-    `;
-    const params = [req.institutionId];
-    
-    if (departmentId) {
-      query += ' AND (rt.department_id = ? OR rt.department_id IS NULL)';
-      params.push(departmentId);
-    }
-    
-    if (templateType) {
-      query += ' AND rt.template_type = ?';
-      params.push(templateType);
-    }
-    
-    query += ' ORDER BY rt.created_at DESC';
-    
-    const [templates] = await db.query(query, params);
-    res.json(templates);
-  } catch (error) {
-    console.error('Error fetching templates:', error);
-    res.status(500).json({ error: 'Server error' });
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not create folder' });
   }
 });
 

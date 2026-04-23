@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { uploadAndSign, removeFile, buildStoragePath } = require('../services/storageService');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -52,8 +53,6 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
     }
 
     const studentAllowed = ['application/pdf', 'image/jpeg', 'image/png'];
-    const isAdmin  = membership.role === 'admin';
-    const isTeacher = membership.role === 'teacher';
     const isStudent = membership.role === 'student';
 
     if (isStudent && !studentAllowed.includes(req.file.mimetype)) {
@@ -61,28 +60,8 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
     }
 
     const { originalname, mimetype, buffer, size } = req.file;
-
-    // Build a unique storage path: groupId/timestamp-filename
-    const timestamp = Date.now();
-    const safeName = originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const storagePath = `${groupId}/${timestamp}-${safeName}`;
-
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('studium-files')
-      .upload(storagePath, buffer, {
-        contentType: mimetype,
-        upsert: false
-      });
-
-    if (uploadError) throw uploadError;
-
-    // Get a signed URL valid for 1 year (files are semi-permanent)
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from('studium-files')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
-
-    if (signedError) throw signedError;
+    const storagePath = buildStoragePath(groupId, originalname);
+    const fileUrl = await uploadAndSign(storagePath, buffer, mimetype);
 
     // Save file record to DB
     const { data: file, error: dbError } = await supabase
@@ -91,7 +70,7 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
         group_id: groupId,
         uploaded_by: req.user.id,
         filename: originalname,
-        file_url: signedData.signedUrl,
+        file_url: fileUrl,
         file_type: mimetype,
         size_bytes: size,
         storage_path: storagePath,
@@ -190,9 +169,7 @@ router.delete('/:groupId/:fileId', async (req, res) => {
     }
 
     // Delete from Supabase Storage
-    await supabase.storage
-      .from('studium-files')
-      .remove([file.storage_path]);
+    await removeFile(file.storage_path);
 
     // Delete from DB
     await supabase.from('files').delete().eq('id', fileId);

@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { getOrCreateConversation, getOtherId } = require('../services/dmService');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -54,36 +55,7 @@ router.post('/conversations', async (req, res) => {
     }
 
     // Ensure consistent ordering so we never create duplicates
-    const [user1_id, user2_id] = [req.user.id, userId].sort();
-
-    // Check if conversation already exists  + 
-    let { data: convo } = await supabase
-      .from('conversations')
-      .select(`
-        id, created_at,
-        user1:user1_id (id, name, email, role),
-        user2:user2_id (id, name, email, role)
-      `)
-      .eq('user1_id', user1_id)
-      .eq('user2_id', user2_id)
-      .single();
-
-    // Create if it doesn't exist
-    if (!convo) {
-      const { data: newConvo, error } = await supabase
-        .from('conversations')
-        .insert({ user1_id, user2_id })
-        .select(`
-          id, created_at,
-          user1:user1_id (id, name, email, role),
-          user2:user2_id (id, name, email, role)
-        `)
-        .single();
-
-      if (error) throw error;
-      convo = newConvo;
-    }
-
+    const convo = await getOrCreateConversation(req.user.id, userId);
     res.json(convo);
   } catch (err) {
     console.error(err);
@@ -155,10 +127,7 @@ router.get('/conversations/:id/messages', async (req, res) => {
       return res.status(403).json({ error: 'Not your conversation' });
     }
 
-    let data, error;
-
-    // Try with reactions + edited + reply_to
-    ({ data, error } = await supabase
+    const { data, error } = await supabase
       .from('direct_messages')
       .select(`
         id, content, read, created_at, edited, reply_to,
@@ -167,32 +136,7 @@ router.get('/conversations/:id/messages', async (req, res) => {
         replied_message:reply_to (id, content, sender:sender_id (id, name))
       `)
       .eq('conversation_id', req.params.id)
-      .order('created_at', { ascending: true }));
-
-    // Fallback: without reply columns
-    if (error) {
-      ({ data, error } = await supabase
-        .from('direct_messages')
-        .select(`
-          id, content, read, created_at, edited,
-          sender:sender_id (id, name, avatar_url),
-          dm_reactions (emoji, user_id)
-        `)
-        .eq('conversation_id', req.params.id)
-        .order('created_at', { ascending: true }));
-    }
-
-    // Fallback: without reactions/edited
-    if (error) {
-      ({ data, error } = await supabase
-        .from('direct_messages')
-        .select(`
-          id, content, read, created_at,
-          sender:sender_id (id, name, avatar_url)
-        `)
-        .eq('conversation_id', req.params.id)
-        .order('created_at', { ascending: true }));
-    }
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
 
@@ -226,23 +170,12 @@ router.patch('/messages/:id/edit', async (req, res) => {
     if (!msg) return res.status(404).json({ error: 'Message not found' });
     if (msg.sender_id !== req.user.id) return res.status(403).json({ error: 'You can only edit your own messages' });
 
-    // Try with edited flag, fall back if column doesn't exist yet
-    let data, error;
-    ({ data, error } = await supabase
+    const { data, error } = await supabase
       .from('direct_messages')
       .update({ content: content.trim(), edited: true })
       .eq('id', req.params.id)
       .select('id, content, edited')
-      .single());
-
-    if (error) {
-      ({ data, error } = await supabase
-        .from('direct_messages')
-        .update({ content: content.trim() })
-        .eq('id', req.params.id)
-        .select('id, content')
-        .single());
-    }
+      .single();
 
     if (error) throw error;
 
@@ -255,7 +188,7 @@ router.patch('/messages/:id/edit', async (req, res) => {
 
     const io = req.app.get('io');
     if (io && convo) {
-      const otherId = convo.user1_id === req.user.id ? convo.user2_id : convo.user1_id;
+      const otherId = getOtherId(convo, req.user.id);
       io.to(`user:${req.user.id}`).to(`user:${otherId}`)
         .emit('dm_message_edited', { conversationId: msg.conversation_id, messageId: req.params.id, content: data.content });
     }
@@ -313,7 +246,7 @@ router.post('/messages/:id/reactions', async (req, res) => {
 
     const io = req.app.get('io');
     if (io) {
-      const otherId = convo.user1_id === req.user.id ? convo.user2_id : convo.user1_id;
+      const otherId = getOtherId(convo, req.user.id);
       io.to(`user:${req.user.id}`).to(`user:${otherId}`)
         .emit('dm_message_reaction', { conversationId: msg.conversation_id, messageId: req.params.id, reactions: reactions || [] });
     }
@@ -347,7 +280,7 @@ router.delete('/messages/:id', async (req, res) => {
 
     const io = req.app.get('io');
     if (io && convo) {
-      const otherId = convo.user1_id === req.user.id ? convo.user2_id : convo.user1_id;
+      const otherId = getOtherId(convo, req.user.id);
       io.to(`user:${req.user.id}`).to(`user:${otherId}`)
         .emit('dm_message_deleted', { conversationId: msg.conversation_id, messageId: req.params.id });
     }

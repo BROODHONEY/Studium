@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
+import { getStoredInstitution, clearStoredInstitution } from '../utils/institution';
 
 export default function LoginPage() {
   const { login }   = useAuth();
@@ -14,22 +15,12 @@ export default function LoginPage() {
   const [institution, setInstitution] = useState(null);
 
   useEffect(() => {
-    // Check if institution is selected
-    const instId = localStorage.getItem('institutionId');
-    const instName = localStorage.getItem('institutionName');
-    const instSubdomain = localStorage.getItem('institutionSubdomain');
-    
-    if (!instId || !instName || !instSubdomain) {
-      // Redirect to institution select if not set
+    const inst = getStoredInstitution();
+    if (!inst) {
       navigate('/institution-select');
       return;
     }
-    
-    setInstitution({ 
-      id: instId, 
-      name: instName, 
-      subdomain: instSubdomain 
-    });
+    setInstitution(inst);
   }, [navigate]);
 
   const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -141,10 +132,7 @@ export default function LoginPage() {
           </p>
           <button
             onClick={() => {
-              localStorage.removeItem('institutionId');
-              localStorage.removeItem('institutionName');
-              localStorage.removeItem('institutionSubdomain');
-              localStorage.removeItem('institutionEmailDomain');
+              clearStoredInstitution();
               navigate('/institution-select');
             }}
             style={{

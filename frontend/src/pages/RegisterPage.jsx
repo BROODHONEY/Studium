@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { authAPI, institutionsAPI } from '../services/api';
 import AuthLayout from '../components/AuthLayout';
+import { getStoredInstitution, clearStoredInstitution } from '../utils/institution';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -21,24 +22,18 @@ export default function RegisterPage() {
   const isStudent = form.role === 'student';
 
   useEffect(() => {
-    const instId = localStorage.getItem('institutionId');
-    const instName = localStorage.getItem('institutionName');
-    const instSubdomain = localStorage.getItem('institutionSubdomain');
-    const instDomain = localStorage.getItem('institutionEmailDomain');
-
-    if (!instId || !instName || !instSubdomain) {
+    const inst = getStoredInstitution();
+    if (!inst) {
       navigate('/institution-select');
       return;
     }
-
-    setInstitution({ id: instId, name: instName, subdomain: instSubdomain, emailDomain: instDomain });
+    setInstitution(inst);
 
     const fetchDepartments = async () => {
       setLoadingDepts(true);
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        const response = await fetch(`${apiUrl}/departments/public?institutionId=${instId}`);
-        if (response.ok) setDepartments(await response.json());
+        const res = await institutionsAPI.departments(inst.id);
+        setDepartments(res.data);
       } catch (err) {
         console.error('Error fetching departments:', err);
       } finally {
@@ -254,10 +249,7 @@ export default function RegisterPage() {
           </p>
           <button
             onClick={() => {
-              localStorage.removeItem('institutionId');
-              localStorage.removeItem('institutionName');
-              localStorage.removeItem('institutionSubdomain');
-              localStorage.removeItem('institutionEmailDomain');
+              clearStoredInstitution();
               navigate('/institution-select');
             }}
             style={{ background: 'transparent', border: 'none', color: '#555', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', textDecoration: 'underline', padding: 0 }}

@@ -310,7 +310,7 @@ router.post('/create-institution', async (req, res) => {
   }
 });
 
-// Mock payment processing
+// Mock payment processing — REPLACE with real payment gateway (Stripe/Razorpay) before production
 router.post('/process-payment', async (req, res) => {
   try {
     const { plan, token } = req.body;

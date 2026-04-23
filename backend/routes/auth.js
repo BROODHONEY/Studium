@@ -4,34 +4,14 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/db');
 const { sendEmail } = require('../config/email');
+const { validate, schemas } = require('../middleware/validate');
 
 const router = express.Router();
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', validate(schemas.register), async (req, res) => {
   const { name, email, phone, password, role, roll_no, department, year, institutionId, devBypass } = req.body;
-
-  if (!name || !password || !email) {
-    return res.status(400).json({ error: 'Name, password, and email are required' });
-  }
-
-  if (!institutionId) {
-    return res.status(400).json({ error: 'Institution is required' });
-  }
-
-  if (!['teacher', 'student'].includes(role)) {
-    return res.status(400).json({ error: 'Role must be teacher or student' });
-  }
-
-  if (role === 'student') {
-    if (!roll_no || !roll_no.trim()) return res.status(400).json({ error: 'Roll number is required for students' });
-    if (!department || !department.trim()) return res.status(400).json({ error: 'Department is required for students' });
-    if (!year || ![1, 2, 3, 4].includes(Number(year))) return res.status(400).json({ error: 'Year (1–4) is required for students' });
-  }
-
-  if (role === 'teacher') {
-    if (!department || !department.trim()) return res.status(400).json({ error: 'Department is required for teachers' });
-  }
+  // Validation already handled by middleware — no manual checks needed here
 
   try {
     // Fetch institution to check allowed domain
@@ -187,16 +167,8 @@ router.post('/superadmin-login', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', validate(schemas.login), async (req, res) => {
   const { email, phone, password, institutionId } = req.body;
-
-  if (!password || (!email && !phone)) {
-    return res.status(400).json({ error: 'Password and email or phone are required' });
-  }
-
-  if (!institutionId) {
-    return res.status(400).json({ error: 'Institution is required' });
-  }
 
   try {
     let query = supabase.from('users').select('*').eq('institution_id', institutionId);

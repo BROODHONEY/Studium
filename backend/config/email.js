@@ -43,7 +43,7 @@ let transporter;
 // Email templates
 const emailTemplates = {
   demoRequest: (data) => ({
-    to: process.env.ADMIN_EMAIL || 'rproshan11@gmail.com',
+    to: process.env.ADMIN_EMAIL,
     subject: `New Demo Request from ${data.institutionName}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -232,7 +232,7 @@ const emailTemplates = {
           <h3>Have Questions?</h3>
           <p>If you'd like to discuss this further or have any questions, please don't hesitate to reach out to us.</p>
           <p style="margin: 0;">
-            <strong>Email:</strong> <a href="mailto:${process.env.ADMIN_EMAIL || 'rproshan11@gmail.com'}" style="color: #A5A6F6;">${process.env.ADMIN_EMAIL || 'rproshan11@gmail.com'}</a>
+            <strong>Email:</strong> <a href="mailto:${process.env.ADMIN_EMAIL}" style="color: #A5A6F6;">${process.env.ADMIN_EMAIL}</a>
           </p>
         </div>
 
@@ -255,7 +255,7 @@ const sendEmail = async (template, data) => {
     
     const emailConfig = emailTemplates[template](data);
     const info = await transporter.sendMail({
-      from: `"Studi+" <${process.env.EMAIL_USER || 'noreply@studiplus.com'}>`,
+      from: `"Studi+" <${process.env.EMAIL_USER || process.env.EMAIL_FROM || 'noreply@studiplus.com'}>`,
       ...emailConfig
     });
     

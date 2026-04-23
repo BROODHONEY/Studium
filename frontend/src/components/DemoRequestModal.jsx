@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Modal from './ui/Modal';
+import { demoRequestsAPI } from '../services/api';
 
 export default function DemoRequestModal({ onClose }) {
   const [formData, setFormData] = useState({
@@ -14,19 +15,10 @@ export default function DemoRequestModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const response = await fetch(`${apiUrl}/demo-requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        setSubmitted(true);
-        setTimeout(() => onClose(), 2000);
-      }
+      await demoRequestsAPI.create(formData);
+      setSubmitted(true);
+      setTimeout(() => onClose(), 2000);
     } catch (error) {
       console.error('Error submitting demo request:', error);
     }

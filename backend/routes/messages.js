@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const { getOrCreateConversation } = require('../services/dmService');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -18,55 +19,37 @@ router.get('/:groupId/pinned', async (req, res) => {
 
     if (!membership) return res.status(403).json({ error: 'Not a member' });
 
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select(`id, content, type, created_at, pinned, pin_time,
-          users!sender_id (id, name, role, roll_no)`)
-        .eq('group_id', groupId)
-        .eq('pinned', true)
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('messages')
+      .select(`id, content, type, created_at, pinned, pin_time,
+        users!sender_id (id, name, role, roll_no)`)
+      .eq('group_id', groupId)
+      .eq('pinned', true)
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
+    if (error) throw error;
 
-      const nowMs = Date.now();
-      const expiredIds = [];
-      const filtered = (data || []).filter((m) => {
-        if (!m.pin_time) return true;
-        const exp = new Date(m.pin_time);
-        if (isNaN(exp.getTime())) return true; // unknown format => don't auto-expire
-        if (exp.getTime() <= nowMs) {
-          expiredIds.push(m.id);
-          return false;
-        }
-        return true;
-      });
-
-      if (expiredIds.length > 0) {
-        try {
-          await supabase
-            .from('messages')
-            .update({ pinned: false, pin_time: null })
-            .in('id', expiredIds);
-        } catch (cleanupErr) {
-          // Best-effort cleanup; still return filtered data.
-        }
+    const nowMs = Date.now();
+    const expiredIds = [];
+    const filtered = (data || []).filter((m) => {
+      if (!m.pin_time) return true;
+      const exp = new Date(m.pin_time);
+      if (isNaN(exp.getTime())) return true;
+      if (exp.getTime() <= nowMs) {
+        expiredIds.push(m.id);
+        return false;
       }
+      return true;
+    });
 
-      return res.json(filtered);
-    } catch {
-      // Backward-compatible fallback (schema without `pin_time`)
-      const { data, error } = await supabase
+    if (expiredIds.length > 0) {
+      await supabase
         .from('messages')
-        .select(`id, content, type, created_at, pinned,
-          users!sender_id (id, name, role, roll_no)`)
-        .eq('group_id', groupId)
-        .eq('pinned', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return res.json(data);
+        .update({ pinned: false, pin_time: null })
+        .in('id', expiredIds);
     }
+
+    return res.json(filtered);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not fetch pinned messages' });
@@ -103,35 +86,13 @@ router.get('/:groupId', async (req, res) => {
       return q;
     };
 
-    // Try full schema first, fall back progressively
-    let data, error;
-
-    ({ data, error } = await buildQuery(`
+    const { data, error } = await buildQuery(`
       id, content, type, created_at, edited, reply_to,
       users!sender_id (id, name, role, roll_no, avatar_url),
       files!file_id (id, filename, file_url, file_type, size_bytes),
       message_reactions (emoji, user_id),
       replied_message:reply_to (id, content, users!sender_id (id, name))
-    `));
-
-    if (error) {
-      // Fallback: without reply columns
-      ({ data, error } = await buildQuery(`
-        id, content, type, created_at, edited,
-        users!sender_id (id, name, role, roll_no, avatar_url),
-        files!file_id (id, filename, file_url, file_type, size_bytes),
-        message_reactions (emoji, user_id)
-      `));
-    }
-
-    if (error) {
-      // Fallback: without reactions/edited
-      ({ data, error } = await buildQuery(`
-        id, content, type, created_at,
-        users!sender_id (id, name, role, roll_no, avatar_url),
-        files!file_id (id, filename, file_url, file_type, size_bytes)
-      `));
-    }
+    `);
 
     if (error) throw error;
 
@@ -206,16 +167,7 @@ router.patch('/:messageId/pin', async (req, res) => {
       updatePayload.pin_time = expiresAtIso;
     }
 
-    try {
-      await supabase.from('messages').update(updatePayload).eq('id', messageId);
-    } catch (updateErr) {
-      // Fallback for schemas without `pin_time`
-      if (pin_ttl_minutes !== undefined || pin_time !== undefined) {
-        await supabase.from('messages').update({ pinned: true }).eq('id', messageId);
-      } else {
-        throw updateErr;
-      }
-    }
+    await supabase.from('messages').update(updatePayload).eq('id', messageId);
 
     const io = req.app.get('io');
     // Auto-unpin after expiry (best-effort, server-memory based).
@@ -230,49 +182,22 @@ router.patch('/:messageId/pin', async (req, res) => {
 
         setTimeout(async () => {
           try {
-            let currentPinned = null;
-            let currentPinTime = null;
+            const { data: current } = await supabase
+              .from('messages')
+              .select('pinned, pin_time')
+              .eq('id', messageId)
+              .single();
 
-            try {
-              const { data: current } = await supabase
-                .from('messages')
-                .select('pinned, pin_time')
-                .eq('id', messageId)
-                .single();
-              currentPinned = current?.pinned;
-              currentPinTime = current?.pin_time;
-            } catch {
-              // Schema without `pin_time`
-              const { data: current } = await supabase
-                .from('messages')
-                .select('pinned')
-                .eq('id', messageId)
-                .single();
-              currentPinned = current?.pinned;
-            }
-
-            const shouldUnpin = (() => {
-              if (currentPinned !== true) return false;
-              if (!currentPinTime) return true;
-              const curr = new Date(currentPinTime);
-              const exp = new Date(expiresAtIso);
-              if (isNaN(curr.getTime()) || isNaN(exp.getTime())) return true;
-              return curr.getTime() === exp.getTime();
-            })();
+            const shouldUnpin =
+              current?.pinned === true &&
+              (!current.pin_time || new Date(current.pin_time).getTime() === new Date(expiresAtIso).getTime());
 
             if (!shouldUnpin) return;
 
-            try {
-              await supabase
-                .from('messages')
-                .update({ pinned: false, pin_time: null })
-                .eq('id', messageId);
-            } catch {
-              await supabase
-                .from('messages')
-                .update({ pinned: false })
-                .eq('id', messageId);
-            }
+            await supabase
+              .from('messages')
+              .update({ pinned: false, pin_time: null })
+              .eq('id', messageId);
 
             io.to(message.group_id).emit('message_unpinned', {
               messageId,
@@ -282,7 +207,6 @@ router.patch('/:messageId/pin', async (req, res) => {
             // Ignore; pinned list endpoint will still filter expired pins.
           }
 
-          // If we hit setTimeout cap, re-schedule until it's actually time.
           if (new Date(expiresAtIso).getTime() - Date.now() > 0) {
             scheduleExpiry();
           }
@@ -329,11 +253,7 @@ router.patch('/:messageId/unpin', async (req, res) => {
       return res.status(403).json({ error: 'Only admins can unpin messages' });
     }
 
-    try {
-      await supabase.from('messages').update({ pinned: false, pin_time: null }).eq('id', messageId);
-    } catch {
-      await supabase.from('messages').update({ pinned: false }).eq('id', messageId);
-    }
+    await supabase.from('messages').update({ pinned: false, pin_time: null }).eq('id', messageId);
 
     const io = req.app.get('io');
     if (io) io.to(message.group_id).emit('message_unpinned', { messageId, groupId: message.group_id });
@@ -507,24 +427,7 @@ router.post('/reply-privately', async (req, res) => {
   }
 
   try {
-    const [user1_id, user2_id] = [req.user.id, targetUserId].sort();
-
-    let { data: convo } = await supabase
-      .from('conversations')
-      .select('id, user1_id, user2_id')
-      .eq('user1_id', user1_id)
-      .eq('user2_id', user2_id)
-      .single();
-
-    if (!convo) {
-      const { data: newConvo, error } = await supabase
-        .from('conversations')
-        .insert({ user1_id, user2_id })
-        .select('id, user1_id, user2_id')
-        .single();
-      if (error) throw error;
-      convo = newConvo;
-    }
+    const convo = await getOrCreateConversation(req.user.id, targetUserId);
 
     // Build message with structured private reply prefix
     // Strip file tokens from quoted content to avoid breaking the token boundary
