@@ -2,6 +2,9 @@
 ALTER TABLE institutions
   ADD COLUMN IF NOT EXISTS allowed_email_domain TEXT;
 
+-- Allow super admin users with no institution
+ALTER TABLE users ALTER COLUMN institution_id DROP NOT NULL;
+
 -- Add email verification fields to users
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE,

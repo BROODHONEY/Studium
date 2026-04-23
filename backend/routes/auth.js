@@ -146,6 +146,46 @@ router.get('/verify-email', async (req, res) => {
   }
 });
 
+// Super admin login (no institution required)
+router.post('/superadmin-login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  try {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('role', 'admin')
+      .is('institution_id', null)
+      .single();
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role, institutionId: null },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const { password_hash, verification_token, verification_token_expires, ...safeUser } = user;
+    res.json({ token, user: safeUser });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 // Login
 router.post('/login', async (req, res) => {
   const { email, phone, password, institutionId } = req.body;

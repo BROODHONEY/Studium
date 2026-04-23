@@ -309,7 +309,8 @@ function InstitutionsTable({ institutions, onStatusChange, onPlanChange, onDelet
           <thead className="bg-[#0A0A0A] border-b border-white/5">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Institution</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Subdomain</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Code</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Email Domain</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Plan</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
@@ -319,7 +320,7 @@ function InstitutionsTable({ institutions, onStatusChange, onPlanChange, onDelet
           <tbody className="divide-y divide-white/5">
             {institutions.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-6 py-12 text-center text-gray-400">
+                <td colSpan="7" className="px-6 py-12 text-center text-gray-400">
                   No institutions yet
                 </td>
               </tr>
@@ -330,7 +331,15 @@ function InstitutionsTable({ institutions, onStatusChange, onPlanChange, onDelet
                     <div className="font-medium text-white">{inst.name}</div>
                     <div className="text-sm text-gray-400">{inst.contact_email}</div>
                   </td>
-                  <td className="px-6 py-4 text-gray-300">{inst.subdomain}</td>
+                  <td className="px-6 py-4">
+                    <span className="font-mono text-sm text-[#A5A6F6] tracking-widest uppercase">{inst.subdomain}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {inst.allowed_email_domain
+                      ? <span className="text-sm text-green-400 font-mono">{inst.allowed_email_domain}</span>
+                      : <span className="text-sm text-gray-600 italic">any</span>
+                    }
+                  </td>
                   <td className="px-6 py-4">
                     <select
                       value={inst.plan}
