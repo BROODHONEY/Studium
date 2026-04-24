@@ -9,7 +9,9 @@ function validate(schema) {
   return (req, res, next) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      const message = result.error.errors[0]?.message || 'Invalid request body';
+      // Zod v4 uses .issues, v3 used .errors — support both
+      const issues = result.error.issues ?? result.error.errors ?? [];
+      const message = issues[0]?.message || 'Invalid request body';
       return res.status(400).json({ error: message });
     }
     req.body = result.data; // replace with coerced/parsed values
@@ -24,7 +26,7 @@ const registerSchema = z.object({
   email:         z.string().email('Invalid email'),
   password:      z.string().min(8, 'Password must be at least 8 characters'),
   role:          z.enum(['teacher', 'student'], { message: 'Role must be teacher or student' }),
-  institutionId: z.string().uuid('Invalid institution ID'),
+  institutionId: z.uuid('Invalid institution ID'),
   phone:         z.string().optional(),
   roll_no:       z.string().optional(),
   department:    z.string().optional(),
@@ -43,7 +45,7 @@ const registerSchema = z.object({
 
 const loginSchema = z.object({
   password:      z.string().min(1, 'Password is required'),
-  institutionId: z.string().uuid('Invalid institution ID'),
+  institutionId: z.uuid('Invalid institution ID'),
   email:         z.string().email().optional(),
   phone:         z.string().optional(),
 }).refine(d => d.email || d.phone, { message: 'Email or phone is required' });

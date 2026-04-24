@@ -4,6 +4,7 @@ import { useSocket } from '../context/SocketContext';
 import { groupsAPI } from '../services/api';
 import { NotificationProvider } from '../context/NotificationContext';
 import { useNotifications } from '../context/NotificationContext';
+import { getAvatarBg as avatarBg, getInitials as ini } from '../constants/theme';
 
 import logo from '../assets/logo.png';
 import GroupList from '../components/GroupList';
@@ -41,9 +42,7 @@ const NAV_META = {
   archive:       { label: 'Archive',       icon: 'M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z' },
 };
 
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#C0C1FF','#db2777','#d97706','#16a34a'];
-const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
-const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+// avatarBg and ini imported from constants/theme
 
 // -- Mobile bottom-tab button ---------------------------
 function TabBtn({ id, active, onClick, badge }) {

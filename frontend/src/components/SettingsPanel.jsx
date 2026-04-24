@@ -1,41 +1,26 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { profileAPI } from '../services/api';
+import { palette as T, getAvatarBg as avatarBg, getInitials as ini } from '../constants/theme';
 
-// -- Obsidian Flux tokens --------------------------------
-const T = {
-  bg:         '#181818',
-  surface:    '#1E1E1E',
+// Extra tokens not in the shared palette (SettingsPanel-specific)
+const Tx = {
   card:       '#252525',
-  border:     '#333333',
-  primary:    '#C0C1FF',
   primaryHi:  '#D4D5FF',
-  primaryLo:  'rgba(192,193,255,0.12)',
-  secondary:  '#FFB38E',
-  secondaryLo:'rgba(255,179,142,0.12)',
   tertiary:   '#9E9E9E',
-  text1:      '#F0F0F0',
-  text2:      '#9E9E9E',
-  text3:      '#555555',
-  danger:     '#EF4444',
-  dangerLo:   'rgba(239,68,68,0.10)',
   green:      '#22C55E',
   greenLo:    'rgba(34,197,94,0.12)',
 };
 
-const AVATAR_COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
-const avatarBg = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
-const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-
 const inp = {
-  width: '100%', background: T.card, border: `1px solid ${T.border}`, borderRadius: 10,
+  width: '100%', background: Tx.card, border: `1px solid ${T.border}`, borderRadius: 10,
   padding: '10px 14px', fontSize: 13, fontWeight: 300, color: T.text1,
   outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s',
 };
 const lbl = { fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 6 };
-const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' };
+const card = { background: Tx.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' };
 const sectionTitle = { fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' };
 const rowStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 };
 const divider = { height: 1, background: T.border, margin: '16px 0' };
@@ -139,7 +124,7 @@ function EntryModal({ title, accentColor, onClose, onSave, canSave, children }) 
         {/* Footer */}
         <div style={{ display: 'flex', gap: 10, padding: '16px 20px', borderTop: `1px solid ${T.border}`, flexShrink: 0 }}>
           <button onClick={onSave} disabled={!canSave}
-            style={{ flex: 1, padding: '11px', borderRadius: 10, background: canSave ? accentColor : T.card, border: 'none', color: canSave ? '#131313' : T.text3, fontSize: 13, fontWeight: 600, cursor: canSave ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+            style={{ flex: 1, padding: '11px', borderRadius: 10, background: canSave ? accentColor : Tx.card, border: 'none', color: canSave ? '#131313' : T.text3, fontSize: 13, fontWeight: 600, cursor: canSave ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
             Save
           </button>
           <button onClick={onClose}
@@ -181,21 +166,21 @@ function CertificateModal({ initial, onClose, onSave }) {
   const set = (k, v) => setD(p => ({ ...p, [k]: v }));
   const canSave = !!d.title.trim() && !!d.issuedBy.trim() && !!d.date;
   return (
-    <EntryModal title={initial ? 'Edit Certificate' : 'Add Certificate'} accentColor={T.green} onClose={onClose} onSave={() => onSave(d)} canSave={canSave}>
+    <EntryModal title={initial ? 'Edit Certificate' : 'Add Certificate'} accentColor={Tx.green} onClose={onClose} onSave={() => onSave(d)} canSave={canSave}>
       <div><label style={lbl}>Certificate Name *</label>
         <input value={d.title} onChange={e => set('title', e.target.value)} placeholder="e.g. AWS Certified Solutions Architect" style={inp}
-          onFocus={e => e.target.style.borderColor = T.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
+          onFocus={e => e.target.style.borderColor = Tx.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
       <div><label style={lbl}>Issued By *</label>
         <input value={d.issuedBy} onChange={e => set('issuedBy', e.target.value)} placeholder="e.g. Amazon Web Services" style={inp}
-          onFocus={e => e.target.style.borderColor = T.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
+          onFocus={e => e.target.style.borderColor = Tx.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
       <div><label style={lbl}>Date of Obtaining *</label>
         <input type="date" value={d.date} onChange={e => set('date', e.target.value)} style={{ ...inp, colorScheme: 'dark' }}
-          onFocus={e => e.target.style.borderColor = T.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
+          onFocus={e => e.target.style.borderColor = Tx.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
       <div><label style={lbl}>Course Learning Outcomes <span style={{ color: T.text3, fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
         <textarea value={d.outcomes} onChange={e => set('outcomes', e.target.value)} placeholder="What did you learn from this course?" rows={3}
           style={{ ...inp, resize: 'vertical', lineHeight: 1.5 }}
-          onFocus={e => e.target.style.borderColor = T.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
-      <AttachmentUploader attachments={d.attachments} onChange={v => set('attachments', v)} accentColor={T.green} />
+          onFocus={e => e.target.style.borderColor = Tx.green} onBlur={e => e.target.style.borderColor = T.border} /></div>
+      <AttachmentUploader attachments={d.attachments} onChange={v => set('attachments', v)} accentColor={Tx.green} />
     </EntryModal>
   );
 }
@@ -323,7 +308,7 @@ function SectionList({ label, accentColor, accentLo, icon, items, onAdd, onEdit,
                             <img src={att.url} alt={att.name} style={{ height: 56, width: 80, objectFit: 'cover', borderRadius: 8, border: `1px solid ${T.border}`, display: 'block' }} />
                           </a>
                         : <a key={ai} href={att.url} target="_blank" rel="noreferrer"
-                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: T.card, border: `1px solid ${T.border}`, textDecoration: 'none', transition: 'border-color 0.15s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: Tx.card, border: `1px solid ${T.border}`, textDecoration: 'none', transition: 'border-color 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
                             onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill={accentColor}><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/></svg>
@@ -446,7 +431,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
 
       {/* ââââ Info strip (students) ââââ */}
       {isStudent && (
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+        <div style={{ background: Tx.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
           {[
             { label: 'Department',    value: user?.department },
             { label: 'Year / Tenure', value: user?.year },
@@ -464,7 +449,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
       {isStudent && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {/* CGPA display */}
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: Tx.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', bottom: -10, right: -10, width: 70, height: 70, borderRadius: '50%', background: 'rgba(192,193,255,0.05)', pointerEvents: 'none' }} />
             <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>Academic Performance</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
@@ -479,7 +464,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
             </p>
           </div>
           {/* Account info */}
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '18px 20px' }}>
+          <div style={{ background: Tx.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '18px 20px' }}>
             <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 12px' }}>Account Info</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
@@ -567,7 +552,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
               onDelete={(i) => handleDelete('internship', i)} />
           </div>
           <div style={card}>
-            <SectionList label="Certificates" accentColor={T.green} accentLo={T.greenLo}
+            <SectionList label="Certificates" accentColor={Tx.green} accentLo={Tx.greenLo}
               icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/></svg>}
               items={certificates}
               onAdd={() => openAdd('certificate')}
@@ -762,11 +747,11 @@ function SignOutButton() {
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 12,
           padding: '11px 14px', borderRadius: 12, border: `1px solid ${T.border}`,
-          cursor: 'pointer', background: T.card, color: T.text2,
+          cursor: 'pointer', background: Tx.card, color: T.text2,
           transition: 'all 0.15s', fontFamily: 'Inter, sans-serif',
         }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = `${T.danger}60`; e.currentTarget.style.color = T.danger; e.currentTarget.style.background = T.dangerLo; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text2; e.currentTarget.style.background = T.card; }}>
+        onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text2; e.currentTarget.style.background = Tx.card; }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
         </svg>

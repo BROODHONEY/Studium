@@ -1,23 +1,7 @@
 import { useState } from 'react';
 import { profileAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-
-const T = {
-  bg:       '#111116',
-  surface:  '#1A1A22',
-  raised:   '#222230',
-  border:   '#2A2A3A',
-  borderHi: '#3A3A50',
-  primary:  '#C0C1FF',
-  primaryLo:'rgba(192,193,255,0.10)',
-  primaryMid:'rgba(192,193,255,0.20)',
-  secondary:'#FFB38E',
-  text1:    '#F0F0F0',
-  text2:    '#9E9E9E',
-  text3:    '#555566',
-  success:  '#22C55E',
-  danger:   '#EF4444',
-};
+import { palette as T } from '../constants/theme';
 
 const inp = {
   width: '100%', background: T.raised, border: `1px solid ${T.border}`,

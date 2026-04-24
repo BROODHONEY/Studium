@@ -8,31 +8,27 @@ import MessageContent from './ui/MessageContent';
 import FormatToolbar from './ui/FormatToolbar';
 import { formatTime, getDateLabel } from '../utils/time';
 
-const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸ ', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
+import { palette as C, getAvatarBg, getInitials } from '../constants/theme';
 
-// -- Design tokens - new palette ------------------------
-const C = {
-  bg:        '#181818',
-  surface:   '#1E1E1E',
-  raised:    '#252525',
-  overlay:   '#2E2E2E',
-  border:    '#333333',
-  borderHi:  '#444444',
-  primary:   '#C0C1FF',
-  primaryHi: '#D4D5FF',
-  primaryLo: 'rgba(192,193,255,0.12)',
-  primaryMid:'rgba(192,193,255,0.22)',
-  secondary: '#FFB38E',
-  secondaryHi:'#FFC9A8',
-  secondaryLo:'rgba(255,179,142,0.12)',
-  tertiary:  '#9E9E9E',
-  tertiaryHi:'#BDBDBD',
-  tertiaryLo:'rgba(158,158,158,0.12)',
-  text1:     '#F0F0F0',
-  text2:     '#9E9E9E',
-  text3:     '#555555',
-  danger:    '#EF4444',
-  dangerLo:  'rgba(239,68,68,0.10)',
+const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+
+// Module-level helpers (pure, no component state)
+const getPinExpiry = (pinTime) => {
+  if (!pinTime) return null;
+  const d = new Date(pinTime);
+  return isNaN(d.getTime()) ? null : d;
+};
+const getRemainingMinutes = (pinTime) => {
+  const d = getPinExpiry(pinTime);
+  if (!d) return null;
+  const diff = d.getTime() - Date.now();
+  return diff <= 0 ? 0 : Math.ceil(diff / 60000);
+};
+const formatPinLabel = (pinTime) => {
+  const r = getRemainingMinutes(pinTime);
+  if (r === null) return null;
+  if (r === 0) return 'Unpinning soon';
+  return r < 60 ? `${r}m left` : `${Math.ceil(r / 60)}h left`;
 };
 
 export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMessageId, onHighlightClear, draft, onDraftChange }) {
@@ -45,9 +41,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
   const [loading, setLoading]       = useState(true);
   const [adminsOnly, setAdminsOnly] = useState(false);
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
-  const [showPinned, setShowPinned] = useState(false);
+  const [_showPinned, _setShowPinned] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch]   = useState(false);
+  const [_showSearch, _setShowSearch]   = useState(false);
   const [typingUsers, setTypingUsers] = useState({});
 
   const [members, setMembers]           = useState([]);
@@ -58,7 +54,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   const [fileRefs, setFileRefs] = useState([]);
 
-  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  const [_highlightedMessageId, setHighlightedMessageId] = useState(null);
   const highlightTimeoutRef = useRef(null);
   const messageRefs = useRef(new Map());
 
@@ -118,7 +114,11 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
 
   useEffect(() => {
     if (!group) return;
-    setMessages([]); setLoading(true);
+    // Reset state for new group, then fetch
+    Promise.resolve().then(() => {
+      setMessages([]);
+      setLoading(true);
+    });
     messagesAPI.list(group.id).then(res => setMessages(res.data)).catch(console.error).finally(() => setLoading(false));
     messagesAPI.pinned(group.id).then(res => setPinnedMsgs(res.data)).catch(console.error);
     groupsAPI.get(group.id).then(res => { setAdminsOnly(res.data.admins_only || false); setMembers(res.data.members || []); }).catch(console.error);
@@ -227,7 +227,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     const fileTokens = fileRefs.map(f => `{{file:${f.id}:${f.filename}:${f.file_url}}}`).join(' ');
     const encoded = encodeForSend(text.trim());
     const content = [encoded, fileTokens].filter(Boolean).join(' ');
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${crypto.randomUUID()}`;
     const optimistic = { id: tempId, content, type: 'text', created_at: new Date().toISOString(), group_id: group.id, users: user, sender: user, ...(replyTo ? { replied_message: { id: replyTo.id, content: replyTo.content, users: { name: replyTo.senderName } } } : {}) };
     setMessages(prev => [...prev, optimistic]);
     socket.emit('send_message', { groupId: group.id, content, type: 'text', ...(replyTo ? { replyTo: replyTo.id } : {}) });
@@ -308,9 +308,6 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     } catch (err) { console.error(err); }
   };
 
-  const getPinExpiry = (pinTime) => { if (!pinTime) return null; const d = new Date(pinTime); return isNaN(d.getTime()) ? null : d; };
-  const getRemainingMinutes = (pinTime) => { const d = getPinExpiry(pinTime); if (!d) return null; const diff = d.getTime() - Date.now(); return diff <= 0 ? 0 : Math.ceil(diff / 60000); };
-  const formatPinLabel = (pinTime) => { const r = getRemainingMinutes(pinTime); if (r === null) return null; if (r === 0) return 'Unpinning soon'; if (r < 60) return `${r}m left`; return `${Math.ceil(r/60)}h left`; };
 
   const handleKeyDown = (e) => {
     if (mentionQuery !== null && filteredMembers.length > 0) {
@@ -356,9 +353,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     setTimeout(() => { if (textareaRef.current) { const pos = before.length + displayToken.length + 1; textareaRef.current.focus(); textareaRef.current.setSelectionRange(pos, pos); } }, 0);
   };
 
-  const initials = (name) => name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-  const AVATAR_PALETTE = ['#C0C1FF','#FFB38E','#9E9E9E','#22C55E','#D4D5FF','#FFC9A8'];
-  const avatarBg = (name) => AVATAR_PALETTE[(name?.charCodeAt(0) || 0) % AVATAR_PALETTE.length];
+  const initials = getInitials;
+  const avatarBg = getAvatarBg;
+
 
   if (!group) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: 'Inter, sans-serif' }}>

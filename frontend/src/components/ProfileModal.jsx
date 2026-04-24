@@ -1,24 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { profileAPI } from '../services/api';
-
-const COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
-const avatarBg = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
-const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-
-const T = {
-  bg:        '#181818',
-  surface:   '#1E1E1E',
-  card:      '#252525',
-  border:    '#333333',
-  primary:   '#C0C1FF',
-  primaryLo: 'rgba(192,193,255,0.12)',
-  secondary: '#FFB38E',
-  secondaryLo:'rgba(255,179,142,0.12)',
-  text1:     '#F0F0F0',
-  text2:     '#9E9E9E',
-  text3:     '#555555',
-};
+import { palette as T, getAvatarBg as avatarBg, getInitials as ini } from '../constants/theme';
 
 // -- Mini card modal shown when clicking any user -------
 export default function ProfileModal({ userId, onClose, onViewFull }) {
@@ -29,11 +12,12 @@ export default function ProfileModal({ userId, onClose, onViewFull }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     profileAPI.get(userId)
-      .then(res => setProfile(res.data))
+      .then(res => { if (!cancelled) setProfile(res.data); })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [userId]);
 
   const isStudent = profile?.role === 'student';

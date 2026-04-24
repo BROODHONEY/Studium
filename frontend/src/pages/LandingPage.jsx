@@ -1,19 +1,30 @@
 import { useState, useEffect } from 'react';
 import DemoRequestModal from '../components/DemoRequestModal';
 import InstitutionLoginModal from '../components/InstitutionLoginModal';
+import { demoRequestsAPI } from '../services/api';
 
 export default function LandingPage() {
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [contactForm, setContactForm] = useState({ institutionName: '', email: '' });
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await demoRequestsAPI.create({ institutionName: contactForm.institutionName, email: contactForm.email });
+      setContactSubmitted(true);
+    } catch {
+      setShowDemoModal(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-x-hidden">
@@ -222,13 +233,16 @@ export default function LandingPage() {
                 Get in touch with us to set up a custom solution. Our team will reach out within 24 hours.
               </p>
               
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setShowDemoModal(true); }}>
+              <form className="space-y-6" onSubmit={handleContactSubmit}>
                 <div>
                   <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
                     Institution Name
                   </label>
                   <input
                     type="text"
+                    required
+                    value={contactForm.institutionName}
+                    onChange={e => setContactForm(p => ({ ...p, institutionName: e.target.value }))}
                     className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
                     placeholder="Enter your institution name"
                   />
@@ -239,16 +253,22 @@ export default function LandingPage() {
                   </label>
                   <input
                     type="email"
+                    required
+                    value={contactForm.email}
+                    onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))}
                     className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
                     placeholder="admin@institution.edu"
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="w-full bg-[#A5A6F6] text-black px-6 py-3.5 rounded-lg font-medium hover:bg-[#9394E8] transition-all duration-200 hover:shadow-lg hover:shadow-[#A5A6F6]/30"
-                >
-                  Submit Inquiry
-                </button>
+                {contactSubmitted ? (
+                  <div className="w-full py-3.5 rounded-lg text-center text-sm font-medium bg-white/5 text-[#A5A6F6] border border-[#A5A6F6]/30">
+                    ✓ Request received — we'll be in touch within 24 hours
+                  </div>
+                ) : (
+                  <button type="submit" className="w-full bg-[#A5A6F6] text-black px-6 py-3.5 rounded-lg font-medium hover:bg-[#9394E8] transition-all duration-200 hover:shadow-lg hover:shadow-[#A5A6F6]/30">
+                    Submit Inquiry
+                  </button>
+                )}
               </form>
             </div>
           </div>

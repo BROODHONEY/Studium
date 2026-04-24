@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, institutionsAPI } from '../services/api';
 import AuthLayout from '../components/AuthLayout';
@@ -84,18 +84,9 @@ export default function RegisterPage() {
     }
   };
 
-  const inp = {
-    width: '100%', background: '#1E1E1E', border: '1px solid #2E2E2E',
-    borderRadius: 12, padding: '11px 14px', fontSize: 13, fontWeight: 300,
-    color: '#F0F0F0', outline: 'none', fontFamily: 'Inter, sans-serif',
-    boxSizing: 'border-box', transition: 'border-color 0.15s',
-  };
-  const lbl = {
-    fontSize: 11, fontWeight: 500, color: '#666', textTransform: 'uppercase',
-    letterSpacing: '0.08em', display: 'block', marginBottom: 6,
-  };
-  const focus = e => e.target.style.borderColor = '#6366F1';
-  const blur = e => e.target.style.borderColor = '#2E2E2E';
+  const EyeIcon = ({ visible }) => visible
+    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
   // Email sent screen
   if (registered) {
@@ -148,7 +139,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={lbl}>I am a</label>
+            <label className="form-label">I am a</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {['student', 'teacher'].map(r => (
                 <button key={r} type="button"
@@ -168,17 +159,15 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label style={lbl}>Full name</label>
-            <input style={inp} type="text" name="name" value={form.name}
-              onChange={handleChange} placeholder="eg. Ravi Kumar" required
-              onFocus={focus} onBlur={blur} />
+            <label className="form-label">Full name</label>
+            <input className="form-input" type="text" name="name" value={form.name}
+              onChange={handleChange} placeholder="eg. Ravi Kumar" required />
           </div>
 
           <div>
-            <label style={lbl}>Department</label>
-            <select style={{ ...inp, colorScheme: 'dark' }} name="department"
-              value={form.department} onChange={handleChange} required
-              onFocus={focus} onBlur={blur} disabled={loadingDepts}>
+            <label className="form-label">Department</label>
+            <select className="form-input" style={{ colorScheme: 'dark' }} name="department"
+              value={form.department} onChange={handleChange} required disabled={loadingDepts}>
               <option value="" disabled>{loadingDepts ? 'Loading departments...' : 'Select your department'}</option>
               {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
             </select>
@@ -187,16 +176,14 @@ export default function RegisterPage() {
           {isStudent && (
             <>
               <div>
-                <label style={lbl}>Roll number</label>
-                <input style={inp} type="text" name="roll_no" value={form.roll_no}
-                  onChange={handleChange} placeholder="eg. 21BD1A0512" required
-                  onFocus={focus} onBlur={blur} />
+                <label className="form-label">Roll number</label>
+                <input className="form-input" type="text" name="roll_no" value={form.roll_no}
+                  onChange={handleChange} placeholder="eg. 21BD1A0512" required />
               </div>
               <div>
-                <label style={lbl}>Year</label>
-                <select style={{ ...inp, colorScheme: 'dark' }} name="year"
-                  value={form.year} onChange={handleChange} required
-                  onFocus={focus} onBlur={blur}>
+                <label className="form-label">Year</label>
+                <select className="form-input" style={{ colorScheme: 'dark' }} name="year"
+                  value={form.year} onChange={handleChange} required>
                   <option value="" disabled>Select your year</option>
                   {[1, 2, 3, 4].map(y => (
                     <option key={y} value={y}>{y === 1 ? '1st' : y === 2 ? '2nd' : y === 3 ? '3rd' : '4th'} Year</option>
@@ -207,26 +194,24 @@ export default function RegisterPage() {
           )}
 
           <div>
-            <label style={lbl}>Email</label>
-            <input style={inp} type="email" name="email" value={form.email}
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" name="email" value={form.email}
               onChange={handleChange} placeholder={institution?.emailDomain ? `you${institution.emailDomain}` : 'you@example.com'}
-              required onFocus={focus} onBlur={blur} />
+              required />
           </div>
 
           <div>
-            <label style={lbl}>Phone <span style={{ color: '#444', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
-            <input style={inp} type="tel" name="phone" value={form.phone}
-              onChange={handleChange} placeholder="+91 98765 43210"
-              onFocus={focus} onBlur={blur} />
+            <label className="form-label">Phone <span style={{ color: '#444', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+            <input className="form-input" type="tel" name="phone" value={form.phone}
+              onChange={handleChange} placeholder="+91 98765 43210" />
           </div>
 
           <div>
-            <label style={lbl}>Password</label>
+            <label className="form-label">Password</label>
             <div style={{ position: 'relative' }}>
-              <input style={{ ...inp, paddingRight: 42 }}
+              <input className="form-input" style={{ paddingRight: 42 }}
                 type={showPw ? 'text' : 'password'} name="password" value={form.password}
-                onChange={handleChange} placeholder="At least 8 characters" required
-                onFocus={focus} onBlur={blur} />
+                onChange={handleChange} placeholder="At least 8 characters" required />
               <button type="button" onClick={() => setShowPw(v => !v)}
                 style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#555', lineHeight: 0 }}>
                 {showPw

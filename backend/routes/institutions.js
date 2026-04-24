@@ -22,11 +22,12 @@ router.get('/verify/:subdomain', async (req, res) => {
       return res.status(404).json({ error: 'Institution not found' });
     }
 
+    const inst = institutions[0];
     res.json({
-      institutionId: institutions[0].id,
-      name: institutions[0].name,
-      subdomain: institutions[0].subdomain,
-      allowedEmailDomain: institutions[0].allowed_email_domain || null
+      institutionId: inst.id,
+      name: inst.name,
+      subdomain: inst.subdomain,
+      allowedEmailDomain: inst.allowed_email_domain || null
     });
   } catch (error) {
     console.error('Error verifying institution:', error);
