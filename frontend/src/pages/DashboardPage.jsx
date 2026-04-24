@@ -332,7 +332,7 @@ export default function DashboardPage() {
       activeTab={activeTab}
       groups={groups}
     >
-      {/* ââââ Desktop layout ââââ */}
+      {/*  · · · · Desktop layout  · · · · */}
       <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--void)', flexDirection: 'row' }}>
 
         {/* Left Sidebar */}
@@ -525,7 +525,7 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
-        {/* ââââ Body: sliding panel + main ââââ */}
+        {/*  · · · · Body: sliding panel + main  · · · · */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
           <div style={{
             width: panelOpen && (settingsOpen || activeNav !== 'dues') && !supportOpen ? 220 : 0,
@@ -539,7 +539,7 @@ export default function DashboardPage() {
 
               {/* Panel content */}
               <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                {/* Panel title ââ big white heading with FAB for groups */}
+                {/* Panel title  · · big white heading with FAB for groups */}
                 <div style={{ padding: '20px 16px 0', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <h2 style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', margin: 0, fontFamily: "'Manrope', 'Inter', sans-serif", letterSpacing: '-0.01em' }}>
                     {settingsOpen ? 'Settings' : NAV_META[activeNav]?.label}
@@ -584,7 +584,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ââââ Main area ââââ */}
+          {/*  · · · · Main area  · · · · */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'var(--void)' }}>
             {renderMain()}
           </div>

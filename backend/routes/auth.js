@@ -46,6 +46,18 @@ router.post('/register', validate(schemas.register), async (req, res) => {
 
     const password_hash = await bcrypt.hash(password, 10);
 
+    // Resolve department name → department_id FK
+    let department_id = null;
+    if (department) {
+      const { data: deptRow } = await supabase
+        .from('departments')
+        .select('id')
+        .eq('institution_id', institutionId)
+        .eq('name', department)
+        .single();
+      department_id = deptRow?.id || null;
+    }
+
     // Generate verification token
     const verification_token = crypto.randomBytes(32).toString('hex');
     const verification_token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -58,6 +70,7 @@ router.post('/register', validate(schemas.register), async (req, res) => {
         email_verified: false,
         verification_token,
         verification_token_expires,
+        department_id,
         ...(role === 'student' ? { roll_no, department, year: Number(year) } : { department })
       })
       .select('id, name, email, phone, role, roll_no, department, year, institution_id, email_verified, created_at')

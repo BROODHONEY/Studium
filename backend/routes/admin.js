@@ -130,12 +130,13 @@ router.get('/users', async (req, res) => {
         name, 
         email, 
         role, 
-        department_id, 
+        department_id,
+        department,
         faculty_role, 
         roll_no, 
         year, 
         created_at,
-        departments:department_id (name)
+        departments:department_id (name, id)
       `)
       .eq('institution_id', req.user.institution_id)
       .order('name');
@@ -145,7 +146,7 @@ router.get('/users', async (req, res) => {
     // Format the response to include department name
     const formattedUsers = (users || []).map(user => ({
       ...user,
-      department: user.departments?.name || null
+      department: user.departments?.name || user.department || null
     }));
 
     res.json(formattedUsers);
@@ -216,15 +217,30 @@ router.put('/users/:id', async (req, res) => {
     const { id } = req.params;
     const { name, email, password, role, department_id, faculty_role, roll_no, year } = req.body;
 
-    const updateData = {
-      name,
-      email,
-      role,
-      department_id: department_id || null,
-      faculty_role: role === 'teacher' ? (faculty_role || null) : null,
-      roll_no: role === 'student' ? (roll_no || null) : null,
-      year: role === 'student' ? (year ? parseInt(year) : null) : null
-    };
+    // Fetch current user to get their role if not provided
+    let effectiveRole = role;
+    if (!effectiveRole) {
+      const { data: existing } = await db.from('users').select('role').eq('id', id).single();
+      effectiveRole = existing?.role;
+    }
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (role !== undefined) updateData.role = role;
+    if (department_id !== undefined) {
+      updateData.department_id = department_id || null;
+      // Keep the text `department` field in sync
+      if (department_id) {
+        const { data: deptRow } = await db.from('departments').select('name').eq('id', department_id).single();
+        if (deptRow) updateData.department = deptRow.name;
+      } else {
+        updateData.department = null;
+      }
+    }
+    if (faculty_role !== undefined) updateData.faculty_role = effectiveRole === 'teacher' ? (faculty_role || null) : null;
+    if (roll_no !== undefined) updateData.roll_no = effectiveRole === 'student' ? (roll_no || null) : null;
+    if (year !== undefined) updateData.year = effectiveRole === 'student' ? (year ? parseInt(year) : null) : null;
 
     // If password is provided, hash it
     if (password) {

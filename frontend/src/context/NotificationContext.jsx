@@ -48,7 +48,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   const clear    = useCallback(() => { setNotifications([]); setHasUnread(false); }, []);
   const dismiss  = useCallback((id) => setNotifications(prev => prev.filter(n => n.id !== id)), []);
 
-  // ââââ On login: fetch missed announcements + dues for all groups ââââ
+  //  · · · · On login: fetch missed announcements + dues for all groups  · · · ·
   useEffect(() => {
     if (!user?.id || !groups?.length) return;
 
@@ -117,7 +117,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
                 add({
                   type: 'message',
                   title: `Unread messages in ${group.name}`,
-                  body: latest.content?.slice(0, 80) || 'ðâ Sent a file',
+                  body: latest.content?.slice(0, 80) || 'ð · Sent a file',
                   groupId: group.id, groupName: group.name,
                   at: new Date(latest.created_at),
                 });
@@ -132,13 +132,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, groups?.length]);
 
-  // notification type ââ tab name
+  // notification type  ·  tab name
   const TYPE_TO_TAB = { message: 'Chat', mention: 'Chat', announcement: 'Overview', due: 'Dues', file: 'Files', assignment: 'Submissions', quiz: 'Submissions' };
 
   const activeGroupRef2 = useRef(activeGroupId);
   useEffect(() => { activeGroupRef2.current = activeGroupId; }, [activeGroupId]);
 
-  // ââââ Stamp last-seen timestamps when a group is opened ââââ
+  //  · · · · Stamp last-seen timestamps when a group is opened  · · · ·
   useEffect(() => {
     if (!activeGroupId || !user?.id) return;
     const now = new Date().toISOString();
@@ -147,13 +147,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     setLastSeen(user.id, activeGroupId, now, lastSeenMsgKey);
   }, [activeGroupId, user?.id]);
 
-  // ââââ Clear DM unread when convo is opened ââââ
+  //  · · · · Clear DM unread when convo is opened  · · · ·
   useEffect(() => {
     if (!activeConvoId) return;
     setDmUnreads(prev => { const next = new Set(prev); next.delete(activeConvoId); return next; });
   }, [activeConvoId]);
 
-  // ââââ Clear tab-level unreads only when that tab is actually opened ââââ
+  //  · · · · Clear tab-level unreads only when that tab is actually opened  · · · ·
   const prevTabRef = useRef(activeTab);
   const prevGroupRef = useRef(activeGroupId);
   useEffect(() => {
@@ -161,7 +161,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     prevGroupRef.current = activeGroupId;
     prevTabRef.current = activeTab;
 
-    // Don't clear on initial group open ââ let each tab clear itself when visited
+    // Don't clear on initial group open  · · let each tab clear itself when visited
     if (groupChanged) return;
     if (!activeGroupId || !activeTab) return;
 
@@ -175,14 +175,14 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, activeGroupId]);
 
-  // ââââ Browser notification permission ââââ
+  //  · · · · Browser notification permission  · · · ·
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
-  // ââââ Live socket events ââââ
+  //  · · · · Live socket events  · · · ·
   useEffect(() => {
     if (!socket || !user) return;
 
@@ -199,7 +199,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
       const group = groupsRef.current?.find(g => g.id === msg.group_id);
       const groupName = group?.name || 'a group';
       const senderName = sender?.name || 'Someone';
-      const body = msg.content?.slice(0, 80) || 'ðâ Sent a file';
+      const body = msg.content?.slice(0, 80) || 'ð · Sent a file';
 
       add({ type: 'message', title: `${senderName} in ${groupName}`, body, groupId: msg.group_id, groupName });
 
@@ -302,7 +302,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   // Set of groupIds that have unread activity (messages, announcements, dues)
   const groupUnreads = new Set(notifications.map(n => n.groupId).filter(Boolean));
 
-  // Map of groupId ââ Set of tab names with unread content
+  // Map of groupId  ·  Set of tab names with unread content
   const groupTabUnreads = notifications.reduce((acc, n) => {
     if (!n.groupId) return acc;
     const tab = TYPE_TO_TAB[n.type];

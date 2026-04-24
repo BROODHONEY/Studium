@@ -11,42 +11,46 @@ export default function InstitutionLoginModal({ onClose }) {
 
   return (
     <Modal onClose={onClose}>
-      <h2 className="text-2xl font-bold mb-2 text-white">Login to Your Institution</h2>
-      <p className="text-gray-400 text-sm mb-6">
+      <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 8px', fontFamily: "'Manrope', Inter, sans-serif", letterSpacing: '-0.02em' }}>Login to Your Institution</h2>
+      <p style={{ fontSize: 13, color: '#666', margin: '0 0 32px', lineHeight: 1.6 }}>
         You'll be asked to enter your institution code to continue.
       </p>
       
-      <div className="space-y-4">
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-          <p className="text-sm text-gray-300 mb-2">
-            <span className="font-medium text-white">Step 1:</span> Enter your institution code
+      <div>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20, marginBottom: 28 }}>
+          <p style={{ fontSize: 13, color: '#aaa', marginBottom: 12, lineHeight: 1.6 }}>
+            <span style={{ fontWeight: 600, color: '#fff' }}>Step 1:</span> Enter your institution code
           </p>
-          <p className="text-sm text-gray-300">
-            <span className="font-medium text-white">Step 2:</span> Sign in with your credentials
+          <p style={{ fontSize: 13, color: '#aaa', margin: 0, lineHeight: 1.6 }}>
+            <span style={{ fontWeight: 600, color: '#fff' }}>Step 2:</span> Sign in with your credentials
           </p>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div style={{ display: 'flex', gap: 12 }}>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 border border-white/10 rounded-lg hover:bg-white/5 transition-colors text-white"
+            style={{ flex: 1, padding: '14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleContinue}
-            className="flex-1 px-4 py-2.5 bg-[#A5A6F6] text-black rounded-lg hover:bg-[#9394E8] transition-colors font-medium"
+            style={{ flex: 1, padding: '14px', borderRadius: 10, border: 'none', background: 'rgba(165,166,246,0.75)', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif', letterSpacing: '0.01em', transition: 'all 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(165,166,246,0.9)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(165,166,246,0.75)'}
           >
             Continue
           </button>
         </div>
       </div>
 
-      <div className="mt-6 pt-6 border-t border-white/5">
-        <p className="text-sm text-gray-400 text-center">
-          Don't have an account? <a href="#contact" onClick={onClose} className="text-[#A5A6F6] hover:underline">Contact us</a> to get started.
+      <div style={{ marginTop: 28, paddingTop: 28, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <p style={{ fontSize: 13, color: '#666', textAlign: 'center', margin: 0 }}>
+          Don't have an account? <a href="#contact" onClick={onClose} style={{ color: '#A5A6F6', textDecoration: 'none', transition: 'opacity 0.2s' }} onMouseEnter={e => e.target.style.opacity = '0.8'} onMouseLeave={e => e.target.style.opacity = '1'}>Contact us</a> to get started.
         </p>
       </div>
     </Modal>

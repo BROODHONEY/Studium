@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-const EMOJI_OPTIONS = ['ðâ', 'â¤ï¸ ', 'ð', 'ð®', 'ð¢', 'ðâ¥'];
+const EMOJI_OPTIONS = ['ð ·', ' ·¤ï¸ ', 'ð', 'ð®', 'ð¢', 'ð ·¥'];
 
 function MenuItem({ icon, label, onClick, danger, disabled }) {
   const [hov, setHov] = useState(false);
@@ -39,14 +39,14 @@ export default function MessageMenu({
   // Horizontal: prefer aligning to the anchor side, but clamp to viewport
   let left, right;
   if (isOwn) {
-    // Own messages ââ align right edge of menu to right edge of anchor
+    // Own messages  · · align right edge of menu to right edge of anchor
     const rawRight = window.innerWidth - anchorRect.right;
     right = Math.max(MARGIN, rawRight);
     // If that would push left edge off screen, switch to left-anchored
     const computedLeft = window.innerWidth - right - MENU_W;
     if (computedLeft < MARGIN) right = window.innerWidth - MENU_W - MARGIN;
   } else {
-    // Others' messages ââ align left edge of menu to left edge of anchor
+    // Others' messages  · · align left edge of menu to left edge of anchor
     left = Math.max(MARGIN, anchorRect.left);
     if (left + MENU_W > window.innerWidth - MARGIN) left = window.innerWidth - MENU_W - MARGIN;
   }

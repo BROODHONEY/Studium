@@ -76,7 +76,7 @@ function AttachmentUploader({ attachments, onChange, accentColor }) {
               ? <img src={att.url} alt={att.name} style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
               : <svg width="12" height="12" viewBox="0 0 16 16" fill={accentColor} style={{ flexShrink: 0 }}><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/></svg>
             }
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{att.name.length > 18 ? att.name.slice(0, 16) + 'â¦' : att.name}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{att.name.length > 18 ? att.name.slice(0, 16) + ' · ·' : att.name}</span>
             <button onClick={() => remove(ai)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.text3, lineHeight: 0, padding: 0, flexShrink: 0 }}
               onMouseEnter={e => e.currentTarget.style.color = T.danger}
               onMouseLeave={e => e.currentTarget.style.color = T.text3}>
@@ -89,7 +89,7 @@ function AttachmentUploader({ attachments, onChange, accentColor }) {
           onMouseLeave={e => { if (!uploading) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text3; } }}>
           <input type="file" accept=".pdf,image/*" style={{ display: 'none' }} onChange={handleFileAdd} disabled={uploading} />
           {uploading
-            ? <><div style={{ width: 10, height: 10, borderRadius: '50%', border: `1.5px solid ${accentColor}`, borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }}/>&nbsp;Uploadingâ¦</>
+            ? <><div style={{ width: 10, height: 10, borderRadius: '50%', border: `1.5px solid ${accentColor}`, borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }}/>&nbsp;Uploading · ·</>
             : <><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>&nbsp;Attach file</>
           }
         </label>
@@ -148,7 +148,7 @@ function AchievementModal({ initial, onClose, onSave }) {
         <input value={d.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Dean's List, Hackathon Winner" style={inp}
           onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} /></div>
       <div><label style={lbl}>Description</label>
-        <textarea value={d.description} onChange={e => set('description', e.target.value)} placeholder="Describe the achievementâ¦" rows={3}
+        <textarea value={d.description} onChange={e => set('description', e.target.value)} placeholder="Describe the achievement · ·" rows={3}
           style={{ ...inp, resize: 'vertical', lineHeight: 1.5 }}
           onFocus={e => e.target.style.borderColor = T.primary} onBlur={e => e.target.style.borderColor = T.border} /></div>
       <div><label style={lbl}>Date</label>
@@ -261,7 +261,7 @@ function SectionList({ label, accentColor, accentLo, icon, items, onAdd, onEdit,
                     )}
                     {(item.date || item.fromDate) && (
                       <p style={{ fontSize: 10, fontWeight: 500, color: accentColor, margin: '4px 0 0' }}>
-                        {item.fromDate ? `${fmtDate(item.fromDate)}${item.toDate ? ' ââ ' + fmtDate(item.toDate) : ' ââ Present'}` : fmtDate(item.date)}
+                        {item.fromDate ? `${fmtDate(item.fromDate)}${item.toDate ? '  ·  ' + fmtDate(item.toDate) : '  ·  Present'}` : fmtDate(item.date)}
                       </p>
                     )}
                   </div>
@@ -411,7 +411,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-      {/* ââââ Hero ââââ */}
+      {/*  · · · · Hero  · · · · */}
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '28px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, right: 0, width: 320, height: 200, background: `radial-gradient(ellipse at top right, ${roleColor}10 0%, transparent 65%)`, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: 200, height: 140, background: 'radial-gradient(ellipse at bottom left, rgba(255,179,142,0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
@@ -429,7 +429,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
         </div>
       </div>
 
-      {/* ââââ Info strip (students) ââââ */}
+      {/*  · · · · Info strip (students)  · · · · */}
       {isStudent && (
         <div style={{ background: Tx.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
           {[
@@ -439,13 +439,13 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
           ].map(({ label, value }) => (
             <div key={label}>
               <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 6px' }}>{label}</p>
-              <p style={{ fontSize: 15, fontWeight: 600, color: T.text1, margin: 0, lineHeight: 1.3 }}>{value || 'ââ'}</p>
+              <p style={{ fontSize: 15, fontWeight: 600, color: T.text1, margin: 0, lineHeight: 1.3 }}>{value || ' · ·'}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* ââââ Stats row (students) ââââ */}
+      {/*  · · · · Stats row (students)  · · · · */}
       {isStudent && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {/* CGPA display */}
@@ -454,7 +454,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
             <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>Academic Performance</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
               <span style={{ fontSize: 40, fontWeight: 800, color: T.primary, fontFamily: "'Manrope','Inter',sans-serif", lineHeight: 1 }}>
-                {user?.cgpa != null ? Number(user.cgpa).toFixed(2) : 'ââ'}
+                {user?.cgpa != null ? Number(user.cgpa).toFixed(2) : ' · ·'}
               </span>
               {user?.cgpa != null && <span style={{ fontSize: 13, color: T.text3, fontWeight: 300 }}>&nbsp;/ 10.0</span>}
             </div>
@@ -507,7 +507,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
         </div>
       )}
 
-      {/* ââââ Edit: name + CGPA only ââââ */}
+      {/*  · · · · Edit: name + CGPA only  · · · · */}
       <div style={card}>
         <p style={sectionTitle}>Edit Profile</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -532,7 +532,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
         </div>
       </div>
 
-      {/* ââââ Student lists ââââ */}
+      {/*  · · · · Student lists  · · · · */}
       {isStudent && (
         <>
           <div style={card}>
@@ -566,7 +566,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
       {anyEdited && (
         <button onClick={handleSave} disabled={saving}
           style={{ position: 'sticky', bottom: 16, width: '100%', padding: '13px', borderRadius: 12, background: T.primary, border: 'none', color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1, boxShadow: '0 8px 32px rgba(192,193,255,0.25)', zIndex: 10, transition: 'opacity 0.15s' }}>
-          {saving ? 'Savingâ¦' : 'Save changes'}
+          {saving ? 'Saving · ·' : 'Save changes'}
         </button>
       )}
 
@@ -640,7 +640,7 @@ function SecuritySection({ addToast }) {
         {error && <p style={{ fontSize: 12, color: T.danger, margin: 0 }}>{error}</p>}
         <button type="submit" disabled={saving || !pwForm.current || !pwForm.next || !pwForm.confirm}
           style={{ padding: '11px', borderRadius: 10, background: pwForm.current && pwForm.next && pwForm.confirm ? T.primary : T.bg, border: `1px solid ${pwForm.current && pwForm.next && pwForm.confirm ? T.primary : T.border}`, color: pwForm.current && pwForm.next && pwForm.confirm ? '#131313' : T.text3, fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}>
-          {saving ? 'Updatingâ¦' : 'Update password'}
+          {saving ? 'Updating · ·' : 'Update password'}
         </button>
       </form>
     </div>

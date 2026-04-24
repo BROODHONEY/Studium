@@ -55,7 +55,7 @@ function FileTypeIcon({ type, size = 18 }) {
 }
 
 const formatSize = (bytes) => {
-  if (!bytes) return ' ÂÂ·';
+  if (!bytes) return '  · ··';
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -109,7 +109,7 @@ function FileRow({ file, selecting, selected, onToggle, canDelete, onDelete, can
       </div>
 
       {!selecting && hov ? (
-        /* On hover: replace size+date with action buttons ââ no overlap */
+        /* On hover: replace size+date with action buttons  · · no overlap */
         <>
           <div style={{ flexShrink: 0, width: 70 }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, width: 200, justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
@@ -283,7 +283,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
   return (
     <div style={{ display: 'flex', height: '100%', background: C.bg, fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
 
-      {/* ââââ Left nav sidebar ââââ */}
+      {/*  · · · · Left nav sidebar  · · · · */}
       <div style={{ width: 220, flexShrink: 0, borderRight: `1px solid ${C.border}`, background: C.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Hero area */}
@@ -384,10 +384,10 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         </div>
       </div>
 
-      {/* ââââ Main content ââââ */}
+      {/*  · · · · Main content  · · · · */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* Top bar ââ title + stats + actions */}
+        {/* Top bar  · · title + stats + actions */}
         <div style={{ padding: '24px 28px 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
             <div>
@@ -518,7 +518,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
                 <input
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search by name or uploaderâ¦"
+                  placeholder="Search by name or uploader · ·"
                   style={{ width: '100%', background: C.overlay, border: `1px solid ${C.border}`, borderRadius: 9, padding: '8px 10px 8px 30px', fontSize: 12, color: C.text1, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
                   onFocus={e => e.target.style.borderColor = C.primary}
                   onBlur={e => e.target.style.borderColor = C.border}
@@ -578,7 +578,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
         </div>
       </div>
 
-      {/* ââââ Modals ââââ */}
+      {/*  · · · · Modals  · · · · */}
       {previewFile && (
         <FilePreviewModal
           file={previewFile}
@@ -605,7 +605,7 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
             <p style={{ fontSize: 13, fontWeight: 300, color: C.text3, margin: '0 0 20px' }}>Organise your files into a category.</p>
             <input ref={catNameInput} value={catName} onChange={e => setCatName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') createCategory(); if (e.key === 'Escape') setCatModal(false); }}
-              placeholder="Folder nameâ¦"
+              placeholder="Folder name · ·"
               style={{ width: '100%', background: '#252525', border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 16px', fontSize: 14, color: C.text1, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', marginBottom: 16, transition: 'border-color 0.15s' }}
               onFocus={e => e.target.style.borderColor = C.primary}
               onBlur={e => e.target.style.borderColor = C.border} />

@@ -15,7 +15,7 @@ const T = {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-// ââââ Pre-start alert modal ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  · · · · Pre-start alert modal  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
 function StartAlertModal({ quiz, onConfirm, onCancel }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', padding: 16 }}>
@@ -30,11 +30,11 @@ function StartAlertModal({ quiz, onConfirm, onCancel }) {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
             {[
-              { icon: 'â ±', text: `You have ${quiz?.duration_mins} minute${quiz?.duration_mins !== 1 ? 's' : ''} to complete this quiz.` },
+              { icon: ' · ±', text: `You have ${quiz?.duration_mins} minute${quiz?.duration_mins !== 1 ? 's' : ''} to complete this quiz.` },
               { icon: 'ð«', text: 'The quiz cannot be paused or stopped once started.' },
-              { icon: 'ðââ', text: 'Closing or refreshing the tab will not stop the timer.' },
-              { icon: 'ðâ', text: `${quiz?.questions?.length} question${quiz?.questions?.length !== 1 ? 's' : ''} ââ answer all before submitting.` },
-              { icon: 'ââ¦', text: 'You can navigate between questions freely before submitting.' },
+              { icon: 'ð · ·', text: 'Closing or refreshing the tab will not stop the timer.' },
+              { icon: 'ð ·', text: `${quiz?.questions?.length} question${quiz?.questions?.length !== 1 ? 's' : ''}  · · answer all before submitting.` },
+              { icon: ' · · ·', text: 'You can navigate between questions freely before submitting.' },
             ].map((r, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', borderRadius: 10, background: T.card, border: `1px solid ${T.border}` }}>
                 <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>{r.icon}</span>
@@ -48,7 +48,7 @@ function StartAlertModal({ quiz, onConfirm, onCancel }) {
             Cancel
           </button>
           <button onClick={onConfirm} style={{ flex: 2, padding: '11px', borderRadius: 10, background: T.green, border: 'none', color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-            I understand ââ Start Quiz
+            I understand  · · Start Quiz
           </button>
         </div>
       </div>
@@ -56,7 +56,7 @@ function StartAlertModal({ quiz, onConfirm, onCancel }) {
   );
 }
 
-// ââââ Unanswered warning modal ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  · · · · Unanswered warning modal  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
 function UnansweredModal({ unanswered, total, onGoTo, onSubmitAnyway, onCancel }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', padding: 16 }}>
@@ -141,13 +141,13 @@ export default function QuizPage() {
             const storageKey = `quiz_started_${quizId}`;
             const startedAt = localStorage.getItem(storageKey);
             if (startedAt) {
-              // Already started before ââ jump straight in
+              // Already started before  · · jump straight in
               const elapsed = Math.floor((now - Number(startedAt)) / 1000);
               const remaining = Math.max(0, r.data.duration_mins * 60 - elapsed);
               setTimeLeft(remaining);
               setPhase('active');
             } else {
-              // First time ââ show confirm modal
+              // First time  · · show confirm modal
               setPhase('confirm');
             }
           }
@@ -196,7 +196,7 @@ export default function QuizPage() {
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
   const timerColor = timeLeft < 60 ? T.red : timeLeft < 180 ? T.amber : T.green;
-  const fmt = (d) => d ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ââ';
+  const fmt = (d) => d ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ' · ·';
 
   if (loading || authLoading) return (
     <div style={{ minHeight: '100vh', background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -287,12 +287,12 @@ export default function QuizPage() {
             {result && result.show_score === false && (
               <p style={{ fontSize: 13, color: T.text2, margin: '0 0 6px' }}>Your score will not be shown for this quiz.</p>
             )}
-            <p style={{ fontSize: 12, color: T.text3 }}>This tab will close automaticallyâ¦</p>
+            <p style={{ fontSize: 12, color: T.text3 }}>This tab will close automatically · ·</p>
             <button onClick={() => window.close()} style={{ marginTop: 20, padding: '10px 24px', borderRadius: 10, border: 'none', background: T.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Close Now</button>
           </div>
         )}
 
-        {/* ACTIVE ââ one question at a time */}
+        {/* ACTIVE  · · one question at a time */}
         {phase === 'active' && q && (
           <>
             {/* Question number nav */}
@@ -346,17 +346,17 @@ export default function QuizPage() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setCurrentQ(i => Math.max(0, i - 1))} disabled={currentQ === 0}
                 style={{ flex: 1, padding: '11px', borderRadius: 10, border: `1px solid ${T.border}`, background: 'none', color: currentQ === 0 ? T.text3 : T.text2, fontSize: 13, cursor: currentQ === 0 ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif', opacity: currentQ === 0 ? 0.4 : 1 }}>
-                â Previous
+                 · · Previous
               </button>
               {currentQ < questions.length - 1 ? (
                 <button onClick={() => setCurrentQ(i => i + 1)}
                   style={{ flex: 1, padding: '11px', borderRadius: 10, border: `1px solid ${T.primary}60`, background: T.primaryLo, color: T.primary, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                  Next ââ
+                  Next  · 
                 </button>
               ) : (
                 <button onClick={handleSubmitClick} disabled={submitting}
                   style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: T.green, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: submitting ? 0.6 : 1 }}>
-                  {submitting ? 'Submittingâ¦' : 'Submit Quiz'}
+                  {submitting ? 'Submitting · ·' : 'Submit Quiz'}
                 </button>
               )}
             </div>
@@ -372,7 +372,7 @@ export default function QuizPage() {
           </span>
           <button onClick={handleSubmitClick} disabled={submitting}
             style={{ padding: '9px 24px', borderRadius: 10, border: 'none', background: T.green, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: submitting ? 0.6 : 1 }}>
-            {submitting ? 'Submittingâ¦' : 'Submit Quiz'}
+            {submitting ? 'Submitting · ·' : 'Submit Quiz'}
           </button>
         </div>
       )}

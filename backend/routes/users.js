@@ -117,7 +117,7 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, role, roll_no, department, year, cgpa, achievements, internships, certificates, created_at')
+      .select('id, name, email, phone, role, roll_no, department, department_id, faculty_role, year, cgpa, achievements, internships, certificates, created_at')
       .eq('id', req.params.id)
       .eq('institution_id', req.user.institutionId) // CRITICAL: Only access users from same institution
       .single();

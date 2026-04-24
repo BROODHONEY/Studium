@@ -105,7 +105,7 @@ export default function DMList({ activeConvoId, onSelect }) {
       {search.trim() && (
         <div style={{ borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
           {searching ? (
-            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>Searching ÂÂ·</p>
+            <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>Searching  · ··</p>
           ) : results.length === 0 ? (
             <p style={{ padding: '10px 16px', fontSize: 12, fontWeight: 300, color: 'var(--text-2)' }}>No users found</p>
           ) : results.map(u => (

@@ -6,6 +6,7 @@ import { duesAPI } from '../services/api';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { toISTDateInput, toISTTimeInput } from '../utils/time';
 
+
 const daysUntil = (dateStr) => {
   const diffMs = new Date(dateStr).getTime() - Date.now();
   if (diffMs < 0) return -1;
@@ -142,7 +143,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
               <label style={DS.lbl}>
                 Description <span style={{ color: '#55556E', fontWeight: 300, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
               </label>
-              <input style={DS.inp} placeholder="Add more context ÂÂ·"
+              <input style={DS.inp} placeholder="Add more context  · ··"
                 value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = '#6366F1'}
                 onBlur={e => e.target.style.borderColor = '#2A2A38'} />
@@ -190,7 +191,7 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
                 style={{ ...DS.primaryBtn, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
-                {loading ? (editing ? 'Updating ÂÂ·' : 'Adding ÂÂ·') : (editing ? 'Update' : 'Add Due Date')}
+                {loading ? (editing ? 'Updating  · ··' : 'Adding  · ··') : (editing ? 'Update' : 'Add Due Date')}
               </button>
               <button type="button" onClick={handleCancel} style={DS.cancelBtn}
                 onMouseEnter={e => e.currentTarget.style.color = '#9898B0'}

@@ -28,17 +28,41 @@ export default function DemoRequestModal({ onClose }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const inputStyle = {
+    width: '100%',
+    padding: '13px 16px',
+    background: '#0d0d10',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: 8,
+    color: '#fff',
+    fontSize: 13,
+    fontFamily: 'Inter, sans-serif',
+    outline: 'none',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: 10,
+    fontWeight: 700,
+    color: '#555',
+    textTransform: 'uppercase',
+    letterSpacing: '0.14em',
+    marginBottom: 10
+  };
+
   if (submitted) {
     return (
       <Modal onClose={onClose}>
-        <div className="text-center py-8">
-          <div className="w-16 h-16 bg-[#A5A6F6]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-[#A5A6F6]" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        <div style={{ textAlign: 'center', padding: '32px 0' }}>
+          <div style={{ width: 64, height: 64, background: 'rgba(165,166,246,0.12)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <svg width="32" height="32" fill="none" stroke="#A5A6F6" strokeWidth="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-2">Request Submitted!</h3>
-          <p className="text-gray-400">We'll contact you within 24 hours.</p>
+          <h3 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 8px', fontFamily: "'Manrope', Inter, sans-serif" }}>Request Submitted!</h3>
+          <p style={{ fontSize: 13, color: '#666', margin: 0 }}>We'll contact you within 24 hours.</p>
         </div>
       </Modal>
     );
@@ -46,102 +70,114 @@ export default function DemoRequestModal({ onClose }) {
 
   return (
     <Modal onClose={onClose}>
-      <h2 className="text-2xl font-bold mb-2 text-white">Request a Demo</h2>
-      <p className="text-gray-400 text-sm mb-6">Fill out the form below and our team will reach out shortly.</p>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
-            Institution Name *
-          </label>
+      <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 8px', fontFamily: "'Manrope', Inter, sans-serif", letterSpacing: '-0.02em' }}>Request a Demo</h2>
+      <p style={{ fontSize: 13, color: '#666', margin: '0 0 32px', lineHeight: 1.6 }}>Fill out the form below and our team will reach out shortly.</p>
+      
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Institution Name *</label>
           <input
             type="text"
             name="institutionName"
             required
             value={formData.institutionName}
             onChange={handleChange}
-            className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
-            placeholder="Enter institution name"
+            placeholder="e.g. Oxford University"
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = 'rgba(165,166,246,0.45)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
-            Contact Name *
-          </label>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Contact Name *</label>
           <input
             type="text"
             name="contactName"
             required
             value={formData.contactName}
             onChange={handleChange}
-            className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
             placeholder="Your full name"
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = 'rgba(165,166,246,0.45)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
-            Email *
-          </label>
-          <input
-            type="email"
-            name="email"
-            required
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
-            placeholder="admin@institution.edu"
-          />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          <div>
+            <label style={labelStyle}>Email *</label>
+            <input
+              type="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="admin@domain.edu"
+              style={inputStyle}
+              onFocus={e => e.target.style.borderColor = 'rgba(165,166,246,0.45)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Phone *</label>
+            <input
+              type="tel"
+              name="phone"
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+1 (555) 000-0000"
+              style={inputStyle}
+              onFocus={e => e.target.style.borderColor = 'rgba(165,166,246,0.45)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
-            Phone *
-          </label>
-          <input
-            type="tel"
-            name="phone"
-            required
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
-            placeholder="+1 (555) 000-0000"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
-            Approximate Student Count
-          </label>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Approximate Student Count</label>
           <input
             type="number"
             name="studentCount"
             value={formData.studentCount}
             onChange={handleChange}
-            className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors"
             placeholder="e.g., 5000"
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = 'rgba(165,166,246,0.45)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
-            Additional Information
-          </label>
+
+        <div style={{ marginBottom: 28 }}>
+          <label style={labelStyle}>Additional Information</label>
           <textarea
             name="message"
-            rows="3"
+            rows="4"
             value={formData.message}
             onChange={handleChange}
-            className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#A5A6F6] transition-colors resize-none"
             placeholder="Tell us about your needs..."
-          ></textarea>
+            style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
+            onFocus={e => e.target.style.borderColor = 'rgba(165,166,246,0.45)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
+          />
         </div>
-        <div className="flex gap-3 pt-4">
+
+        <div style={{ display: 'flex', gap: 12 }}>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 border border-white/10 rounded-lg hover:bg-white/5 transition-colors text-white"
+            style={{ flex: 1, padding: '14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="flex-1 px-4 py-2.5 bg-[#A5A6F6] text-black rounded-lg hover:bg-[#9394E8] transition-colors font-medium"
+            style={{ flex: 1, padding: '14px', borderRadius: 10, border: 'none', background: 'rgba(165,166,246,0.75)', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif', letterSpacing: '0.01em', transition: 'all 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(165,166,246,0.9)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(165,166,246,0.75)'}
           >
             Submit Request
           </button>

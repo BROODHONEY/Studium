@@ -317,12 +317,60 @@ function MessagesTab() {
   );
 }
 
+function DeptCell({ user, departments, onAssign }) {
+  const [editing, setEditing] = useState(false);
+  // Match by FK first, fall back to matching the legacy text `department` field
+  const dept = departments.find(d => d.id === user.department_id)
+    || departments.find(d => d.name === user.department);
+  const resolvedDeptId = dept?.id || user.department_id || '';
+
+  if (editing) {
+    return (
+      <select
+        autoFocus
+        value={resolvedDeptId}
+        onChange={e => { onAssign(user.id, e.target.value); setEditing(false); }}
+        onBlur={() => setEditing(false)}
+        style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.primary}`, background: C.raised, color: C.text1, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', outline: 'none', maxWidth: 180 }}
+      >
+        <option value="">No Department</option>
+        {departments.map(d => (
+          <option key={d.id} value={d.id}>{d.name}</option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      title="Click to change department"
+      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 6, transition: 'background 0.15s' }}
+      onMouseEnter={e => e.currentTarget.style.background = C.raised}
+      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+    >
+      <span style={{ fontSize: 13, color: dept ? C.text1 : C.text3 }}>{dept ? dept.name : '—'}</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    </button>
+  );
+}
+
 function FacultyTab({ users, departments, onRefresh }) {
-  const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [selectedEmails, setSelectedEmails] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [deptFilter, setDeptFilter] = useState('');
+
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = !searchQuery || u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDept = !deptFilter || u.department_id === deptFilter;
+    return matchesSearch && matchesDept;
+  });
 
   const handleAssignRole = async (userId, role) => {
     try {
@@ -337,6 +385,22 @@ function FacultyTab({ users, departments, onRefresh }) {
     } catch (error) {
       console.error('Error assigning role:', error);
       alert('Failed to assign role');
+    }
+  };
+
+  const handleAssignDepartment = async (userId, departmentId) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${apiUrl}/admin/users/${userId}`,
+        { department_id: departmentId || null },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      onRefresh();
+    } catch (error) {
+      console.error('Error assigning department:', error);
+      alert('Failed to assign department');
     }
   };
 
@@ -377,9 +441,46 @@ function FacultyTab({ users, departments, onRefresh }) {
         </button>
       </div>
 
+      {/* Search & Filter Bar */}
+      <div style={{ padding: '16px 28px', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
+          <svg style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{ width: '100%', padding: '8px 12px 8px 32px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.raised, color: C.text1, fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box' }}
+            onFocus={e => e.target.style.borderColor = C.primary}
+            onBlur={e => e.target.style.borderColor = C.border}
+          />
+        </div>
+        <select
+          value={deptFilter}
+          onChange={e => setDeptFilter(e.target.value)}
+          style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.raised, color: deptFilter ? C.text1 : C.text3, fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none', cursor: 'pointer', minWidth: 180 }}
+        >
+          <option value="">All Departments</option>
+          {departments.map(d => (
+            <option key={d.id} value={d.id}>{d.name}</option>
+          ))}
+        </select>
+        {(searchQuery || deptFilter) && (
+          <button
+            onClick={() => { setSearchQuery(''); setDeptFilter(''); }}
+            style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'none', color: C.text2, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap' }}
+          >
+            Clear
+          </button>
+        )}
+        <span style={{ fontSize: 12, color: C.text3, whiteSpace: 'nowrap' }}>{filteredUsers.length} of {users.length}</span>
+      </div>
+
       {/* Content */}
       <div style={{ padding: '28px' }}>
-        {users.length === 0 ? (
+        {filteredUsers.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0', color: C.text3, fontSize: 14 }}>
             <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5, display: 'flex', justifyContent: 'center' }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -389,7 +490,7 @@ function FacultyTab({ users, departments, onRefresh }) {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
-            <p>No faculty members yet. Add teachers to get started.</p>
+            <p>{users.length === 0 ? 'No faculty members yet. Add teachers to get started.' : 'No results match your search.'}</p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -399,13 +500,13 @@ function FacultyTab({ users, departments, onRefresh }) {
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Name</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Email</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Department</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Current Role</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Faculty Role</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user, idx) => (
-                  <tr key={user.id} style={{ borderBottom: idx < users.length - 1 ? `1px solid ${C.border}` : 'none', transition: 'background 0.15s' }}
+                {filteredUsers.map((user, idx) => (
+                  <tr key={user.id} style={{ borderBottom: idx < filteredUsers.length - 1 ? `1px solid ${C.border}` : 'none', transition: 'background 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = C.raised}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <td style={{ padding: '16px' }}>
@@ -415,9 +516,11 @@ function FacultyTab({ users, departments, onRefresh }) {
                       </div>
                     </td>
                     <td style={{ padding: '16px', fontSize: 13, color: C.text2 }}>{user.email}</td>
-                    <td style={{ padding: '16px', fontSize: 13, color: C.text2 }}>{user.department || '-'}</td>
                     <td style={{ padding: '16px' }}>
-                      <span style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)' }}>
+                      <DeptCell user={user} departments={departments} onAssign={handleAssignDepartment} />
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <span style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: user.faculty_role ? 'rgba(34,197,94,0.15)' : 'rgba(100,100,100,0.15)', color: user.faculty_role ? '#22c55e' : C.text3, border: `1px solid ${user.faculty_role ? 'rgba(34,197,94,0.25)' : 'rgba(100,100,100,0.25)'}` }}>
                         {user.faculty_role || 'No Role'}
                       </span>
                     </td>

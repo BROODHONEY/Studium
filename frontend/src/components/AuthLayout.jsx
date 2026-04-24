@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import logo from '../assets/logo.png';
 
-// ââââ Add / remove slides here ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  · · · · Add / remove slides here  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
 import slide1 from '../assets/carousel/1.jpeg';
 import slide2 from '../assets/carousel/2.jpeg';
 import slide3 from '../assets/carousel/3.jpeg';
@@ -11,7 +11,7 @@ import slide5 from '../assets/carousel/5.jpeg';
 const SLIDES   = [slide1, slide2, slide3, slide4, slide5];
 const INTERVAL = 4500;
 
-// ââââ Carousel ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  · · · · Carousel  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
 // Each slide is absolutely positioned; the active one translates to 0,
 // the previous slides sit at -100% and incoming at +100%.
 function BgCarousel({ slides, cur, prev }) {
@@ -38,7 +38,7 @@ function BgCarousel({ slides, cur, prev }) {
   );
 }
 
-// ââââ Layout shell ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  · · · · Layout shell  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
 export default function AuthLayout({ children, tagline, sub, institution }) {
   const [cur, setCur]   = useState(0);
   const [prev, setPrev] = useState(null);
@@ -73,7 +73,7 @@ export default function AuthLayout({ children, tagline, sub, institution }) {
         border: '1px solid rgba(255,255,255,0.06)',
       }}>
 
-        {/* ââââ Left panel ââââ */}
+        {/*  · · · · Left panel  · · · · */}
         <div className="auth-left-panel" style={{
           position: 'relative', flexShrink: 0, overflow: 'hidden',
           borderRadius: '28px 0 0 28px',
@@ -90,7 +90,7 @@ export default function AuthLayout({ children, tagline, sub, institution }) {
             background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.28) 0%, transparent 65%)',
           }} />
 
-          {/* Content ââ logo top, dots + text bottom */}
+          {/* Content  · · logo top, dots + text bottom */}
           <div style={{
             position: 'relative', zIndex: 3, height: '100%',
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -131,7 +131,7 @@ export default function AuthLayout({ children, tagline, sub, institution }) {
           </div>
         </div>
 
-        {/* ââââ Right panel ââ scrollable ââââ */}
+        {/*  · · · · Right panel  · · scrollable  · · · · */}
         <div style={{
           flex: 1, overflowY: 'auto', backgroundColor: '#131313',
           display: 'flex', flexDirection: 'column', alignItems: 'center',

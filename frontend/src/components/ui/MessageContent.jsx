@@ -2,13 +2,13 @@
 import remarkGfm from 'remark-gfm';
 
 const FILE_ICONS = {
-  'pdf': 'ðâ', 'ppt': 'ðâ', 'pptx': 'ðâ',
-  'doc': 'ðâ', 'docx': 'ðâ', 'xls': 'ðâ', 'xlsx': 'ðâ',
-  'jpg': 'ðââ¼ï¸ ', 'jpeg': 'ðââ¼ï¸ ', 'png': 'ðââ¼ï¸ ',
+  'pdf': 'ð ·', 'ppt': 'ð ·', 'pptx': 'ð ·',
+  'doc': 'ð ·', 'docx': 'ð ·', 'xls': 'ð ·', 'xlsx': 'ð ·',
+  'jpg': 'ð · ·¼ï¸ ', 'jpeg': 'ð · ·¼ï¸ ', 'png': 'ð · ·¼ï¸ ',
 };
 const fileIcon = (name = '') => {
   const ext = name.split('.').pop()?.toLowerCase();
-  return FILE_ICONS[ext] || 'ðâ';
+  return FILE_ICONS[ext] || 'ð ·';
 };
 
 // File ref format stored in content: {{file:id:filename:url}}
@@ -37,7 +37,7 @@ function FileChip({ filename, fileUrl, fileId, isOwn, onFileRef }) {
       </div>
       {/* File info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{filename && filename.length > 28 ? filename.slice(0, 26) + 'â¦' : filename}</p>
+        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{filename && filename.length > 28 ? filename.slice(0, 26) + ' · ·' : filename}</p>
         <p style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0', textTransform: 'uppercase' }}>{ext} Document</p>
       </div>
       {/* Download icon */}

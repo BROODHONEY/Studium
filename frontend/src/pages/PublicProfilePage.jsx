@@ -129,7 +129,7 @@ export default function PublicProfilePage() {
                   ].map(({ label, value }) => (
                     <div key={label}>
                       <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 6px' }}>{label}</p>
-                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0 }}>{value || 'ââ'}</p>
+                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0 }}>{value || ' · ·'}</p>
                     </div>
                   ))}
                 </div>
@@ -191,7 +191,7 @@ export default function PublicProfilePage() {
                             {item.description && <p style={{ fontSize: 11, fontWeight: 300, color: T.text2, margin: '3px 0 0' }}>{item.description}</p>}
                             {item.fromDate && (
                               <p style={{ fontSize: 10, fontWeight: 500, color: T.secondary, margin: '4px 0 0' }}>
-                                {fmtDate(item.fromDate)}{item.toDate ? ` ââ ${fmtDate(item.toDate)}` : ' ââ Present'}
+                                {fmtDate(item.fromDate)}{item.toDate ? `  ·  ${fmtDate(item.toDate)}` : '  ·  Present'}
                               </p>
                             )}
                           </div>

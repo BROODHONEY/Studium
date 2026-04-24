@@ -31,8 +31,8 @@ const FORMAT_TOOLS = [
   { title: 'Bold',      action: (r, s) => wrap(r, s, '**'),        icon: <strong>B</strong> },
   { title: 'Italic',    action: (r, s) => wrap(r, s, '_'),          icon: <em>I</em> },
   { title: 'Underline', action: (r, s) => wrap(r, s, '~~'),         icon: <u>U</u> },
-  { title: 'Bullet',    action: (r, s) => wrap(r, s, '\n- ', ''),   icon: 'â¢' },
-  { title: 'Link',      action: (r, s) => wrap(r, s, '[', '](url)'), icon: 'ðâââ' },
+  { title: 'Bullet',    action: (r, s) => wrap(r, s, '\n- ', ''),   icon: ' ·¢' },
+  { title: 'Link',      action: (r, s) => wrap(r, s, '[', '](url)'), icon: 'ð · · ·' },
 ];
 
 export default function FormatToolbar({ textareaRef, setText, groupId, onFilePick }) {
@@ -51,7 +51,7 @@ export default function FormatToolbar({ textareaRef, setText, groupId, onFilePic
         </button>
       ))}
 
-      {/* File reference button ââ only shown when groupId is provided */}
+      {/* File reference button  · · only shown when groupId is provided */}
       {groupId && (
         <button ref={fileButtonRef} type="button" title="Attach file reference"
           onMouseDown={e => { e.preventDefault(); setShowFilePicker(v => !v); }}
