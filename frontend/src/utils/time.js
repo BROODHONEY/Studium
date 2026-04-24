@@ -23,7 +23,7 @@ export const formatTime = (ts) =>
 export const formatDate = (ts) =>
   toUTC(ts).toLocaleDateString(LOC, opts({ weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
 
-/** "Wed, 25 Mar 2026 · 9:04 PM"  · · skips time if midnight in IST */
+/** "Wed, 25 Mar 2026 · 9:04 PM"  · ·  skips time if midnight in IST */
 export const formatDateTime = (ts) => {
   const dt   = toUTC(ts);
   const hm   = dt.toLocaleTimeString(LOC, opts({ hour: 'numeric', minute: '2-digit', hour12: false }));
@@ -33,7 +33,7 @@ export const formatDateTime = (ts) => {
   return `${date} · ${time}`;
 };
 
-/** "Today" / "Yesterday" / "25 March 2026"  · · for date separators */
+/** "Today" / "Yesterday" / "25 March 2026"  · ·  for date separators */
 export const getDateLabel = (ts) => {
   const toISTDate = (d) => d.toLocaleDateString('en-CA', opts());
   const d   = toUTC(ts);
@@ -44,7 +44,7 @@ export const getDateLabel = (ts) => {
   return d.toLocaleDateString(LOC, opts({ day: 'numeric', month: 'long', year: 'numeric' }));
 };
 
-/** "25 Mar" or "9:04 PM"  · · for DM list preview */
+/** "25 Mar" or "9:04 PM"  · ·  for DM list preview */
 export const formatShort = (ts) => {
   const d   = toUTC(ts);
   const now = new Date();
@@ -54,10 +54,10 @@ export const formatShort = (ts) => {
   return d.toLocaleDateString(LOC, opts({ day: 'numeric', month: 'short' }));
 };
 
-/** YYYY-MM-DD in IST  · · for date inputs */
+/** YYYY-MM-DD in IST  · ·  for date inputs */
 export const toISTDateInput = (ts) =>
   toUTC(ts).toLocaleDateString('en-CA', opts());
 
-/** HH:MM in IST  · · for time inputs */
+/** HH:MM in IST  · ·  for time inputs */
 export const toISTTimeInput = (ts) =>
   toUTC(ts).toLocaleTimeString(LOC, opts({ hour: '2-digit', minute: '2-digit', hour12: false }));

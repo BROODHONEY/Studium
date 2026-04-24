@@ -170,7 +170,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <label style={lbl}>Message</label>
               <textarea ref={contentRef}
                 style={{ ...inp, resize: 'none', lineHeight: 1.6, minHeight: 100 }}
-                rows={4} placeholder="Write your announcement  · ··" required
+                rows={4} placeholder="Write your announcement   ·" required
                 value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
                 onFocus={e => e.target.style.borderColor = '#C0C1FF'}
                 onBlur={e => e.target.style.borderColor = '#333333'} />
@@ -181,11 +181,11 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                   {attachedFiles.map(f => (
                     <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#252525', border: '1px solid #333333', fontSize: 11, color: '#9E9E9E', maxWidth: 220 }}>
                       <svg width="11" height="11" viewBox="0 0 16 16" fill="#555555" style={{ flexShrink: 0 }}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{f.filename.length > 24 ? f.filename.slice(0, 22) + ' · ·' : f.filename}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{f.filename.length > 24 ? f.filename.slice(0, 22) + '…' : f.filename}</span>
                       <button type="button" onClick={() => setAttachedFiles(prev => prev.filter(x => x.id !== f.id))}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555555', lineHeight: 1, padding: 0, flexShrink: 0 }}
                         onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#555555'}>Ã · ·</button>
+                        onMouseLeave={e => e.currentTarget.style.color = '#555555'}>Ã · · </button>
                     </span>
                   ))}
                 </div>
@@ -246,7 +246,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
                 style={{ width: '100%', padding: '14px', background: '#C0C1FF', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
-                {loading ? 'Saving  · ··' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
+                {loading ? 'Saving   ·' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
               </button>
               <button type="button" onClick={handleCancel}
                 style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#555555', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
@@ -291,7 +291,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [openEmojiId, setOpenEmojiId] = useState(null);
-  const EMOJI_OPTIONS = ['ð ·', ' ·¤ï¸ ', 'ð', 'ð®', 'ð ·¥', 'ð · '];
+  const EMOJI_OPTIONS = ['ð ·', ' · ¤ï¸ ', 'ð', 'ð®', 'ð · ¥', 'ð · '];
 
   useEffect(() => {
     if (!group) return;
@@ -406,7 +406,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
           onConfirm={handleConfirmDelete} disabled={confirmingDelete}
         />
 
-        {/*  · · · · Greeting + group info  · · · · */}
+        {/*  · ·  · ·  Greeting + group info  · ·  · ·  */}
         <div style={{ marginBottom: 36 }}>
           <p style={{ fontSize: 11, fontWeight: 600, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>
             {group.subject}

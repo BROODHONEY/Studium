@@ -73,8 +73,8 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
     const c3 = r2.indexOf(':');
     return {
       groupId:    inner.slice(0, c1),
-      groupName:  r1.slice(0, c2).replace(/  · ··/g, ':'),
-      senderName: r2.slice(0, c3).replace(/  · ··/g, ':'),
+      groupName:  r1.slice(0, c2).replace(/   ·/g, ':'),
+      senderName: r2.slice(0, c3).replace(/   ·/g, ':'),
       quoted:     cleanTokens(r2.slice(c3+1)),
       message:    content.slice(newlineIdx+1),
     };
@@ -343,7 +343,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
                             <span style={{ fontSize: 11, color: C.text2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: 240, lineHeight: 1.4 }}>
                               {(msg.replied_message.content || '')
                                 .replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1')
-                                .replace(/\{\{file:[^:]+:([^:]+):[^}]+\}\}/g, 'ð · $1')
+                                .replace(/\{\{file:[^:]+:([^:]+):[^}]+\}\}/g, 'ð · $1')
                                 .slice(0, 80)}
                             </span>
                           </button>
@@ -448,7 +448,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
               <span style={{ fontSize: 11, fontWeight: 500, color: '#9090B0' }}>{replyTo.senderName}</span>
               <p style={{ fontSize: 11, color: '#55556E', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyTo.content?.slice(0, 60)}</p>
             </div>
-            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#55556E', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>  · ··</button>
+            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#55556E', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>   ·</button>
           </div>
         )}
         {/* Attached file pills */}
@@ -458,7 +458,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
               <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: '#1C1C26', border: '1px solid #2A2A36', fontSize: 11, color: '#9090B0' }}>
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#55556E', flexShrink: 0 }}><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
                 <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-                <button onMouseDown={e => { e.preventDefault(); setAttachedFiles(prev => prev.filter(r => r.id !== f.id)); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#55556E', lineHeight: 1, padding: 0 }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'} onMouseLeave={e => e.currentTarget.style.color = '#55556E'}>  · ··</button>
+                <button onMouseDown={e => { e.preventDefault(); setAttachedFiles(prev => prev.filter(r => r.id !== f.id)); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#55556E', lineHeight: 1, padding: 0 }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'} onMouseLeave={e => e.currentTarget.style.color = '#55556E'}>   ·</button>
               </span>
             ))}
           </div>
@@ -477,7 +477,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
             <button onClick={() => setShowToolbar(v => !v)} title="Attach / Format" style={{ flexShrink: 0, width: 44, alignSelf: 'stretch', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: showToolbar ? '#6366F1' : '#55556E', transition: 'color 0.15s' }} onMouseEnter={e => { if (!showToolbar) e.currentTarget.style.color = '#9090B0'; }} onMouseLeave={e => { if (!showToolbar) e.currentTarget.style.color = '#55556E'; }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
             </button>
-            <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown} rows={1} placeholder={`Message ${other?.name}  · ··`} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: '#EEEEF8', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
+            <textarea ref={textareaRef} value={text} onChange={handleTypingInput} onKeyDown={handleKeyDown} rows={1} placeholder={`Message ${other?.name}   ·`} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '12px 8px', fontSize: 13, fontWeight: 300, color: '#EEEEF8', resize: 'none', fontFamily: 'Inter, sans-serif', minHeight: 46, maxHeight: 130, overflowY: 'auto', boxSizing: 'border-box', lineHeight: 1.5 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px'; }}/>
             <div style={{ padding: '8px 8px 8px 4px', flexShrink: 0, display: 'flex', alignItems: 'flex-end' }}>
               <button onClick={sendMessage} disabled={!text.trim() && attachedFiles.length === 0} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: (text.trim() || attachedFiles.length > 0) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (text.trim() || attachedFiles.length > 0) ? '#6366F1' : '#2A2A3A', color: '#fff', transition: 'all 0.15s' }} onMouseEnter={e => { if (text.trim() || attachedFiles.length > 0) e.currentTarget.style.background = '#4f46e5'; }} onMouseLeave={e => { e.currentTarget.style.background = (text.trim() || attachedFiles.length > 0) ? '#6366F1' : '#2A2A3A'; }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>

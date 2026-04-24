@@ -6,7 +6,7 @@ import QuizBuilder from './QuizBuilder';
 import ConfirmDialog from './ui/ConfirmDialog';
 import FilePreviewModal from './ui/FilePreviewModal';
 
-//  · · · · Design system from brand palette  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Design system from brand palette  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 const C = {
   bg:       '#131313',
   surface:  '#1A1A1A',
@@ -34,18 +34,18 @@ const C = {
 const FF = "'Inter', sans-serif";
 const FM = "'Manrope', 'Inter', sans-serif";
 
-const fmt     = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ' · ·';
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ' · ·';
+const fmt     = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ' · · ';
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ' · · ';
 const isPast  = (d) => d && new Date(d) < new Date();
 
-//  · · · · Shared input  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Shared input  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 const inp = {
   width: '100%', background: C.card, border: `1px solid ${C.border}`,
   borderRadius: 8, padding: '10px 14px', fontSize: 13, color: C.t1,
   outline: 'none', fontFamily: FF, boxSizing: 'border-box', transition: 'border-color 0.15s',
 };
 
-//  · · · · Icon badge (square rounded icon container)  · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Icon badge (square rounded icon container)  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function IconBadge({ color, dim, children }) {
   return (
     <div style={{ width: 38, height: 38, borderRadius: 10, background: dim, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${color}22` }}>
@@ -54,7 +54,7 @@ function IconBadge({ color, dim, children }) {
   );
 }
 
-//  · · · · Status pill  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Status pill  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function Pill({ label, color, dim }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: dim, border: `1px solid ${color}35`, fontSize: 10, fontWeight: 600, color, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
@@ -64,7 +64,7 @@ function Pill({ label, color, dim }) {
   );
 }
 
-//  · · · · Outlined button  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Outlined button  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function OutlineBtn({ onClick, children, color = C.t2, hoverColor = C.primary, style: s = {} }) {
   const [hov, setHov] = useState(false);
   return (
@@ -76,7 +76,7 @@ function OutlineBtn({ onClick, children, color = C.t2, hoverColor = C.primary, s
   );
 }
 
-//  · · · · Primary button  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Primary button  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function PrimaryBtn({ onClick, type = 'button', disabled, children, color = C.primary, textColor = '#131313', style: s = {} }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled}
@@ -86,7 +86,7 @@ function PrimaryBtn({ onClick, type = 'button', disabled, children, color = C.pr
   );
 }
 
-//  · · · · Modal shell  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Modal shell  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function Modal({ title, onClose, maxWidth = 500, children }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflowY: 'auto' }}
@@ -106,7 +106,7 @@ function Modal({ title, onClose, maxWidth = 500, children }) {
   );
 }
 
-//  · · · · Field wrapper  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Field wrapper  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function Field({ label, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -116,7 +116,7 @@ function Field({ label, children }) {
   );
 }
 
-//  · · · · Create Assignment Modal  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Create Assignment Modal  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function CreateModal({ groupId, onCreated, onClose }) {
   const [form, setForm] = useState({ title: '', description: '', due_date: '', due_time: '', allow_offline: false });
   const [loading, setLoading] = useState(false);
@@ -144,7 +144,7 @@ function CreateModal({ groupId, onCreated, onClose }) {
             onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.border} />
         </Field>
         <Field label="Description">
-          <textarea style={{ ...inp, resize: 'vertical', minHeight: 80 }} placeholder="Instructions or details · ·"
+          <textarea style={{ ...inp, resize: 'vertical', minHeight: 80 }} placeholder="Instructions or details..."
             value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             onFocus={e => e.target.style.borderColor = C.primary} onBlur={e => e.target.style.borderColor = C.border} />
         </Field>
@@ -173,14 +173,14 @@ function CreateModal({ groupId, onCreated, onClose }) {
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
           <OutlineBtn onClick={onClose}>Cancel</OutlineBtn>
-          <PrimaryBtn type="submit" disabled={loading}>{loading ? 'Creating · ·' : 'Create Assignment'}</PrimaryBtn>
+          <PrimaryBtn type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create Assignment'}</PrimaryBtn>
         </div>
       </form>
     </Modal>
   );
 }
 
-//  · · · · Edit Assignment Modal  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Edit Assignment Modal  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function EditAssignmentModal({ item, groupId, onUpdated, onClose }) {
   const toDateInput = (iso) => iso ? iso.slice(0, 10) : '';
   const toTimeInput = (iso) => iso ? new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
@@ -249,7 +249,7 @@ function EditAssignmentModal({ item, groupId, onUpdated, onClose }) {
   );
 }
 
-//  · · · · Edit Quiz Modal (info only, no questions)  · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Edit Quiz Modal (info only, no questions)  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function EditQuizModal({ item, groupId, onUpdated, onClose }) {
   const toDateInput = (iso) => {
     if (!iso) return '';
@@ -352,7 +352,7 @@ function EditQuizModal({ item, groupId, onUpdated, onClose }) {
   );
 }
 
-//  · · · · Submit Modal (student)  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Submit Modal (student)  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function SubmitModal({ assignment, groupId, onDone, onClose }) {
   const [note, setNote] = useState('');
   const [file, setFile] = useState(null);
@@ -432,7 +432,7 @@ function SubmitModal({ assignment, groupId, onDone, onClose }) {
         <form onSubmit={handleSubmit} style={{ padding: '0 28px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {isOffline ? (
-            /* Offline assignment  · · no upload needed */
+            /* Offline assignment  · ·  no upload needed */
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '32px 20px', borderRadius: 12, background: C.card, border: `1px solid ${C.border}` }}>
               <div style={{ width: 52, height: 52, borderRadius: '50%', background: C.greenDim, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="24" height="24" viewBox="0 0 16 16" fill={C.green}><path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2zm6.5 4.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 10.293V6.5a.5.5 0 0 1 1 0z"/></svg>
@@ -494,7 +494,7 @@ function SubmitModal({ assignment, groupId, onDone, onClose }) {
             {!isOffline && (
               <button type="submit" disabled={loading}
                 style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg, ${C.primary}, #9899e8)`, color: '#131313', fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: FF, opacity: loading ? 0.7 : 1, letterSpacing: '0.01em' }}>
-                {loading ? 'Submitting · ·' : 'Submit Assignment'}
+                {loading ? 'Submitting...' : 'Submit Assignment'}
               </button>
             )}
           </div>
@@ -512,7 +512,7 @@ function SubmitModal({ assignment, groupId, onDone, onClose }) {
   );
 }
 
-//  · · · · Report table (shared by assignment + quiz)  · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Report table (shared by assignment + quiz)  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function ReportTable({ headers, rows, loading }) {
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}>
@@ -533,7 +533,7 @@ function ReportTable({ headers, rows, loading }) {
   );
 }
 
-//  · · · · Assignment Report Modal  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Assignment Report Modal  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function ReportModal({ assignment, groupId, onClose }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -566,7 +566,7 @@ function ReportModal({ assignment, groupId, onClose }) {
     report.forEach(r => rows.push([
       r.name, r.roll_no,
       r.submitted ? (r.is_overdue ? 'Overdue' : 'Submitted') : 'Not Submitted',
-      r.attempts, fmtDate(r.last_submitted_at), r.file_name || ' · ·', r.note || ''
+      r.attempts, fmtDate(r.last_submitted_at), r.file_name || ' · · ', r.note || ''
     ]));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const a = document.createElement('a');
@@ -630,13 +630,13 @@ function ReportModal({ assignment, groupId, onClose }) {
                               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
                               View
                             </button>
-                          ) : <span style={{ color: C.t4, fontSize: 11 }}> · ·</span>}
+                          ) : <span style={{ color: C.t4, fontSize: 11 }}> · · </span>}
                         </td>
                         {/* Note */}
                         <td style={{ padding: '11px 18px', color: C.t2, maxWidth: 200 }}>
                           {r.note
                             ? <span style={{ fontSize: 11, color: C.t2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: 180 }} title={r.note}>{r.note}</span>
-                            : <span style={{ color: C.t4, fontSize: 11 }}> · ·</span>}
+                            : <span style={{ color: C.t4, fontSize: 11 }}> · · </span>}
                         </td>
                       </>
                     )}
@@ -647,14 +647,14 @@ function ReportModal({ assignment, groupId, onClose }) {
                             disabled={marking === r.id}
                             onClick={() => handleMarkOffline(r.id, true)}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, border: `1px solid rgba(239,68,68,0.3)`, background: C.redDim, color: C.red, fontSize: 10, fontWeight: 600, cursor: marking === r.id ? 'not-allowed' : 'pointer', fontFamily: FF, opacity: marking === r.id ? 0.6 : 1 }}>
-                            {marking === r.id ? 'Updating · ·' : 'Unmark'}
+                            {marking === r.id ? 'Updating...' : 'Unmark'}
                           </button>
                         ) : (
                           <button
                             disabled={marking === r.id}
                             onClick={() => handleMarkOffline(r.id, false)}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, border: `1px solid ${C.greenDim}`, background: C.greenDim, color: C.green, fontSize: 10, fontWeight: 600, cursor: marking === r.id ? 'not-allowed' : 'pointer', fontFamily: FF, opacity: marking === r.id ? 0.6 : 1 }}>
-                            {marking === r.id ? 'Updating · ·' : 'Mark Submitted'}
+                            {marking === r.id ? 'Updating...' : 'Mark Submitted'}
                           </button>
                         )}
                       </td>
@@ -673,7 +673,7 @@ function ReportModal({ assignment, groupId, onClose }) {
   );
 }
 
-//  · · · · Quiz Report Modal  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Quiz Report Modal  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function QuizReportModal({ quiz, groupId, onClose }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -685,7 +685,7 @@ function QuizReportModal({ quiz, groupId, onClose }) {
   const downloadCSV = () => {
     if (!report) return;
     const rows = [['Name', 'Roll No.', 'Completed', 'Score', 'Submitted At']];
-    report.forEach(r => rows.push([r.name, r.roll_no, r.completed ? 'Yes' : 'No', r.score != null ? `${r.score}/${r.total}` : ' · ·', fmtDate(r.submitted_at)]));
+    report.forEach(r => rows.push([r.name, r.roll_no, r.completed ? 'Yes' : 'No', r.score != null ? `${r.score}/${r.total}` : ' · · ', fmtDate(r.submitted_at)]));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -718,7 +718,7 @@ function QuizReportModal({ quiz, groupId, onClose }) {
               <td style={{ padding: '11px 18px', color: C.primary, fontWeight: 600 }}>
                 {r.score != null ? (
                   <>{r.score}/{r.total}<span style={{ fontSize: 10, color: C.t3, marginLeft: 6 }}>({Math.round((r.score / r.total) * 100)}%)</span></>
-                ) : ' · ·'}
+                ) : ' · · '}
               </td>
               <td style={{ padding: '11px 18px', color: C.t3 }}>{fmtDate(r.submitted_at)}</td>
             </tr>
@@ -728,7 +728,7 @@ function QuizReportModal({ quiz, groupId, onClose }) {
   );
 }
 
-//  · · · · Quiz Builder Modal wrapper  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Quiz Builder Modal wrapper  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function QuizBuilderModal({ groupId, onCreated, onClose }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflowY: 'auto' }}
@@ -740,7 +740,7 @@ function QuizBuilderModal({ groupId, onCreated, onClose }) {
   );
 }
 
-//  · · · · Row item (assignment or quiz)  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Row item (assignment or quiz)  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function ItemRow({ icon, iconColor, iconDim, title, subtitle, col1, col2, col3, statusPill, actions, isLast }) {
   const [hov, setHov] = useState(false);
   return (
@@ -766,7 +766,7 @@ function ItemRow({ icon, iconColor, iconDim, title, subtitle, col1, col2, col3, 
       {col3 !== undefined && (
         <div style={{ width: 90, flexShrink: 0 }}>{col3}</div>
       )}
-      {/* Status  · · wider so pill doesn't overlap */}
+      {/* Status  · ·  wider so pill doesn't overlap */}
       <div style={{ width: 140, flexShrink: 0, display: 'flex', justifyContent: 'flex-start' }}>{statusPill}</div>
       {/* Actions */}
       <div style={{ width: 160, flexShrink: 0, display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>{actions}</div>
@@ -774,7 +774,7 @@ function ItemRow({ icon, iconColor, iconDim, title, subtitle, col1, col2, col3, 
   );
 }
 
-//  · · · · Three-dot dropdown menu  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Three-dot dropdown menu  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function DotsMenu({ items }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -793,7 +793,7 @@ function DotsMenu({ items }) {
         <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
       </button>
       {open && (
-        <div style={{ position: 'absolute', right: 0, top: 32, zIndex: 50, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: 4, minWidth: 130, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        <div style={{ position: 'absolute', right: 0, top: 32, zIndex: 200, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: 4, minWidth: 130, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
           {items.map(({ label, color = C.t1, onClick }) => (
             <button key={label} onClick={() => { setOpen(false); onClick(); }}
               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 7, border: 'none', background: 'none', color, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: FF, transition: 'background 0.12s' }}
@@ -808,7 +808,7 @@ function DotsMenu({ items }) {
   );
 }
 
-//  · · · · Assignment row  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Assignment row  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function AssignmentRow({ item, isTeacher, onDelete, onSubmit, onReport, onEdit, onClose, onViewSubmission, isLast }) {
   const past     = isPast(item.due_date);
   const isClosed = !!item.closed_at;
@@ -818,7 +818,7 @@ function AssignmentRow({ item, isTeacher, onDelete, onSubmit, onReport, onEdit, 
   const attemptsLeft  = 2 - used;
   const canSubmit = !isTeacher && !isOffline && attemptsLeft > 0 && !isClosed;
 
-  //  · · · · Student status pill  · · · ·
+  //  · ·  · ·  Student status pill  · ·  · · 
   let statusPill;
   if (isTeacher) {
     statusPill = isClosed
@@ -899,7 +899,7 @@ function AssignmentRow({ item, isTeacher, onDelete, onSubmit, onReport, onEdit, 
   );
 }
 
-//  · · · · Quiz row  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Quiz row  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function QuizRow({ item, isTeacher, groupId, onDelete, onReport, onEdit, onClose, isLast }) {
   const now    = new Date().getTime();
   const starts = new Date(item.starts_at).getTime();
@@ -963,7 +963,7 @@ function QuizRow({ item, isTeacher, groupId, onDelete, onReport, onEdit, onClose
   );
 }
 
-//  · · · · Stat card  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Stat card  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function StatCard({ label, value, color, dim, icon }) {
   return (
     <div style={{ flex: 1, background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, overflow: 'hidden', position: 'relative' }}>
@@ -979,7 +979,7 @@ function StatCard({ label, value, color, dim, icon }) {
   );
 }
 
-//  · · · · Section header  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Section header  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function SectionHeader({ label, count, color, dim }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 20px', marginBottom: 0 }}>
@@ -989,7 +989,7 @@ function SectionHeader({ label, count, color, dim }) {
   );
 }
 
-//  · · · · Main Panel  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Main Panel  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 export default function SubmissionsPanel({ group }) {
   const { user } = useAuth();
   const { addToast } = useToast();
@@ -1098,7 +1098,7 @@ export default function SubmissionsPanel({ group }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: C.bg, fontFamily: FF, overflow: 'hidden' }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
-      {/*  · · · · Top bar  · · · · */}
+      {/*  · ·  · ·  Top bar  · ·  · ·  */}
       <div style={{ padding: '24px 28px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexShrink: 0, background: C.surface }}>
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 4px' }}>
@@ -1123,7 +1123,7 @@ export default function SubmissionsPanel({ group }) {
         )}
       </div>
 
-      {/*  · · · · Scrollable body  · · · · */}
+      {/*  · ·  · ·  Scrollable body  · ·  · ·  */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
@@ -1156,7 +1156,7 @@ export default function SubmissionsPanel({ group }) {
             {quizzes.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <SectionHeader label="Quizzes" count={quizzes.length} color={C.secondary} dim={C.secondaryDim} />
-                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'visible' }}>
                   {/* Table header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '10px 20px', borderBottom: `1px solid ${C.border}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}>
@@ -1180,7 +1180,7 @@ export default function SubmissionsPanel({ group }) {
             {assignments.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <SectionHeader label="Assignments" count={assignments.length} color={C.primary} dim={C.primaryDim} />
-                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'visible' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '10px 20px', borderBottom: `1px solid ${C.border}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1 }}>
                       <div style={{ width: 38, flexShrink: 0 }} />

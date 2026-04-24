@@ -280,7 +280,9 @@ export default function OnboardingWizard({ onComplete }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '36px 32px', width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', animation: 'popIn 280ms cubic-bezier(0.34,1.2,0.64,1) both', position: 'relative' }}>
+      {/* gradient glow */}
+      <div style={{ position: 'absolute', width: 540, height: 380, background: 'radial-gradient(ellipse at center, rgba(165,166,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', borderRadius: '50%' }} />
+      <div style={{ background: '#111114', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '36px 32px', width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', animation: 'popIn 280ms cubic-bezier(0.34,1.2,0.64,1) both', position: 'relative', zIndex: 1, boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
 
         {/* Skip button */}
         {step < 3 && (

@@ -48,7 +48,7 @@ function urgencyStyle(days) {
   return               { color: P.text3,      bg: 'transparent', label: `${days}d left` };
 }
 
-//  · · · · Mini calendar  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Mini calendar  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function MiniCalendar({ dues, onDayClick, selectedDay }) {
   const today = new Date();
   const [viewYear, setViewYear]   = useState(today.getFullYear());
@@ -155,7 +155,7 @@ function MiniCalendar({ dues, onDayClick, selectedDay }) {
   );
 }
 
-//  · · · · Due card  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Due card  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function DueCard({ due, onNavigate }) {
   const [hov, setHov] = useState(false);
   const days = daysUntil(due.due_date);
@@ -180,7 +180,7 @@ function DueCard({ due, onNavigate }) {
           <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: urg.bg, color: urg.color, border: `1px solid ${urg.color}40` }}>
             {urg.label}
           </span>
-          {/* Category  · · always accent-colored */}
+          {/* Category  · ·  always accent-colored */}
           <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: cat.bg, color: cat.color, border: `1px solid ${cat.color}50` }}>
             {cat.label}
           </span>
@@ -227,7 +227,7 @@ function DueCard({ due, onNavigate }) {
   );
 }
 
-//  · · · · Filter row (inline dropdowns)  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Filter row (inline dropdowns)  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 function FilterRow({ filter, setFilter, catFilter, setCatFilter }) {
   const statusOptions = [
     { key: 'upcoming', label: 'Upcoming' },
@@ -265,7 +265,7 @@ function FilterRow({ filter, setFilter, catFilter, setCatFilter }) {
   );
 }
 
-//  · · · · Main component  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+//  · ·  · ·  Main component  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 export default function GlobalDuesPanel({ onNavigateToGroup }) {
   const [dues, setDues]           = useState([]);
   const [loading, setLoading]     = useState(true);

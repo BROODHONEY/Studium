@@ -102,39 +102,34 @@ export default function FilePickerPopover({ groupId, onPick, onClose, triggerRef
         left: pos.left,
         width: POP_W,
         zIndex: 9999,
-        background: '#111111',
-        border: '1px solid #2a2a2a',
-        borderRadius: 12,
+        background: '#111114',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 14,
         boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
         overflow: 'hidden',
         fontFamily: 'Inter, sans-serif',
       }}>
 
       {/* Header */}
-      <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid #1c1c1c' }}>
+      <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em' }}>Attach file</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', lineHeight: 0, padding: 2 }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
-            </svg>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#555', letterSpacing: '0.14em', textTransform: 'uppercase' }}>Attach File</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#444', lineHeight: 0, padding: 2, transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+            onMouseLeave={e => e.currentTarget.style.color = '#444'}>
+            <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        {/* Search */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d0d', border: '1px solid #1c1c1c', borderRadius: 8, padding: '7px 10px' }}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0d10', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '7px 10px' }}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="#555" style={{ flexShrink: 0 }}>
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
           </svg>
           <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search files…"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif' }}/>
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, color: '#ccc', fontFamily: 'Inter, sans-serif' }}/>
           {search && (
-            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', lineHeight: 0, padding: 0 }}>
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>
-              </svg>
+            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#444', lineHeight: 0, padding: 0 }}>
+              <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           )}
         </div>
@@ -145,25 +140,25 @@ export default function FilePickerPopover({ groupId, onPick, onClose, triggerRef
         {loading ? (
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ height: 44, borderRadius: 8, background: '#0d0d0d' }}/>
+              <div key={i} style={{ height: 44, borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}/>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)', padding: '20px', textAlign: 'center', fontStyle: 'italic' }}>
+          <p style={{ fontSize: 12, color: '#555', padding: '20px', textAlign: 'center' }}>
             {files.length === 0 ? 'No files uploaded yet' : 'No matches'}
           </p>
         ) : (
           filtered.map(file => (
             <button key={file.id} onClick={() => handlePick(file)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(165,166,246,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'none'}>
               <FileIcon mimeType={file.file_type} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.75)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.filename}</p>
-                <p style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.25)', margin: '2px 0 0' }}>{file.users?.name}</p>
+                <p style={{ fontSize: 12, fontWeight: 500, color: '#ccc', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.filename}</p>
+                <p style={{ fontSize: 10, color: '#555', margin: '2px 0 0' }}>{file.users?.name}</p>
               </div>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.15)', flexShrink: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="#444" style={{ flexShrink: 0 }}>
                 <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
               </svg>
             </button>

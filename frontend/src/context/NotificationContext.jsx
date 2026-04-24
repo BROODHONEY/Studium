@@ -48,7 +48,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   const clear    = useCallback(() => { setNotifications([]); setHasUnread(false); }, []);
   const dismiss  = useCallback((id) => setNotifications(prev => prev.filter(n => n.id !== id)), []);
 
-  //  · · · · On login: fetch missed announcements + dues for all groups  · · · ·
+  //  · ·  · ·  On login: fetch missed announcements + dues for all groups  · ·  · · 
   useEffect(() => {
     if (!user?.id || !groups?.length) return;
 
@@ -117,7 +117,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
                 add({
                   type: 'message',
                   title: `Unread messages in ${group.name}`,
-                  body: latest.content?.slice(0, 80) || 'ð · Sent a file',
+                  body: latest.content?.slice(0, 80) || 'ð · Sent a file',
                   groupId: group.id, groupName: group.name,
                   at: new Date(latest.created_at),
                 });
@@ -138,7 +138,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   const activeGroupRef2 = useRef(activeGroupId);
   useEffect(() => { activeGroupRef2.current = activeGroupId; }, [activeGroupId]);
 
-  //  · · · · Stamp last-seen timestamps when a group is opened  · · · ·
+  //  · ·  · ·  Stamp last-seen timestamps when a group is opened  · ·  · · 
   useEffect(() => {
     if (!activeGroupId || !user?.id) return;
     const now = new Date().toISOString();
@@ -147,13 +147,13 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     setLastSeen(user.id, activeGroupId, now, lastSeenMsgKey);
   }, [activeGroupId, user?.id]);
 
-  //  · · · · Clear DM unread when convo is opened  · · · ·
+  //  · ·  · ·  Clear DM unread when convo is opened  · ·  · · 
   useEffect(() => {
     if (!activeConvoId) return;
     setDmUnreads(prev => { const next = new Set(prev); next.delete(activeConvoId); return next; });
   }, [activeConvoId]);
 
-  //  · · · · Clear tab-level unreads only when that tab is actually opened  · · · ·
+  //  · ·  · ·  Clear tab-level unreads only when that tab is actually opened  · ·  · · 
   const prevTabRef = useRef(activeTab);
   const prevGroupRef = useRef(activeGroupId);
   useEffect(() => {
@@ -161,7 +161,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
     prevGroupRef.current = activeGroupId;
     prevTabRef.current = activeTab;
 
-    // Don't clear on initial group open  · · let each tab clear itself when visited
+    // Don't clear on initial group open  · ·  let each tab clear itself when visited
     if (groupChanged) return;
     if (!activeGroupId || !activeTab) return;
 
@@ -175,14 +175,14 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, activeGroupId]);
 
-  //  · · · · Browser notification permission  · · · ·
+  //  · ·  · ·  Browser notification permission  · ·  · · 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
-  //  · · · · Live socket events  · · · ·
+  //  · ·  · ·  Live socket events  · ·  · · 
   useEffect(() => {
     if (!socket || !user) return;
 
@@ -199,7 +199,7 @@ export function NotificationProvider({ activeGroupId, activeConvoId, activeTab, 
       const group = groupsRef.current?.find(g => g.id === msg.group_id);
       const groupName = group?.name || 'a group';
       const senderName = sender?.name || 'Someone';
-      const body = msg.content?.slice(0, 80) || 'ð · Sent a file';
+      const body = msg.content?.slice(0, 80) || 'ð · Sent a file';
 
       add({ type: 'message', title: `${senderName} in ${groupName}`, body, groupId: msg.group_id, groupName });
 

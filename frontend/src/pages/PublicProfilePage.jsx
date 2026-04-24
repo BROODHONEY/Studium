@@ -129,7 +129,7 @@ export default function PublicProfilePage() {
                   ].map(({ label, value }) => (
                     <div key={label}>
                       <p style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 6px' }}>{label}</p>
-                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0 }}>{value || ' · ·'}</p>
+                      <p style={{ fontSize: 16, fontWeight: 600, color: T.text1, margin: 0 }}>{value || ' · · '}</p>
                     </div>
                   ))}
                 </div>

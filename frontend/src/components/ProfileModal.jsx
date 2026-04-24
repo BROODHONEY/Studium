@@ -26,11 +26,13 @@ export default function ProfileModal({ userId, onClose, onViewFull }) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(12px)', padding: 16 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', padding: 16 }}
       onClick={onClose}
     >
+      {/* gradient glow */}
+      <div style={{ position: 'absolute', width: 360, height: 260, background: 'radial-gradient(ellipse at center, rgba(165,166,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', borderRadius: '50%' }} />
       <div
-        style={{ width: '100%', maxWidth: 340, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, overflow: 'hidden', fontFamily: 'Inter, sans-serif', boxShadow: '0 32px 80px rgba(0,0,0,0.8)' }}
+        style={{ width: '100%', maxWidth: 340, background: '#111114', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, overflow: 'hidden', fontFamily: 'Inter, sans-serif', boxShadow: '0 24px 80px rgba(0,0,0,0.6)', position: 'relative', zIndex: 1 }}
         onClick={e => e.stopPropagation()}
       >
         {loading ? (
