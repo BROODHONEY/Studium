@@ -4,6 +4,7 @@ import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 import { getStoredInstitution, clearStoredInstitution } from '../utils/institution';
+import ShinyButton from '../components/ui/ShinyButton';
 
 export default function LoginPage() {
   const { login }   = useAuth();
@@ -78,15 +79,15 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="btn-auth" style={{ marginTop: 4 }}>
+          <ShinyButton type="submit" disabled={loading} className="w-full py-3" style={{ marginTop: 4 }}>
             {loading ? 'Signing in…' : 'Sign In'}
-          </button>
+          </ShinyButton>
         </form>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
           <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
             Don't have an account?{' '}
-            <Link to="/register" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>Sign up</Link>
+            <Link to="/register" style={{ color: '#FF6B35', fontWeight: 500, textDecoration: 'none' }}>Sign up</Link>
           </p>
           <button onClick={() => { clearStoredInstitution(); navigate('/institution-select'); }}
             style={{ background: 'transparent', border: 'none', color: '#555', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', textDecoration: 'underline', padding: 0 }}>
@@ -102,3 +103,4 @@ export default function LoginPage() {
     </AuthLayout>
   );
 }
+

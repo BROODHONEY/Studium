@@ -26,9 +26,9 @@ const TagIcon = ({ type }) => {
 
 export const ANNOUNCEMENT_TAGS = {
   general:    { label: 'General',    border: 'border-l-[#9E9E9E]',  badge: 'bg-[rgba(158,158,158,0.12)] text-[#BDBDBD] border-[rgba(158,158,158,0.25)]' },
-  urgent:     { label: 'Urgent',     border: 'border-l-[#FFB38E]',  badge: 'bg-[rgba(255,179,142,0.14)] text-[#FFB38E] border-[rgba(255,179,142,0.30)]' },
-  exam:       { label: 'Exam',       border: 'border-l-[#C0C1FF]',  badge: 'bg-[rgba(192,193,255,0.12)] text-[#C0C1FF] border-[rgba(192,193,255,0.25)]' },
-  assignment: { label: 'Assignment', border: 'border-l-[#FFB38E]',  badge: 'bg-[rgba(255,179,142,0.10)] text-[#FFC9A8] border-[rgba(255,179,142,0.22)]' },
+  urgent:     { label: 'Urgent',     border: 'border-l-[#FF6B35]',  badge: 'bg-[rgba(255,107,53,0.10)] text-[#FF6B35] border-[rgba(255,107,53,0.28)]' },
+  exam:       { label: 'Exam',       border: 'border-l-[#FF6B35]',  badge: 'bg-[rgba(255,107,53,0.10)] text-[#FF6B35] border-[rgba(255,107,53,0.22)]' },
+  assignment: { label: 'Assignment', border: 'border-l-[#C0C1FF]',  badge: 'bg-[rgba(192,193,255,0.10)] text-[#C0C1FF] border-[rgba(192,193,255,0.20)]' },
   event:      { label: 'Event',      border: 'border-l-[#22C55E]',  badge: 'bg-[rgba(34,197,94,0.10)] text-[#22C55E] border-[rgba(34,197,94,0.22)]' },
 };
 
@@ -103,9 +103,9 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
 
   const TAG_STYLES = {
     general:    { background: 'rgba(158,158,158,0.12)', color: '#BDBDBD', border: '1px solid rgba(158,158,158,0.25)' },
-    urgent:     { background: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: '1px solid rgba(255,179,142,0.30)' },
-    exam:       { background: 'rgba(192,193,255,0.12)', color: '#C0C1FF', border: '1px solid rgba(192,193,255,0.25)' },
-    assignment: { background: 'rgba(255,179,142,0.10)', color: '#FFC9A8', border: '1px solid rgba(255,179,142,0.22)' },
+    urgent:     { background: 'rgba(255,107,53,0.10)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.28)' },
+    exam:       { background: 'rgba(255,107,53,0.10)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.22)' },
+    assignment: { background: 'rgba(192,193,255,0.10)', color: '#C0C1FF', border: '1px solid rgba(192,193,255,0.20)' },
     event:      { background: 'rgba(34,197,94,0.10)',   color: '#22C55E', border: '1px solid rgba(34,197,94,0.22)' },
   };
 
@@ -113,7 +113,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <button onClick={() => setOpen(true)}
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'rgba(91,95,239,0.06)', color: 'var(--text-2)', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.12)'; e.currentTarget.style.color = '#F0F0F0'; }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.10)'; e.currentTarget.style.color = '#F0F0F0'; }}
         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(91,95,239,0.06)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
           <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
@@ -161,7 +161,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <label style={lbl}>Title</label>
               <input style={inp} placeholder="Announcement title" required
                 value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                onFocus={e => e.target.style.borderColor = '#FF6B35'}
                 onBlur={e => e.target.style.borderColor = '#333333'} />
             </div>
 
@@ -172,7 +172,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                 style={{ ...inp, resize: 'none', lineHeight: 1.6, minHeight: 100 }}
                 rows={4} placeholder="Write your announcement   ·" required
                 value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                onFocus={e => e.target.style.borderColor = '#FF6B35'}
                 onBlur={e => e.target.style.borderColor = '#333333'} />
 
               {/* Attached files chips */}
@@ -195,7 +195,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
               <div style={{ position: 'relative', marginTop: 8 }}>
                 <button ref={fileButtonRef} type="button" title="Attach file"
                   onClick={() => setShowFilePicker(v => !v)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 7, border: '1px solid #333333', cursor: 'pointer', fontSize: 11, transition: 'all 0.15s', background: showFilePicker ? 'rgba(192,193,255,0.12)' : 'rgba(255,255,255,0.04)', color: showFilePicker ? '#C0C1FF' : '#555555' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 7, border: '1px solid #333333', cursor: 'pointer', fontSize: 11, transition: 'all 0.15s', background: showFilePicker ? 'rgba(255,107,53,0.10)' : 'rgba(255,255,255,0.04)', color: showFilePicker ? '#FF6B35' : '#555555' }}
                   onMouseEnter={e => { if (!showFilePicker) { e.currentTarget.style.color = '#9E9E9E'; } }}
                   onMouseLeave={e => { if (!showFilePicker) { e.currentTarget.style.color = '#555555'; } }}>
                   <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
@@ -217,7 +217,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             {/* Schedule toggle */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button type="button" onClick={() => setScheduled(v => !v)}
-                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s', background: scheduled ? '#C0C1FF' : '#333333', padding: 0 }}>
+                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s', background: scheduled ? '#FF6B35' : '#333333', padding: 0 }}>
                 <span style={{ position: 'absolute', top: 2, left: scheduled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}/>
               </button>
               <span style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E' }}>Schedule for later</span>
@@ -229,14 +229,14 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
                   <label style={lbl}>Date</label>
                   <input type="date" style={inp} required min={minDate}
                     value={schedDate} onChange={e => setSchedDate(e.target.value)}
-                    onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                    onFocus={e => e.target.style.borderColor = '#FF6B35'}
                     onBlur={e => e.target.style.borderColor = '#333333'} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={lbl}>Time</label>
                   <input type="time" style={inp}
                     value={schedTime} onChange={e => setSchedTime(e.target.value)}
-                    onFocus={e => e.target.style.borderColor = '#C0C1FF'}
+                    onFocus={e => e.target.style.borderColor = '#FF6B35'}
                     onBlur={e => e.target.style.borderColor = '#333333'} />
                 </div>
               </div>
@@ -245,7 +245,7 @@ function AnnouncementForm({ groupId, onCreated, editing, onCancel }) {
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               <button type="submit" disabled={loading}
-                style={{ width: '100%', padding: '14px', background: '#C0C1FF', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
+                style={{ width: '100%', padding: '14px', background: '#FF6B35', border: 'none', borderRadius: 12, color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s', fontFamily: 'Inter, sans-serif' }}>
                 {loading ? 'Saving   ·' : scheduled ? (editing ? 'Reschedule' : 'Schedule') : (editing ? 'Update' : 'Post Now')}
               </button>
               <button type="button" onClick={handleCancel}
@@ -369,12 +369,12 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
     surface:   '#1E1E1E',
     card:      '#252525',
     border:    '#333333',
-    primary:   '#C0C1FF',   /* lavender */
-    primaryHi: '#D4D5FF',
-    primaryLo: 'rgba(192,193,255,0.12)',
-    secondary: '#FFB38E',   /* peach */
-    secondaryHi:'#FFC9A8',
-    secondaryLo:'rgba(255,179,142,0.12)',
+    primary:   '#FF6B35',   /* warm orange */
+    primaryHi: '#FF8C5A',
+    primaryLo: 'rgba(255,107,53,0.10)',
+    secondary: '#C0C1FF',   /* soft lavender */
+    secondaryHi:'#D4D5FF',
+    secondaryLo:'rgba(192,193,255,0.12)',
     tertiary:  '#9E9E9E',   /* grey */
     tertiaryHi:'#BDBDBD',
     tertiaryLo:'rgba(158,158,158,0.12)',
@@ -393,8 +393,8 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: P.bg, fontFamily: 'Inter, sans-serif', position: 'relative' }}>
       {/* Subtle top-right glow */}
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(255,107,53,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(192,193,255,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 28px 60px', position: 'relative' }}>
         <ConfirmDialog
@@ -420,7 +420,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
 
           {/* Meta strip */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, color: P.primary, background: P.primaryLo, border: `1px solid rgba(192,193,255,0.25)`, borderRadius: 6, padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, color: P.primary, background: P.primaryLo, border: `1px solid rgba(255,107,53,0.22)`, borderRadius: 6, padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
               {myRole}
             </span>
@@ -480,7 +480,7 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
                       reactionMap[r.emoji].push(r.user_id);
                     });
                     const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-                    const avatarColors = ['#C0C1FF','#7072AC','#B95F00','#0d9488','#db2777'];
+                    const avatarColors = ['#FF6B35','#7072AC','#B95F00','#0d9488','#db2777'];
                     const avatarBg = (n) => avatarColors[(n?.charCodeAt(0) || 0) % avatarColors.length];
                     return (
                       <div key={a.id}
@@ -822,3 +822,6 @@ export default function GroupOverview({ group, onFileRef, onOpenCalendar }) {
     </div>
   );
 }
+
+
+

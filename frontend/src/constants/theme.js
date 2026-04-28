@@ -3,23 +3,23 @@
  * Import this instead of defining local `const C = { ... }` in each component.
  */
 export const palette = {
-  shell:       '#0E0E0E',
+  shell:       '#131313',
   sidebar:     '#141414',
-  surface:     '#1A1A1A',
-  raised:      '#222222',
+  surface:     '#1E1E1E',
+  raised:      '#252525',
   bg:          '#181818',
   overlay:     '#2E2E2E',
-  border:      '#2A2A2A',
-  borderHi:    '#383838',
+  border:      '#333333',
+  borderHi:    '#444444',
 
-  primary:     '#C0C1FF',
-  primaryHi:   '#D4D5FF',
-  primaryLo:   'rgba(192,193,255,0.10)',
-  primaryMid:  'rgba(192,193,255,0.20)',
+  primary:     '#FF6B35',
+  primaryHi:   '#FF8C5A',
+  primaryLo:   'rgba(255,107,53,0.10)',
+  primaryMid:  'rgba(255,107,53,0.20)',
 
-  secondary:   '#FFB38E',
-  secondaryHi: '#FFC9A8',
-  secondaryLo: 'rgba(255,179,142,0.12)',
+  secondary:   '#C0C1FF',
+  secondaryHi: '#D4D5FF',
+  secondaryLo: 'rgba(192,193,255,0.12)',
 
   tertiary:    '#9E9E9E',
   tertiaryHi:  '#BDBDBD',
@@ -36,10 +36,12 @@ export const palette = {
 };
 
 /** Avatar background color derived from the first character of a name. */
-const AVATAR_COLORS = ['#4f46e5', '#0d9488', '#C0C1FF', '#db2777', '#d97706', '#16a34a'];
+const AVATAR_COLORS = ['#4f46e5', '#0d9488', '#FF6B35', '#db2777', '#d97706', '#16a34a'];
 export const getAvatarBg = (name) =>
   AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
 /** Two-letter initials from a full name. */
 export const getInitials = (name) =>
   name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+

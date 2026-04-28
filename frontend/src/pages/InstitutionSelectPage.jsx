@@ -4,6 +4,7 @@ import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 import { institutionsAPI } from '../services/api';
 import { storeInstitution } from '../utils/institution';
+import ShinyButton from '../components/ui/ShinyButton';
 
 export default function InstitutionSelectPage() {
   const navigate = useNavigate();
@@ -94,8 +95,8 @@ export default function InstitutionSelectPage() {
                     style={{
                       flex: 1,
                       aspectRatio: '1',
-                      background: filled ? 'rgba(99,102,241,0.1)' : '#1A1A1A',
-                      border: `1.5px solid ${isActive ? '#6366F1' : filled ? 'rgba(99,102,241,0.5)' : '#2A2A2A'}`,
+                      background: filled ? 'rgba(255,107,53,0.08)' : '#1A1A1A',
+                      border: `1.5px solid ${isActive ? '#FF6B35' : filled ? 'rgba(255,107,53,0.4)' : '#2A2A2A'}`,
                       borderRadius: 10,
                       display: 'flex',
                       alignItems: 'center',
@@ -105,7 +106,7 @@ export default function InstitutionSelectPage() {
                       color: '#F0F0F0',
                       fontFamily: "'Manrope','Inter',monospace",
                       transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
-                      boxShadow: isActive ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
+                      boxShadow: isActive ? '0 0 0 3px rgba(255,107,53,0.15)' : 'none',
                     }}
                   >
                     {code[i] ?? <span style={{ color: '#2E2E2E', fontSize: 18 }}>—</span>}
@@ -139,7 +140,7 @@ export default function InstitutionSelectPage() {
             <p style={{ fontSize: 11, color: '#555', margin: '8px 0 0', fontWeight: 300, textAlign: 'center' }}>
               {code.length < 6
                 ? `${6 - code.length} character${6 - code.length !== 1 ? 's' : ''} remaining`
-                : <span style={{ color: '#6366F1' }}>✓ Code complete</span>
+                : <span style={{ color: '#FF6B35' }}>✓ Code complete</span>
               }
             </p>
             <p style={{ fontSize: 11, color: '#444', margin: '4px 0 0', fontWeight: 300, textAlign: 'center' }}>
@@ -147,9 +148,14 @@ export default function InstitutionSelectPage() {
             </p>
           </div>
 
-          <button type="submit" disabled={loading || code.length < 6} className="btn-auth" style={{ marginTop: 4 }}>
+          <ShinyButton
+            type="submit"
+            disabled={loading || code.length < 6}
+            variant={code.length < 6 ? 'ghost' : 'default'}
+            className="w-full mt-1 py-3 text-sm"
+          >
             {loading ? 'Verifying…' : 'Continue'}
-          </button>
+          </ShinyButton>
         </form>
       </div>
     </AuthLayout>

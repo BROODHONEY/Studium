@@ -12,11 +12,11 @@ const C = {
   raised:     '#222222',
   border:     '#2A2A2A',
   borderHi:   '#383838',
-  primary:    '#C0C1FF',
-  primaryLo:  'rgba(192,193,255,0.10)',
-  primaryMid: 'rgba(192,193,255,0.20)',
-  secondary:  '#FFB38E',
-  secondaryLo:'rgba(255,179,142,0.12)',
+  primary:    '#FF6B35',
+  primaryLo:  'rgba(255,107,53,0.10)',
+  primaryMid: 'rgba(255,107,53,0.20)',
+  secondary: '#C0C1FF',
+  secondaryLo: 'rgba(192,193,255,0.12)',
   text1:      '#F0F0F0',
   text2:      '#9E9E9E',
   text3:      '#555555',
@@ -307,7 +307,7 @@ function MessagesTab() {
         <button
           onClick={() => window.location.href = '/dashboard'}
           style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: C.primary, color: '#131313', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#D4D5FF'}
+          onMouseEnter={e => e.currentTarget.style.background = '#FF8C5A'}
           onMouseLeave={e => e.currentTarget.style.background = C.primary}
         >
           Go to Messages
@@ -430,7 +430,7 @@ function FacultyTab({ users, departments, onRefresh }) {
             setShowEmailModal(true);
           }}
           style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: C.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#D4D5FF'}
+          onMouseEnter={e => e.currentTarget.style.background = '#FF8C5A'}
           onMouseLeave={e => e.currentTarget.style.background = C.primary}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -610,7 +610,7 @@ function FacultyTab({ users, departments, onRefresh }) {
                 onClick={handleSendEmail}
                 disabled={!emailSubject || !emailBody}
                 style={{ flex: 1, padding: '10px', borderRadius: 8, border: 'none', background: C.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: (!emailSubject || !emailBody) ? 0.5 : 1, transition: 'all 0.15s' }}
-                onMouseEnter={e => { if (emailSubject && emailBody) e.currentTarget.style.background = '#D4D5FF'; }}
+                onMouseEnter={e => { if (emailSubject && emailBody) e.currentTarget.style.background = '#FF8C5A'; }}
                 onMouseLeave={e => { if (emailSubject && emailBody) e.currentTarget.style.background = C.primary; }}
               >
                 Open in Gmail
@@ -659,7 +659,7 @@ function DepartmentsTab({ departments, users, onAdd, onEdit, onRefresh }) {
         <button
           onClick={onAdd}
           style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: C.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#D4D5FF'}
+          onMouseEnter={e => e.currentTarget.style.background = '#FF8C5A'}
           onMouseLeave={e => e.currentTarget.style.background = C.primary}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -845,7 +845,7 @@ function DepartmentModal({ department, onClose, onSuccess }) {
               type="submit"
               disabled={loading}
               style={{ flex: 1, padding: '10px', borderRadius: 8, border: 'none', background: C.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: loading ? 0.5 : 1, transition: 'all 0.15s' }}
-              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#D4D5FF'; }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#FF8C5A'; }}
               onMouseLeave={e => { if (!loading) e.currentTarget.style.background = C.primary; }}
             >
               {loading ? 'Saving...' : 'Save'}
@@ -1037,7 +1037,7 @@ function UserModal({ user, departments, onClose, onSuccess }) {
               type="submit"
               disabled={loading}
               style={{ flex: 1, padding: '10px', borderRadius: 8, border: 'none', background: C.primary, color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', opacity: loading ? 0.5 : 1, transition: 'all 0.15s' }}
-              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#D4D5FF'; }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#FF8C5A'; }}
               onMouseLeave={e => { if (!loading) e.currentTarget.style.background = C.primary; }}
             >
               {loading ? 'Saving...' : 'Save'}
@@ -1048,3 +1048,7 @@ function UserModal({ user, departments, onClose, onSuccess }) {
     </div>
   );
 }
+
+
+
+

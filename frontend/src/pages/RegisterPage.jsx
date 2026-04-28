@@ -1,8 +1,9 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, institutionsAPI } from '../services/api';
 import AuthLayout from '../components/AuthLayout';
 import { getStoredInstitution, clearStoredInstitution } from '../utils/institution';
+import ShinyButton from '../components/ui/ShinyButton';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ export default function RegisterPage() {
           <div style={{ fontSize: 52, marginBottom: 16 }}>📬</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', margin: '0 0 10px' }}>Verify your email</h2>
           <p style={{ color: '#888', fontSize: 13, lineHeight: 1.6, margin: '0 0 24px' }}>
-            We sent a verification link to <span style={{ color: '#C0C1FF' }}>{form.email}</span>.<br />
+            We sent a verification link to <span style={{ color: '#FF6B35' }}>{form.email}</span>.<br />
             Click the link in the email to activate your account.
           </p>
           <button
@@ -222,15 +223,15 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="btn-auth" style={{ marginTop: 4 }}>
+          <ShinyButton type="submit" disabled={loading} className="w-full py-3" style={{ marginTop: 4 }}>
             {loading ? 'Creating account…' : 'Sign Up'}
-          </button>
+          </ShinyButton>
         </form>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', paddingBottom: 8 }}>
           <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#C0C1FF', fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
+            <Link to="/login" style={{ color: '#FF6B35', fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
           </p>
           <button
             onClick={() => {
@@ -267,3 +268,4 @@ export default function RegisterPage() {
     </AuthLayout>
   );
 }
+

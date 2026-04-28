@@ -8,11 +8,11 @@ const P = {
   overlay:    '#2C2C2C',
   border:     '#333333',
   borderHi:   '#444444',
-  primary:    '#C0C1FF',
-  primaryLo:  'rgba(192,193,255,0.12)',
-  primaryMid: 'rgba(192,193,255,0.22)',
-  secondary:  '#FFB38E',
-  secondaryLo:'rgba(255,179,142,0.12)',
+  primary:    '#FF6B35',
+  primaryLo:  'rgba(255,107,53,0.10)',
+  primaryMid: 'rgba(255,107,53,0.20)',
+  secondary: '#C0C1FF',
+  secondaryLo: 'rgba(192,193,255,0.12)',
   text1:      '#F0F0F0',
   text2:      '#9090A8',
   text3:      '#555566',
@@ -21,8 +21,8 @@ const P = {
 };
 
 export const CATEGORIES = {
-  assignment:  { label: 'Assignment',     color: '#C0C1FF', bg: 'rgba(192,193,255,0.14)' },
-  quiz:        { label: 'Quiz',           color: '#FFB38E', bg: 'rgba(255,179,142,0.14)' },
+  assignment:  { label: 'Assignment',     color: '#FF6B35', bg: 'rgba(192,193,255,0.14)' },
+  quiz:        { label: 'Quiz',           color: '#FF6B35', bg: 'rgba(192,193,255,0.12)' },
   observation: { label: 'Observation',    color: '#22C55E', bg: 'rgba(34,197,94,0.14)'   },
   form:        { label: 'Form / Details', color: '#9E9E9E', bg: 'rgba(158,158,158,0.14)' },
   other:       { label: 'Other',          color: '#555566', bg: 'rgba(85,85,102,0.14)'   },
@@ -305,7 +305,7 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', background: P.bg, fontFamily: 'Inter, sans-serif', position: 'relative' }}>
       <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.07) 0%, transparent 60%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.04) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(192,193,255,0.04) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: 1000, margin: '0 auto', width: '100%', padding: '32px 28px 48px', position: 'relative' }}>
 
@@ -401,12 +401,12 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
             {overdueCount > 0 && (
               <div style={{
                 background: 'linear-gradient(145deg, #1E1208 0%, #1A1010 100%)',
-                border: '1px solid rgba(255,179,142,0.20)',
+                border: '1px solid rgba(192,193,255,0.18)',
                 borderRadius: 14, padding: '20px 20px 16px',
                 position: 'relative', overflow: 'hidden',
               }}>
                 {/* Subtle glow */}
-                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(255,179,142,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(255,107,53,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
                 <p style={{ fontSize: 10, fontWeight: 700, color: P.secondary, textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 8px' }}>
                   Alert
@@ -425,13 +425,13 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
                   onClick={() => setFilter('overdue')}
                   style={{
                     width: '100%', padding: '11px', borderRadius: 10,
-                    background: 'rgba(255,179,142,0.12)', border: '1px solid rgba(255,179,142,0.25)',
+                    background: 'rgba(255,107,53,0.10)', border: '1px solid rgba(192,193,255,0.22)',
                     color: P.secondary, fontSize: 11, fontWeight: 700,
                     letterSpacing: '0.10em', textTransform: 'uppercase',
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,179,142,0.20)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,179,142,0.12)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.18)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.10)'; }}
                 >
                   Review Now
                 </button>
@@ -480,3 +480,7 @@ export default function GlobalDuesPanel({ onNavigateToGroup }) {
     </div>
   );
 }
+
+
+
+

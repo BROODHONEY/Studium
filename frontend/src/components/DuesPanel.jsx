@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
@@ -152,8 +152,8 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
               <label style={DS.lbl}>Category</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {[
-                  { key: 'assignment',  label: 'Assignment',     color: '#C0C1FF' },
-                  { key: 'quiz',        label: 'Quiz',           color: '#FFB38E' },
+                  { key: 'assignment',  label: 'Assignment',     color: '#FF6B35' },
+                  { key: 'quiz',        label: 'Quiz',           color: '#FF6B35' },
                   { key: 'observation', label: 'Observation',    color: '#22C55E' },
                   { key: 'form',        label: 'Form / Details', color: '#9E9E9E' },
                   { key: 'other',       label: 'Other',          color: '#555566' },
@@ -358,9 +358,9 @@ export default function DuesPanel({ group }) {
                               fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
                               textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0,
                               ...(d.category === 'quiz'
-                                ? { background: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: '1px solid rgba(255,179,142,0.30)' }
+                                ? { background: 'rgba(192,193,255,0.12)', color: '#FF6B35', border: '1px solid rgba(192,193,255,0.28)' }
                                 : d.category === 'assignment'
-                                  ? { background: 'rgba(192,193,255,0.12)', color: '#C0C1FF', border: '1px solid rgba(192,193,255,0.25)' }
+                                  ? { background: 'rgba(255,107,53,0.10)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.22)' }
                                   : d.category === 'exam'
                                     ? { background: 'rgba(239,68,68,0.12)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)' }
                                     : { background: 'rgba(158,158,158,0.12)', color: '#9E9E9E', border: '1px solid rgba(158,158,158,0.25)' }
@@ -415,3 +415,6 @@ export default function DuesPanel({ group }) {
     </div>
   );
 }
+
+
+

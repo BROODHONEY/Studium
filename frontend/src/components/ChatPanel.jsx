@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { messagesAPI, groupsAPI } from '../services/api';
@@ -618,7 +618,7 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                                 borderLeft: isOwn ? 'none' : `3px solid ${C.secondary}`,
                                 borderRight: isOwn ? `3px solid ${C.secondary}` : 'none',
                                 borderTop: 'none', borderBottom: 'none',
-                                background: isOwn ? 'rgba(255,179,142,0.10)' : C.secondaryLo,
+                                background: isOwn ? 'rgba(192,193,255,0.10)' : C.secondaryLo,
                                 cursor: 'pointer',
                               }}>
                               <span style={{ fontSize: 11, fontWeight: 600, color: C.secondary, display: 'block' }}>
@@ -851,9 +851,9 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
                     {myRole === 'admin' && (
                       <div style={{ display: 'flex', gap: 8, padding: '0 14px 12px' }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => { const r = getRemainingMinutes(pm.pin_time); setPinTimeModal({ open: true, messageId: pm.id, pin_ttl_minutes: r === null ? '' : String(r), content: pm.content }); }}
-                          style={{ fontSize: 12, fontWeight: 500, padding: '5px 14px', borderRadius: 8, background: 'rgba(192,193,255,0.08)', border: '1px solid rgba(192,193,255,0.15)', color: C.primaryHi, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'background 0.15s' }}
+                          style={{ fontSize: 12, fontWeight: 500, padding: '5px 14px', borderRadius: 8, background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.10)', color: C.primaryHi, cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'background 0.15s' }}
                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(192,193,255,0.16)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(192,193,255,0.08)'}>
+                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,107,53,0.08)'}>
                           Expiry
                         </button>
                         <button onClick={() => handleUnpinMessage(pm.id)}
@@ -934,3 +934,6 @@ export default function ChatPanel({ group, onViewProfile, onFileRef, highlightMe
     </div>
   );
 }
+
+
+

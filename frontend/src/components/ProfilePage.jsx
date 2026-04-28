@@ -13,11 +13,11 @@ const T = {
   cardHi:    '#2C2C2C',
   border:    '#333333',
   borderHi:  '#444444',
-  primary:   '#C0C1FF',
-  primaryHi: '#D4D5FF',
-  primaryLo: 'rgba(192,193,255,0.12)',
-  secondary: '#FFB38E',
-  secondaryLo:'rgba(255,179,142,0.12)',
+  primary:   '#FF6B35',
+  primaryHi: '#FF8C5A',
+  primaryLo: 'rgba(255,107,53,0.10)',
+  secondary: '#C0C1FF',
+  secondaryLo: 'rgba(192,193,255,0.12)',
   green:     '#22C55E',
   greenLo:   'rgba(34,197,94,0.12)',
   amber:     '#F59E0B',
@@ -276,7 +276,7 @@ export default function ProfilePage({ userId, onClose }) {
             <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '28px 32px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 28 }}>
               {/* Ambient glow */}
               <div style={{ position: 'absolute', top: 0, right: 0, width: 340, height: '100%', background: `radial-gradient(ellipse at top right, ${roleColor}10 0%, transparent 65%)`, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 0, left: 0, width: 200, height: '60%', background: 'radial-gradient(ellipse at bottom left, rgba(255,179,142,0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, width: 200, height: '60%', background: 'radial-gradient(ellipse at bottom left, rgba(192,193,255,0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
 
               {/* Avatar */}
               <div style={{ width: 96, height: 96, borderRadius: 20, background: avatarBg(profile?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, fontWeight: 700, color: '#fff', flexShrink: 0, border: `2px solid ${T.borderHi}`, position: 'relative', zIndex: 1 }}>
@@ -465,13 +465,13 @@ export default function ProfilePage({ userId, onClose }) {
 
             {/*  · ·  · ·  Own-profile hint  · ·  · ·  */}
             {isOwn && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 20px', borderRadius: 12, background: 'rgba(192,193,255,0.06)', border: '1px solid rgba(192,193,255,0.12)', marginTop: 4 }}>
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#C0C1FF', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 20px', borderRadius: 12, background: 'rgba(192,193,255,0.06)', border: '1px solid rgba(255,107,53,0.10)', marginTop: 4 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#FF6B35', flexShrink: 0 }}>
                   <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
                   <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
                 </svg>
                 <p style={{ fontSize: 12, fontWeight: 300, color: '#9E9E9E', margin: 0 }}>
-                  To update your profile, go to <span style={{ color: '#C0C1FF', fontWeight: 500 }}>Settings  ·  Account</span>
+                  To update your profile, go to <span style={{ color: '#FF6B35', fontWeight: 500 }}>Settings  ·  Account</span>
                 </p>
               </div>
             )}
@@ -486,3 +486,7 @@ export default function ProfilePage({ userId, onClose }) {
     </div>
   );
 }
+
+
+
+

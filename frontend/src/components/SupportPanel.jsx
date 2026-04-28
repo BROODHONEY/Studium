@@ -36,15 +36,15 @@ function FaqItem({ q, a }) {
 export default function SupportPanel() {
   return (
     <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#181818', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 500, height: 400, background: 'radial-gradient(ellipse at top right, rgba(255,107,53,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top left, rgba(192,193,255,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px', position: 'relative' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(192,193,255,0.18), rgba(192,193,255,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#C0C1FF' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" style={{ color: '#FF6B35' }}>
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
               <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
             </svg>
@@ -56,13 +56,13 @@ export default function SupportPanel() {
         </div>
 
         {/* Contact card */}
-        <div style={{ background: 'linear-gradient(135deg, rgba(192,193,255,0.10), rgba(192,193,255,0.05))', border: '1px solid rgba(192,193,255,0.20)', borderRadius: 14, padding: '20px 24px', marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ background: 'linear-gradient(135deg, rgba(255,107,53,0.10), rgba(192,193,255,0.05))', border: '1px solid rgba(255,107,53,0.20)', borderRadius: 14, padding: '20px 24px', marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
             <p style={{ fontSize: 14, fontWeight: 500, color: '#F0F0F0', margin: '0 0 4px' }}>Need more help?</p>
             <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: 0 }}>Reach out and we'll get back to you.</p>
           </div>
           <a href="mailto:support@studiplus.app"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 9, background: '#C0C1FF', color: '#131313', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'opacity 0.15s', flexShrink: 0 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 9, background: '#FF6B35', color: '#131313', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'opacity 0.15s', flexShrink: 0 }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
             <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
@@ -96,7 +96,7 @@ export default function SupportPanel() {
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', borderRadius: 10, border: '1px solid #333333', background: '#252525', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', transition: 'border-color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(192,193,255,0.3)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#333333'}>
-              <span style={{ color: '#C0C1FF', flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ color: '#FF6B35', flexShrink: 0 }}>{item.icon}</span>
               <div>
                 <p style={{ fontSize: 12, fontWeight: 500, color: '#F0F0F0', margin: 0 }}>{item.label}</p>
                 <p style={{ fontSize: 11, fontWeight: 300, color: '#555555', margin: 0 }}>{item.desc}</p>
@@ -120,3 +120,6 @@ export default function SupportPanel() {
     </div>
   );
 }
+
+
+

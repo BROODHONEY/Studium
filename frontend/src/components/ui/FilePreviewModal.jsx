@@ -7,9 +7,9 @@ const C = {
   raised:   '#252528',
   border:   '#333336',
   borderHi: '#444448',
-  primary:  '#C0C1FF',
-  primaryLo:'rgba(192,193,255,0.12)',
-  secondary:'#FFB38E',
+  primary:  '#FF6B35',
+  primaryLo:'rgba(255,107,53,0.10)',
+  secondary: '#C0C1FF',
   text1:    '#F0F0F0',
   text2:    '#9090A8',
   text3:    '#555566',
@@ -220,7 +220,7 @@ export default function FilePreviewModal({ file, onClose, onDelete, canDelete })
             <button
               onClick={handleDownload}
               disabled={downloading}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, background: downloaded ? 'rgba(34,197,94,0.15)' : C.primaryLo, border: `1px solid ${downloaded ? 'rgba(34,197,94,0.35)' : 'rgba(192,193,255,0.25)'}`, color: downloaded ? C.success : C.primary, fontSize: 12, fontWeight: 600, cursor: downloading ? 'not-allowed' : 'pointer', transition: 'all 0.15s', opacity: downloading ? 0.7 : 1 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, background: downloaded ? 'rgba(34,197,94,0.15)' : C.primaryLo, border: `1px solid ${downloaded ? 'rgba(34,197,94,0.35)' : 'rgba(255,107,53,0.22)'}`, color: downloaded ? C.success : C.primary, fontSize: 12, fontWeight: 600, cursor: downloading ? 'not-allowed' : 'pointer', transition: 'all 0.15s', opacity: downloading ? 0.7 : 1 }}
             >
               {downloading ? (
                 <div style={{ width: 12, height: 12, borderRadius: '50%', border: `2px solid ${C.primaryLo}`, borderTopColor: C.primary, animation: 'spin 0.7s linear infinite' }} />
@@ -343,3 +343,6 @@ function InfoRow({ label, value, truncate }) {
     </div>
   );
 }
+
+
+

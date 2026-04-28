@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import AnimatedContent from '../AnimatedContent';
 
 const FILE_ICONS = {
   'application/pdf': 'pdf',
@@ -112,7 +113,9 @@ export default function MultiUploadModal({ onUpload, onClose }) {
     >
       <div style={{ position: 'absolute', width: 520, height: 360, background: 'radial-gradient(ellipse at center, rgba(165,166,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', borderRadius: '50%' }} />
 
-      <div style={{ width: '100%', maxWidth: 560, background: '#111114', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '85vh', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+      <AnimatedContent immediate distance={18} duration={0.3} ease="power3.out" scale={0.97}
+        style={{ width: '100%', maxWidth: 560, position: 'relative', zIndex: 1 }}>
+      <div style={{ width: '100%', background: '#111114', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '85vh', overflow: 'hidden' }}>
 
         <div style={{ padding: '28px 32px 0' }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 8px' }}>Action Required</p>
@@ -196,6 +199,7 @@ export default function MultiUploadModal({ onUpload, onClose }) {
           </div>
         </div>
       </div>
+      </AnimatedContent>
     </div>
   );
 }

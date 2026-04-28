@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
@@ -8,7 +8,7 @@ import { palette as T, getAvatarBg as avatarBg, getInitials as ini } from '../co
 // Extra tokens not in the shared palette (SettingsPanel-specific)
 const Tx = {
   card:       '#252525',
-  primaryHi:  '#D4D5FF',
+  primaryHi:  '#FF8C5A',
   tertiary:   '#9E9E9E',
   green:      '#22C55E',
   greenLo:    'rgba(34,197,94,0.12)',
@@ -414,7 +414,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
       {/*  · ·  · ·  Hero  · ·  · ·  */}
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '28px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, right: 0, width: 320, height: 200, background: `radial-gradient(ellipse at top right, ${roleColor}10 0%, transparent 65%)`, pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: 200, height: 140, background: 'radial-gradient(ellipse at bottom left, rgba(255,179,142,0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: 200, height: 140, background: 'radial-gradient(ellipse at bottom left, rgba(192,193,255,0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 22, position: 'relative' }}>
           <div style={{ width: 76, height: 76, borderRadius: 20, background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 700, color: '#fff', flexShrink: 0, border: `2px solid ${T.border}` }}>
             {ini(user?.name)}
@@ -565,7 +565,7 @@ function AccountSection({ user, login, token, addToast, onDirtyChange }) {
       {/* Sticky save */}
       {anyEdited && (
         <button onClick={handleSave} disabled={saving}
-          style={{ position: 'sticky', bottom: 16, width: '100%', padding: '13px', borderRadius: 12, background: T.primary, border: 'none', color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1, boxShadow: '0 8px 32px rgba(192,193,255,0.25)', zIndex: 10, transition: 'opacity 0.15s' }}>
+          style={{ position: 'sticky', bottom: 16, width: '100%', padding: '13px', borderRadius: 12, background: T.primary, border: 'none', color: '#131313', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1, boxShadow: '0 8px 32px rgba(255,107,53,0.22)', zIndex: 10, transition: 'opacity 0.15s' }}>
           {saving ? 'Saving...' : 'Save changes'}
         </button>
       )}
@@ -807,13 +807,13 @@ function SignOutButton() {
               <button onClick={logout}
                 style={{
                   flex: 2, padding: '12px', borderRadius: 12,
-                  background: 'rgba(192,193,255,0.15)', border: '1px solid rgba(192,193,255,0.25)',
+                  background: 'rgba(255,107,53,0.10)', border: '1px solid rgba(255,107,53,0.22)',
                   color: T.primary, fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase',
                   fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.22)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(192,193,255,0.15)'; }}>
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.20)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.10)'; }}>
                 Confirm Sign Out
               </button>
             </div>
@@ -855,3 +855,6 @@ export default function SettingsPanel({ activeSection, onDirtyChange }) {
     </div>
   );
 }
+
+
+

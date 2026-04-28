@@ -13,11 +13,11 @@ const C = {
   raised:     '#222222',
   border:     '#2A2A2A',
   borderHi:   '#383838',
-  primary:    '#C0C1FF',
-  primaryLo:  'rgba(192,193,255,0.10)',
-  primaryMid: 'rgba(192,193,255,0.20)',
-  secondary:  '#FFB38E',
-  secondaryLo:'rgba(255,179,142,0.12)',
+  primary:    '#FF6B35',
+  primaryLo:  'rgba(255,107,53,0.10)',
+  primaryMid: 'rgba(255,107,53,0.20)',
+  secondary: '#C0C1FF',
+  secondaryLo: 'rgba(192,193,255,0.12)',
   text1:      '#F0F0F0',
   text2:      '#9E9E9E',
   text3:      '#555555',
@@ -288,7 +288,7 @@ function StudentProfileModal({ student, onClose, onViewFullProfile }) {
               <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}>PDF Preview</span>
               <h2 style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#F0F0F0', margin: 0 }}>{student.name} — Profile</h2>
               <button onClick={handleDownloadPdf}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 9, background: 'rgba(192,193,255,0.12)', border: '1px solid rgba(192,193,255,0.25)', color: '#C0C1FF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 9, background: 'rgba(255,107,53,0.10)', border: '1px solid rgba(255,107,53,0.22)', color: '#FF6B35', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                 ↓ Download / Print PDF
               </button>
               <button onClick={() => { setShowPdfPreview(false); URL.revokeObjectURL(pdfBlobUrl); setPdfBlobUrl(null); }}
@@ -404,7 +404,7 @@ function mdToHtml(md) {
     // inline code
     .replace(/`(.+?)`/g, '<code style="background:#f3f4f6;padding:2px 5px;border-radius:4px;font-family:monospace;font-size:13px;">$1</code>')
     // blockquote
-    .replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid #c0c1ff;margin:8px 0;padding:4px 12px;color:#555;">$1</blockquote>')
+    .replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid #FF6B35;margin:8px 0;padding:4px 12px;color:#555;">$1</blockquote>')
     // hr
     .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">')
     // unordered list items
@@ -813,7 +813,7 @@ function AdvancedFiltersModal({ filters, onChange, onApply, onClose }) {
         {/* Achievement & Cert counts */}
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:12, fontWeight:600, color: C.text2, marginBottom:12, display:'flex', alignItems:'center', gap:8 }}>
-            <span style={{ width:20, height:20, borderRadius:6, background: C.secondaryLo, border:`1px solid rgba(255,179,142,0.25)`, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11 }}>★</span>
+            <span style={{ width:20, height:20, borderRadius:6, background: C.secondaryLo, border:`1px solid rgba(192,193,255,0.22)`, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11 }}>★</span>
             Academic Achievements
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
@@ -841,8 +841,8 @@ function AdvancedFiltersModal({ filters, onChange, onApply, onClose }) {
             <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
               {local.cgpa_min && <span style={{ fontSize:11, background: C.primaryLo, color: C.primary, borderRadius:6, padding:'3px 10px', border:`1px solid ${C.primaryMid}`, fontWeight:600 }}>CGPA ≥ {local.cgpa_min}</span>}
               {local.cgpa_max && <span style={{ fontSize:11, background: C.primaryLo, color: C.primary, borderRadius:6, padding:'3px 10px', border:`1px solid ${C.primaryMid}`, fontWeight:600 }}>CGPA ≤ {local.cgpa_max}</span>}
-              {local.achievement_min && <span style={{ fontSize:11, background: C.secondaryLo, color: C.secondary, borderRadius:6, padding:'3px 10px', border:`1px solid rgba(255,179,142,0.25)`, fontWeight:600 }}>Achievements ≥ {local.achievement_min}</span>}
-              {local.cert_min && <span style={{ fontSize:11, background: C.secondaryLo, color: C.secondary, borderRadius:6, padding:'3px 10px', border:`1px solid rgba(255,179,142,0.25)`, fontWeight:600 }}>Certs ≥ {local.cert_min}</span>}
+              {local.achievement_min && <span style={{ fontSize:11, background: C.secondaryLo, color: C.secondary, borderRadius:6, padding:'3px 10px', border:`1px solid rgba(192,193,255,0.22)`, fontWeight:600 }}>Achievements ≥ {local.achievement_min}</span>}
+              {local.cert_min && <span style={{ fontSize:11, background: C.secondaryLo, color: C.secondary, borderRadius:6, padding:'3px 10px', border:`1px solid rgba(192,193,255,0.22)`, fontWeight:600 }}>Certs ≥ {local.cert_min}</span>}
             </div>
           </div>
         )}
@@ -1159,7 +1159,7 @@ export default function TeacherDashboard() {
               <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                 <span style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>Active Filters:</span>
                 {activeFilters.map(f => (
-                  <span key={f.key} style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', borderRadius:6, background: C.secondaryLo, border:`1px solid rgba(255,179,142,0.25)`, color: C.secondary, fontSize:11, fontWeight:600 }}>
+                  <span key={f.key} style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', borderRadius:6, background: C.secondaryLo, border:`1px solid rgba(192,193,255,0.22)`, color: C.secondary, fontSize:11, fontWeight:600 }}>
                     {f.label}
                     <button onClick={() => removeFilter(f.key)} style={{ background:'none', border:'none', cursor:'pointer', color: C.secondary, fontSize:13, padding:0, lineHeight:1 }}>×</button>
                   </span>
@@ -1359,3 +1359,8 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+
+
+
+
+

@@ -59,15 +59,15 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
       onClick={() => onSelect(group)}
       style={{
         width: '100%', textAlign: 'left', padding: '8px 12px 8px 14px',
-        background: active ? 'rgba(192,193,255,0.10)' : 'transparent',
+        background: active ? 'rgba(255,107,53,0.10)' : 'transparent',
         border: 'none', cursor: 'pointer', display: 'block',
         opacity: isArchived || dragging ? 0.4 : 1,
         transition: 'background 0.12s, transform 0.1s',
         position: 'relative',
-        borderLeft: active ? '2px solid #C0C1FF' : '2px solid transparent',
+        borderLeft: active ? '2px solid #FF6B35' : '2px solid transparent',
       }}
       className="press"
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(192,193,255,0.08)'; }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {pinned && (
@@ -84,7 +84,7 @@ function GroupItem({ group, active, onSelect, onLongPress, onDragStart, onDragOv
           </span>
         )}
         {hasUnread && !active && (
-          <span style={{ flexShrink: 0, width: 6, height: 6, borderRadius: '50%', background: '#C0C1FF', display: 'inline-block' }}/>
+          <span style={{ flexShrink: 0, width: 6, height: 6, borderRadius: '50%', background: '#FF6B35', display: 'inline-block' }}/>
         )}
       </div>
       <p style={{ fontSize: 12, fontWeight: 300, color: '#666666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '2px 0 0' }}>
@@ -318,7 +318,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             {pinnedGroups.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px 6px' }}>
-                  <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: '#C0C1FF' }}>
+                  <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0, color: '#FF6B35' }}>
                     <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
                   </svg>
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#F0F0F0', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pinned</span>
@@ -382,7 +382,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                         onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragFolderId(folder.id); }}
                         onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragFolderId(p => p === folder.id ? null : p); }}
                         onDrop={e => { e.preventDefault(); e.stopPropagation(); handleDropOnFolder(folder.id, e); }}
-                        style={{ borderRadius: 0, overflow: 'hidden', border: dragFolderId === folder.id ? '1px solid rgba(192,193,255,0.35)' : '1px solid var(--border-color)' }}>
+                        style={{ borderRadius: 0, overflow: 'hidden', border: dragFolderId === folder.id ? '1px solid rgba(255,107,53,0.30)' : '1px solid var(--border-color)' }}>
 
                         {/* Folder card header */}
                         <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-raised)' }}
@@ -406,7 +406,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
                                 }}
                                 onBlur={() => { if (renameVal.trim()) persist(folders.map(f => f.id === folder.id ? { ...f, name: renameVal.trim() } : f)); setRenamingId(null); }}
                                 onClick={e => e.stopPropagation()}
-                                style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 14, fontWeight: 500, color: '#F0F0F0', fontFamily: 'Inter, sans-serif', borderBottom: '1px solid rgba(192,193,255,0.4)' }}
+                                style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontSize: 14, fontWeight: 500, color: '#F0F0F0', fontFamily: 'Inter, sans-serif', borderBottom: '1px solid rgba(255,107,53,0.35)' }}
                               />
                             ) : (
                               <span style={{ fontSize: 14, fontWeight: 500, color: '#F0F0F0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -555,7 +555,7 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
             />
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={createFolder} disabled={!folderName.trim()}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: folderName.trim() ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', border: '1px solid', borderColor: folderName.trim() ? '#C0C1FF' : 'var(--border-color)', color: folderName.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: folderName.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: folderName.trim() ? 'linear-gradient(135deg,#6366F1,#3730a3)' : 'var(--bg-raised)', border: '1px solid', borderColor: folderName.trim() ? '#FF6B35' : 'var(--border-color)', color: folderName.trim() ? '#fff' : 'var(--text-3)', fontSize: 13, fontWeight: 500, cursor: folderName.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
                 Create
               </button>
               <button onClick={() => { setFolderModal(false); setFolderName(''); }}
@@ -797,3 +797,5 @@ export default function GroupList({ groups, activeGroupId, onSelect, onOpenModal
     </div>
   );
 }
+
+

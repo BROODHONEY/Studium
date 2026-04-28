@@ -6,8 +6,8 @@ const C = {
   raised: '#222222',
   border: '#2A2A2A',
   borderHi: '#383838',
-  primary: '#C0C1FF',
-  primaryLo: 'rgba(192,193,255,0.10)',
+  primary: '#FF6B35',
+  primaryLo: 'rgba(255,107,53,0.10)',
   text1: '#F0F0F0',
   text2: '#9E9E9E',
   text3: '#555555',
@@ -464,3 +464,4 @@ function UploadModal({ onClose, onUpload, user }) {
     </div>
   );
 }
+

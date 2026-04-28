@@ -14,11 +14,11 @@ const C = {
   cardHi:   '#252525',
   border:   '#2A2A2A',
   borderHi: '#383838',
-  primary:      '#C0C1FF',
-  primaryDim:   'rgba(192,193,255,0.15)',
-  primaryBorder:'rgba(192,193,255,0.25)',
-  secondary:    '#FFB38E',
-  secondaryDim: 'rgba(255,179,142,0.15)',
+  primary:      '#FF6B35',
+  primaryDim:   'rgba(255,107,53,0.10)',
+  primaryBorder:'rgba(255,107,53,0.22)',
+  secondary: '#C0C1FF',
+  secondaryDim: 'rgba(192,193,255,0.12)',
   green:    '#22C55E',
   greenDim: 'rgba(34,197,94,0.14)',
   red:      '#EF4444',
@@ -625,7 +625,7 @@ function ReportModal({ assignment, groupId, onClose }) {
                             <button
                               onClick={() => setPreviewFile({ file_url: r.file_url, filename: r.file_name, file_type: r.file_type, size_bytes: r.file_size, users: { name: r.name } })}
                               style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, border: `1px solid ${C.primaryBorder}`, background: C.primaryDim, color: C.primary, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: FF, transition: 'all 0.15s' }}
-                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(192,193,255,0.22)'}
+                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,107,53,0.20)'}
                               onMouseLeave={e => e.currentTarget.style.background = C.primaryDim}>
                               <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
                               View
@@ -1228,3 +1228,7 @@ export default function SubmissionsPanel({ group }) {
     </div>
   );
 }
+
+
+
+

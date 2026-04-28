@@ -68,14 +68,14 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
               style={{
                 padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 500 : 300,
                 border: 'none', cursor: 'pointer', transition: 'all 0.15s', position: 'relative',
-                background: isActive ? 'linear-gradient(135deg, rgba(192,193,255,0.12), rgba(99,102,241,0.12))' : 'transparent',
-                color: isActive ? '#C0C1FF' : 'var(--text-3)',
+                background: isActive ? 'linear-gradient(135deg, rgba(255,107,53,0.10), rgba(99,102,241,0.12))' : 'transparent',
+                color: isActive ? '#FF6B35' : 'var(--text-3)',
               }}
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'var(--text-2)'; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'var(--text-3)'; }}>
               {tab}
               {tabUnreads.has(tab) && (
-                <span style={{ position: 'absolute', top: 3, right: 3, width: 5, height: 5, borderRadius: '50%', background: '#C0C1FF' }} />
+                <span style={{ position: 'absolute', top: 3, right: 3, width: 5, height: 5, borderRadius: '50%', background: '#FF6B35' }} />
               )}
             </button>
           );
@@ -100,11 +100,11 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
           {tabs.map(tab => (
             <button key={tab}
               onClick={() => { onTabChange(tab); setDropdownOpen(false); }}
-              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', fontSize: 13, fontWeight: activeTab === tab ? 500 : 300, color: activeTab === tab ? '#C0C1FF' : 'var(--text-2)', background: activeTab === tab ? 'rgba(99,102,241,0.12)' : 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', fontFamily: 'Inter, sans-serif' }}
+              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', fontSize: 13, fontWeight: activeTab === tab ? 500 : 300, color: activeTab === tab ? '#FF6B35' : 'var(--text-2)', background: activeTab === tab ? 'rgba(99,102,241,0.12)' : 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', fontFamily: 'Inter, sans-serif' }}
               onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; }}
               onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.background = 'none'; }}>
               {tab}
-              {tabUnreads.has(tab) && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C0C1FF', flexShrink: 0 }} />}
+              {tabUnreads.has(tab) && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FF6B35', flexShrink: 0 }} />}
             </button>
           ))}
         </div>,
@@ -113,3 +113,4 @@ export default function ChatHeader({ group, activeTab, onTabChange }) {
     </div>
   );
 }
+

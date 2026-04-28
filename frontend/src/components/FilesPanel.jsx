@@ -15,12 +15,12 @@ const C = {
   overlay:   '#2C2C2C',
   border:    '#333333',
   borderHi:  '#444444',
-  primary:   '#C0C1FF',
-  primaryHi: '#D4D5FF',
-  primaryLo: 'rgba(192,193,255,0.12)',
-  secondary: '#FFB38E',
-  secondaryHi:'#FFC9A8',
-  secondaryLo:'rgba(255,179,142,0.12)',
+  primary:   '#FF6B35',
+  primaryHi: '#FF8C5A',
+  primaryLo: 'rgba(255,107,53,0.10)',
+  secondary: '#C0C1FF',
+  secondaryHi: '#D4D5FF',
+  secondaryLo: 'rgba(192,193,255,0.12)',
   tertiary:  '#9E9E9E',
   tertiaryHi:'#BDBDBD',
   tertiaryLo:'rgba(158,158,158,0.10)',
@@ -78,7 +78,7 @@ function FileRow({ file, selecting, selected, onToggle, canDelete, onDelete, can
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '14px 16px',
-        background: selected ? 'rgba(192,193,255,0.08)' : hov ? 'rgba(192,193,255,0.04)' : 'transparent',
+        background: selected ? 'rgba(255,107,53,0.08)' : hov ? 'rgba(192,193,255,0.04)' : 'transparent',
         borderBottom: `1px solid ${C.border}`,
         cursor: selecting ? 'pointer' : 'default',
         transition: 'background 0.12s',
@@ -659,3 +659,6 @@ export default function FilesPanel({ group, highlightFileId, onHighlightClear })
     </div>
   );
 }
+
+
+

@@ -488,7 +488,7 @@ export default function InstitutionOnboardingPage() {
 
           {/* Mock Payment Form */}
           <div style={{ background: 'rgba(99,102,241,0.05)', padding: 16, borderRadius: 12, border: '1px solid rgba(99,102,241,0.2)' }}>
-            <p style={{ fontSize: 12, color: '#C0C1FF', margin: 0, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: '#FF6B35', margin: 0, textAlign: 'center' }}>
               🎭 This is a mock payment screen for demonstration purposes
             </p>
           </div>
@@ -559,3 +559,4 @@ export default function InstitutionOnboardingPage() {
     </AuthLayout>
   );
 }
+

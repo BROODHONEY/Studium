@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { groupsAPI } from '../services/api';
@@ -6,13 +6,13 @@ import ConfirmDialog from './ui/ConfirmDialog';
 
 //  · ·  · ·  Helpers  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const AVATAR_COLORS = ['#C0C1FF', '#7072AC', '#FFB38E', '#22C55E', '#9E9E9E', '#db2777'];
+const AVATAR_COLORS = ['#FF6B35', '#7072AC', '#FF6B35', '#22C55E', '#9E9E9E', '#db2777'];
 const avatarBg = (n) => AVATAR_COLORS[(n?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
 //  · ·  · ·  Role badge config  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · ·  · · 
 const ROLE_BADGE = {
-  admin:   { label: 'Admin',   bg: 'rgba(192,193,255,0.14)', color: '#C0C1FF', border: 'rgba(192,193,255,0.30)' },
-  teacher: { label: 'Faculty', bg: 'rgba(255,179,142,0.14)', color: '#FFB38E', border: 'rgba(255,179,142,0.30)' },
+  admin:   { label: 'Admin',   bg: 'rgba(192,193,255,0.14)', color: '#FF6B35', border: 'rgba(255,107,53,0.28)' },
+  teacher: { label: 'Faculty', bg: 'rgba(192,193,255,0.12)', color: '#FF6B35', border: 'rgba(192,193,255,0.28)' },
   student: { label: 'Student', bg: 'rgba(158,158,158,0.12)', color: '#9E9E9E', border: 'rgba(158,158,158,0.25)' },
 };
 
@@ -100,9 +100,9 @@ function actionBtnStyle(type) {
   const isDanger = type === 'danger';
   return {
     padding: '4px 10px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer',
-    border: `1px solid ${isDanger ? 'rgba(239,68,68,0.30)' : 'rgba(192,193,255,0.30)'}`,
-    background: isDanger ? 'rgba(239,68,68,0.10)' : 'rgba(192,193,255,0.10)',
-    color: isDanger ? '#EF4444' : '#C0C1FF',
+    border: `1px solid ${isDanger ? 'rgba(239,68,68,0.30)' : 'rgba(255,107,53,0.28)'}`,
+    background: isDanger ? 'rgba(239,68,68,0.10)' : 'rgba(255,107,53,0.10)',
+    color: isDanger ? '#EF4444' : '#FF6B35',
     transition: 'all 0.15s',
   };
 }
@@ -245,7 +245,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
         {/* Ambient glows */}
         <div style={{ position: 'absolute', top: 0, right: 0, width: 400, height: 300, background: 'radial-gradient(ellipse at top right, rgba(192,193,255,0.07) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, width: 300, height: 250, background: 'radial-gradient(ellipse at top left, rgba(255,179,142,0.04) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: 300, height: 250, background: 'radial-gradient(ellipse at top left, rgba(192,193,255,0.04) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
 
         <div style={{ maxWidth: 720, margin: '0 auto', width: '100%', padding: '28px 24px 48px', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 }}>
 
@@ -264,7 +264,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
             <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 22px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: '#FFB38E', textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 4px' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#FF6B35', textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 4px' }}>
                     {group.subject || 'Group'}
                   </p>
                   {!editingDesc && (
@@ -327,8 +327,8 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
             {/* Quick invite card */}
             {isAdmin && (
-              <div style={{ background: 'linear-gradient(145deg, #1E1208 0%, #1A1010 100%)', border: '1px solid rgba(255,179,142,0.20)', borderRadius: 14, padding: '20px 22px', minWidth: 180, maxWidth: 220, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(255,179,142,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+              <div style={{ background: 'linear-gradient(145deg, #1E1208 0%, #1A1010 100%)', border: '1px solid rgba(192,193,255,0.18)', borderRadius: 14, padding: '20px 22px', minWidth: 180, maxWidth: 220, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(192,193,255,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>
                   Quick Invite
                 </span>
@@ -340,7 +340,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
                     {group.invite_code}
                   </span>
                   <button onClick={copyCode}
-                    style={{ padding: '4px 8px', borderRadius: 7, background: copied ? 'rgba(34,197,94,0.12)' : 'rgba(192,193,255,0.10)', border: `1px solid ${copied ? 'rgba(34,197,94,0.30)' : 'rgba(192,193,255,0.25)'}`, color: copied ? '#22C55E' : 'var(--primary)', fontSize: 11, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
+                    style={{ padding: '4px 8px', borderRadius: 7, background: copied ? 'rgba(34,197,94,0.12)' : 'rgba(255,107,53,0.10)', border: `1px solid ${copied ? 'rgba(34,197,94,0.30)' : 'rgba(255,107,53,0.22)'}`, color: copied ? '#22C55E' : 'var(--primary)', fontSize: 11, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
                     {copied ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
@@ -477,3 +477,7 @@ function DangerConfirm({ message, confirmLabel, disabled, onConfirm, onCancel })
     </div>
   );
 }
+
+
+
+

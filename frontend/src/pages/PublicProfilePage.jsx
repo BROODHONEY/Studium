@@ -10,8 +10,8 @@ const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 
 const T = {
   bg: '#181818', surface: '#1E1E1E', card: '#252525', cardHi: '#2C2C2C',
   border: '#333333', borderHi: '#444444',
-  primary: '#C0C1FF', primaryHi: '#D4D5FF', primaryLo: 'rgba(192,193,255,0.12)',
-  secondary: '#FFB38E', secondaryLo: 'rgba(255,179,142,0.12)',
+  primary: '#FF6B35', primaryHi: '#FF8C5A', primaryLo: 'rgba(255,107,53,0.10)',
+  secondary: '#C0C1FF', secondaryLo: 'rgba(192,193,255,0.12)',
   green: '#22C55E', greenLo: 'rgba(34,197,94,0.12)',
   amber: '#F59E0B', amberLo: 'rgba(245,158,11,0.12)',
   text1: '#F0F0F0', text2: '#9E9E9E', text3: '#555555',
@@ -208,3 +208,6 @@ export default function PublicProfilePage() {
     </div>
   );
 }
+
+
+

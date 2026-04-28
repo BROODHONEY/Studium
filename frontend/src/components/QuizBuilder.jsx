@@ -5,7 +5,7 @@ import { quizzesAPI } from '../services/api';
 const T = {
   bg: '#181818', surface: '#1E1E1E', card: '#252525', cardHi: '#2C2C2C',
   border: '#333333', borderHi: '#444444',
-  primary: '#C0C1FF', primaryLo: 'rgba(192,193,255,0.12)',
+  primary: '#FF6B35', primaryLo: 'rgba(255,107,53,0.10)',
   green: '#22C55E', greenLo: 'rgba(34,197,94,0.12)',
   red: '#EF4444', redLo: 'rgba(239,68,68,0.12)',
   amber: '#F59E0B',
@@ -170,3 +170,4 @@ export default function QuizBuilder({ groupId, onCreated, onCancel }) {
     </div>
   );
 }
+
