@@ -437,7 +437,6 @@ export default function ProfilePage({ userId, onClose }) {
                     </div>
                   )}
                 </div>
-                )}
               </>
             )}
 
