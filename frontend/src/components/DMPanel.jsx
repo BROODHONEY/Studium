@@ -10,7 +10,7 @@ import ConfirmDialog from './ui/ConfirmDialog';
 import { formatTime, getDateLabel } from '../utils/time';
 
 const ini = (n) => n?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-const COLORS = ['#4f46e5','#0d9488','#6366F1','#db2777','#d97706','#16a34a'];
+const COLORS = ['#FF6B35','#C0C1FF','#9E9E9E','#FF8C5A','#D4D5FF','#BDBDBD'];
 const avatarBg = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
 
 const PIN_MAX = 4;
@@ -207,7 +207,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: 300, background: 'radial-gradient(ellipse at top right, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
       {/* Header */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid #2A2A36', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#111116' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #333333', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#181818', position: 'relative', zIndex: 1 }}>
         <button onClick={() => onViewProfile?.(other?.id)} style={{ position: 'relative', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(other?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#fff' }}>
             {ini(other?.name)}
@@ -221,7 +221,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
         {/* Pin toggle button */}
         {pinnedIds.length > 0 && (
           <button onClick={() => setShowPins(v => !v)} title="Pinned messages"
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: showPins ? 'rgba(99,102,241,0.15)' : 'none', border: `1px solid ${showPins ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)'}`, color: showPins ? 'rgba(165,180,252,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: showPins ? 'rgba(255,107,53,0.12)' : 'none', border: `1px solid ${showPins ? 'rgba(255,107,53,0.28)' : '#333333'}`, color: showPins ? '#FF6B35' : '#9E9E9E', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">              <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
             </svg>
             <span style={{ fontSize: 11, fontWeight: 400 }}>{pinnedIds.length}</span>
@@ -291,7 +291,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
               (msg.dm_reactions || []).forEach(r => { if (!reactionMap[r.emoji]) reactionMap[r.emoji] = []; reactionMap[r.emoji].push(r.user_id); });
 
               // Design tokens
-              const C = { primary: '#6366F1', primaryHi: '#8B8EF8', primaryLo: 'rgba(99,102,241,0.14)', raised: '#1C1C26', border: '#2A2A3A', text1: '#EEEEF8', text2: '#9090B0', text3: '#55556E' };
+              const C = { primary: '#FF6B35', primaryHi: '#FF8C5A', primaryLo: 'rgba(255,107,53,0.10)', raised: '#1E1E1E', border: '#333333', text1: '#F0F0F0', text2: '#9E9E9E', text3: '#555555' };
 
               return (
                 <div key={msg.id}>
@@ -439,7 +439,7 @@ export default function DMPanel({ conversation, onNewMessage, onViewProfile, onN
       </div>
 
       {/* Input */}
-      <div style={{ padding: '12px 16px 16px', borderTop: '1px solid #2A2A36', flexShrink: 0, background: '#111116' }}>
+      <div style={{ padding: '12px 16px 16px', borderTop: '1px solid #333333', flexShrink: 0, background: '#181818', position: 'relative', zIndex: 1 }}>
         {/* Reply banner */}
         {replyTo && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '7px 12px', borderRadius: 8, borderLeft: '3px solid #6366F1', background: '#16161E' }}>

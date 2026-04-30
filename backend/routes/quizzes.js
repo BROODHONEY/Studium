@@ -48,16 +48,17 @@ router.get('/:groupId/:quizId', async (req, res) => {
       .single();
     if (error || !quiz) return res.status(404).json({ error: 'Quiz not found' });
 
+    // SECURITY FIX: Only fetch correct_index for teachers/admins
+    // Students should NEVER receive answer data from the server
+    const selectFields = m.role === 'student'
+      ? 'id, question, options, order_index'
+      : 'id, question, options, correct_index, order_index';
+
     const { data: questions } = await supabase
       .from('quiz_questions')
-      .select('id, question, options, correct_index, order_index')
+      .select(selectFields)
       .eq('quiz_id', req.params.quizId)
       .order('order_index');
-
-    // Students don't see correct_index
-    const safeQuestions = m.role === 'student'
-      ? questions.map(({ correct_index, ...q }) => q)
-      : questions;
 
     // Check if student already attempted
     let attempt = null;
@@ -71,7 +72,7 @@ router.get('/:groupId/:quizId', async (req, res) => {
       attempt = a || null;
     }
 
-    res.json({ ...quiz, questions: safeQuestions, my_attempt: attempt });
+    res.json({ ...quiz, questions: questions || [], my_attempt: attempt });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed' }); }
 });
 

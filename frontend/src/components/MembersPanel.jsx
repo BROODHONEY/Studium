@@ -148,7 +148,8 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
 
   const [confirmLeave, setConfirmLeave]   = useState(false);
   const [leaving, setLeaving]             = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting]           = useState(false);
 
   const [memberConfirm, setMemberConfirm]       = useState(null);
@@ -222,9 +223,17 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
   };
 
   const handleDeleteGroup = async () => {
+    if (deleteConfirmText !== group.name) return;
     setDeleting(true);
-    try { await groupsAPI.delete(group.id); onGroupDeleted?.(group.id); }
-    catch (err) { setError(err.response?.data?.error || 'Could not delete group'); setConfirmDelete(false); }
+    try { 
+      await groupsAPI.delete(group.id); 
+      onGroupDeleted?.(group.id); 
+    }
+    catch (err) { 
+      setError(err.response?.data?.error || 'Could not delete group'); 
+      setShowDeleteModal(false);
+      setDeleteConfirmText('');
+    }
     finally { setDeleting(false); }
   };
 
@@ -401,17 +410,7 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
               )
             )}
             {isCreator && (
-              confirmDelete ? (
-                <DangerConfirm
-                  message={`Delete "${group.name}"? This removes all messages and files permanently.`}
-                  confirmLabel={deleting ? 'Deleting...' : 'Yes, delete'}
-                  disabled={deleting}
-                  onConfirm={handleDeleteGroup}
-                  onCancel={() => setConfirmDelete(false)}
-                />
-              ) : (
-                <GhostDangerBtn label="Delete group" onClick={() => setConfirmDelete(true)} />
-              )
+              <GhostDangerBtn label="Delete group" onClick={() => setShowDeleteModal(true)} />
             )}
           </div>
 
@@ -432,6 +431,99 @@ export default function MembersPanel({ group, onGroupUpdate, onLeft, onGroupDele
         onConfirm={handleConfirmMemberAction}
         disabled={confirmingMember}
       />
+
+      {/* Delete Group Modal */}
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', padding: 16, fontFamily: 'Inter, sans-serif' }}
+          onClick={() => { if (!deleting) { setShowDeleteModal(false); setDeleteConfirmText(''); } }}>
+          <div style={{ width: '100%', maxWidth: 480, background: '#1A1A1A', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}
+            onClick={e => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid rgba(239,68,68,0.15)', background: 'linear-gradient(180deg, rgba(239,68,68,0.08) 0%, transparent 100%)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 16 16" fill="#EF4444">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                  </svg>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontSize: 20, fontWeight: 700, color: '#F0F0F0', margin: '0 0 6px', fontFamily: "'Manrope', 'Inter', sans-serif", letterSpacing: '-0.01em' }}>
+                    Delete Group
+                  </h3>
+                  <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: 0, lineHeight: 1.5 }}>
+                    This action cannot be undone. All messages, files, and data will be permanently deleted.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px 28px' }}>
+              <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 10, marginBottom: 20 }}>
+                <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(239,68,68,0.9)', margin: 0, lineHeight: 1.6 }}>
+                  <strong style={{ fontWeight: 600 }}>Warning:</strong> Deleting this group will:
+                </p>
+                <ul style={{ fontSize: 12, color: 'rgba(239,68,68,0.8)', margin: '8px 0 0', paddingLeft: 20, lineHeight: 1.8 }}>
+                  <li>Remove all {members.length} members</li>
+                  <li>Delete all messages and chat history</li>
+                  <li>Delete all uploaded files and resources</li>
+                  <li>Remove all assignments and submissions</li>
+                </ul>
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 8 }}>
+                  Type the group name to confirm
+                </label>
+                <div style={{ padding: '3px', background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))', borderRadius: 11 }}>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={e => setDeleteConfirmText(e.target.value)}
+                    placeholder={group.name}
+                    autoFocus
+                    disabled={deleting}
+                    style={{ width: '100%', background: '#252525', border: 'none', borderRadius: 8, padding: '12px 16px', fontSize: 14, fontWeight: 500, color: '#F0F0F0', outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <p style={{ fontSize: 11, color: '#555555', margin: '6px 0 0', fontWeight: 300 }}>
+                  Please type <span style={{ fontFamily: 'monospace', color: '#9E9E9E', fontWeight: 500 }}>{group.name}</span> to confirm
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <button
+                  onClick={handleDeleteGroup}
+                  disabled={deleting || deleteConfirmText !== group.name}
+                  style={{ width: '100%', padding: '14px', background: deleteConfirmText === group.name ? 'linear-gradient(135deg, #EF4444, #DC2626)' : '#2A2A2A', border: 'none', borderRadius: 12, color: deleteConfirmText === group.name ? '#fff' : '#555555', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: (deleting || deleteConfirmText !== group.name) ? 'not-allowed' : 'pointer', opacity: deleting ? 0.6 : 1, transition: 'all 0.15s', fontFamily: 'Inter, sans-serif', boxShadow: deleteConfirmText === group.name ? '0 4px 12px rgba(239,68,68,0.3)' : 'none' }}
+                >
+                  {deleting ? (
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 0.7s linear infinite' }}>
+                        <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
+                        <path d="M12 2a10 10 0 0 1 10 10"/>
+                      </svg>
+                      Deleting...
+                    </span>
+                  ) : 'Delete Group Permanently'}
+                </button>
+                <button
+                  onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }}
+                  disabled={deleting}
+                  style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: '#9E9E9E', fontSize: 13, fontWeight: 400, cursor: deleting ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif', transition: 'color 0.15s' }}
+                  onMouseEnter={e => { if (!deleting) e.currentTarget.style.color = '#F0F0F0'; }}
+                  onMouseLeave={e => { if (!deleting) e.currentTarget.style.color = '#9E9E9E'; }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

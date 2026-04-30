@@ -5,6 +5,13 @@ const jwt = require('jsonwebtoken');
 const supabase = require('../config/db');
 const { sendEmail } = require('../config/email');
 const { validate, schemas } = require('../middleware/validate');
+const logger = require('../config/logger');
+const { 
+  checkAccountLockout, 
+  recordFailedAttempt, 
+  clearFailedAttempts,
+  getRemainingAttempts 
+} = require('../middleware/accountLockout');
 
 const router = express.Router();
 
@@ -41,7 +48,9 @@ router.post('/register', validate(schemas.register), async (req, res) => {
     const query = supabase.from('users').select('id').eq('email', email);
     const { data: existing } = await query.single();
     if (existing) {
-      return res.status(409).json({ error: 'User already exists with this email' });
+      // Generic message to prevent email enumeration
+      logger.securityEvent('REGISTRATION_ATTEMPT_EXISTING_EMAIL', { email, ip: req.ip });
+      return res.status(400).json({ error: 'Registration failed. Please check your information and try again.' });
     }
 
     const password_hash = await bcrypt.hash(password, 10);
@@ -180,8 +189,9 @@ router.post('/superadmin-login', async (req, res) => {
 });
 
 // Login
-router.post('/login', validate(schemas.login), async (req, res) => {
+router.post('/login', checkAccountLockout, validate(schemas.login), async (req, res) => {
   const { email, phone, password, institutionId } = req.body;
+  const identifier = email || phone;
 
   try {
     let query = supabase.from('users').select('*').eq('institution_id', institutionId);
@@ -191,21 +201,47 @@ router.post('/login', validate(schemas.login), async (req, res) => {
     const { data: user, error } = await query.single();
 
     if (error || !user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      logger.authFailure(email || phone, req.ip, 'User not found');
+      recordFailedAttempt(identifier, institutionId, req.ip);
+      
+      const remaining = getRemainingAttempts(identifier, institutionId);
+      const message = remaining > 0 && remaining <= 3
+        ? `Invalid credentials. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+        : 'Invalid credentials';
+      
+      return res.status(401).json({ error: message });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      logger.authFailure(email || phone, req.ip, 'Invalid password');
+      const isLocked = recordFailedAttempt(identifier, institutionId, req.ip);
+      
+      if (isLocked) {
+        return res.status(429).json({ 
+          error: 'Account temporarily locked due to multiple failed login attempts. Please try again in 15 minutes.' 
+        });
+      }
+      
+      const remaining = getRemainingAttempts(identifier, institutionId);
+      const message = remaining > 0 && remaining <= 3
+        ? `Invalid credentials. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+        : 'Invalid credentials';
+      
+      return res.status(401).json({ error: message });
     }
 
     // Block unverified users (admins are pre-verified)
     if (user.role !== 'admin' && !user.email_verified) {
+      logger.authFailure(email || phone, req.ip, 'Email not verified');
       return res.status(403).json({
         error: 'Please verify your email before signing in.',
         requiresVerification: true
       });
     }
+
+    // Clear failed attempts on successful login
+    clearFailedAttempts(identifier, institutionId);
 
     const token = jwt.sign(
       { id: user.id, role: user.role, institutionId: user.institution_id },
@@ -213,11 +249,20 @@ router.post('/login', validate(schemas.login), async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    logger.authSuccess(user.id, user.email, req.ip);
+
     const { password_hash, verification_token, verification_token_expires, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
+    logger.error('Login error', { error: err.message, ip: req.ip });
+    
+    // Generic error message in production
+    const errorMessage = process.env.NODE_ENV === 'production' 
+      ? 'An error occurred. Please try again later.'
+      : 'Something went wrong';
+    
+    res.status(500).json({ error: errorMessage });
   }
 });
 

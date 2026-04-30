@@ -71,7 +71,11 @@ function StepProfile({ user, data, onChange, onNext, onBack }) {
 
       {/* Read-only info */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-        {[['Department', user?.department || '—'], ['Year', user?.year ? `Year ${user.year}` : '—'], ['Roll No', user?.roll_no || '—']].map(([k, v]) => (
+        {[
+          ['Department', user?.department || 'Not set'], 
+          ['Year', user?.year ? `Year ${user.year}` : 'Not set'], 
+          ['Roll No', user?.roll_no || 'Not set']
+        ].map(([k, v]) => (
           <div key={k} style={{ background: T.raised, borderRadius: 9, padding: '11px 14px', border: `1px solid ${T.border}` }}>
             <div style={{ fontSize: 10, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 3 }}>{k}</div>
             <div style={{ fontSize: 13, fontWeight: 600, color: T.text1 }}>{v}</div>

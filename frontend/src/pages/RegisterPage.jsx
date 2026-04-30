@@ -122,10 +122,10 @@ export default function RegisterPage() {
           <h2 style={{ fontSize: 24, fontWeight: 700, color: '#F0F0F0', margin: '0 0 6px', letterSpacing: '-0.02em', fontFamily: "'Manrope','Inter',sans-serif" }}>
             Create Account
           </h2>
-          <p style={{ fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: 0 }}>
             Enter your details to get started.
             {institution?.emailDomain && !devBypass && (
-              <span style={{ color: '#6366F1', marginLeft: 4 }}>
+              <span style={{ color: '#FF6B35', marginLeft: 4 }}>
                 Requires {institution.emailDomain} email.
               </span>
             )}
@@ -146,13 +146,15 @@ export default function RegisterPage() {
                 <button key={r} type="button"
                   onClick={() => setForm(p => ({ ...p, role: r }))}
                   style={{
-                    padding: '10px', borderRadius: 12, fontSize: 13, fontWeight: 400,
+                    padding: '10px', borderRadius: 12, fontSize: 13, fontWeight: 500,
                     cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s',
                     fontFamily: 'Inter, sans-serif',
                     ...(form.role === r
-                      ? { background: 'linear-gradient(135deg,#6366F1,#4338ca)', color: '#fff', border: '1px solid transparent' }
-                      : { background: '#1E1E1E', border: '1px solid #2E2E2E', color: '#888' })
-                  }}>
+                      ? { background: 'linear-gradient(135deg, #FF6B35, #FF8C5A)', color: '#fff', border: '1px solid transparent', boxShadow: '0 4px 12px rgba(255,107,53,0.25)' }
+                      : { background: '#1E1E1E', border: '1px solid #333333', color: '#9E9E9E' })
+                  }}
+                  onMouseEnter={e => { if (form.role !== r) { e.currentTarget.style.background = '#252525'; e.currentTarget.style.borderColor = '#444444'; } }}
+                  onMouseLeave={e => { if (form.role !== r) { e.currentTarget.style.background = '#1E1E1E'; e.currentTarget.style.borderColor = '#333333'; } }}>
                   {r}
                 </button>
               ))}
@@ -229,16 +231,20 @@ export default function RegisterPage() {
         </form>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', paddingBottom: 8 }}>
-          <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
+          <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: 0 }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#FF6B35', fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
+            <Link to="/login" style={{ color: '#FF6B35', fontWeight: 500, textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#FF8C5A'}
+              onMouseLeave={e => e.currentTarget.style.color = '#FF6B35'}>Log in</Link>
           </p>
           <button
             onClick={() => {
               clearStoredInstitution();
               navigate('/institution-select');
             }}
-            style={{ background: 'transparent', border: 'none', color: '#555', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', textDecoration: 'underline', padding: 0 }}
+            style={{ background: 'transparent', border: 'none', color: '#555555', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', textDecoration: 'underline', padding: 0, transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#9E9E9E'}
+            onMouseLeave={e => e.currentTarget.style.color = '#555555'}
           >
             Change institution
           </button>

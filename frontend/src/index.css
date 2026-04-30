@@ -3,89 +3,77 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════
-   NEW PALETTE (shell / sidebar / overview only)
-   Primary   #FF6B35  — warm orange
-   Secondary #C0C1FF  — soft lavender
-   Tertiary  #9E9E9E  — grey
-   Neutral   #131313  — near-black
-   Headline  Manrope
-   Body      Inter
+   PALETTE — black / white / grey primary, #FFAA6E accent
+   Primary   #E8E8E8  — near-white
+   Accent    #FFAA6E  — light warm orange (subtle only)
+   Neutral   #0d0d0d  — near-black
    ═══════════════════════════════════════════════════════ */
 
-/* ── Dark theme (default — app is dark-first) ─────────── */
+/* ── Dark theme (default) ─────────────────────────────── */
 :root,
 html.dark {
-  /* ── Shell backgrounds */
-  --shell:    #131313;   /* icon rail — outermost */
-  --void:     #181818;   /* page background */
-  --surface:  #1E1E1E;   /* sidebar, panels */
-  --raised:   #252525;   /* cards, inputs */
-  --overlay:  #2E2E2E;   /* hover states, dropdowns */
-  --border:   #333333;   /* dividers, borders */
-  --border-hi:#444444;   /* focused borders */
+  --shell:    #0d0d0d;
+  --void:     #141414;
+  --surface:  #181818;
+  --raised:   #202020;
+  --overlay:  #2A2A2A;
+  --border:   #2E2E2E;
+  --border-hi:#3D3D3D;
 
-  /* ── Primary — warm orange */
-  --primary:     #FF6B35;
-  --primary-hi:  #FF8C5A;
-  --primary-lo:  rgba(255,107,53,0.10);
-  --primary-mid: rgba(255,107,53,0.20);
+  --primary:     #E8E8E8;
+  --primary-hi:  #FFFFFF;
+  --primary-lo:  rgba(232,232,232,0.08);
+  --primary-mid: rgba(232,232,232,0.14);
 
-  /* ── Secondary — soft lavender */
-  --secondary:    #C0C1FF;
-  --secondary-hi: #D4D5FF;
-  --secondary-lo: rgba(192,193,255,0.12);
+  --accent:      #FFAA6E;
+  --accent-hi:   #FFC08A;
+  --accent-lo:   rgba(255,170,110,0.10);
 
-  /* ── Tertiary — grey */
-  --tertiary:    #9E9E9E;
-  --tertiary-hi: #BDBDBD;
-  --tertiary-lo: rgba(158,158,158,0.12);
+  --secondary:    #888888;
+  --secondary-hi: #AAAAAA;
+  --secondary-lo: rgba(136,136,136,0.10);
 
-  /* ── Text */
+  --tertiary:    #555555;
+  --tertiary-hi: #777777;
+  --tertiary-lo: rgba(85,85,85,0.12);
+
   --text-1: #F0F0F0;
-  --text-2: #9E9E9E;
-  --text-3: #555555;
+  --text-2: #888888;
+  --text-3: #444444;
   --text-4: rgba(240,240,240,0.06);
 
-  /* ── Semantic */
   --danger:    #EF4444;
   --danger-lo: rgba(239,68,68,0.10);
   --success:   #22C55E;
   --success-lo:rgba(34,197,94,0.10);
 
-  /* ── Legacy aliases */
-  --accent:           #FF6B35;
-  --accent-low:       rgba(255,107,53,0.10);
-  --bg-void:          #181818;
-  --bg-page:          #181818;
-  --bg-surface:       #1E1E1E;
-  --bg-raised:        #252525;
-  --bg-card:          #252525;
-  --border-color:     #333333;
-  --border-subtle:    #2E2E2E;
+  --accent-low:       rgba(255,170,110,0.10);
+  --bg-void:          #141414;
+  --bg-page:          #141414;
+  --bg-surface:       #181818;
+  --bg-raised:        #202020;
+  --bg-card:          #202020;
+  --border-color:     #2E2E2E;
+  --border-subtle:    #252525;
 
-  /* ── Layout zones */
-  --rail-bg:    #131313;
-  --sidebar-bg: #141414;
-  --main-bg:    #181818;
+  --rail-bg:    #0d0d0d;
+  --sidebar-bg: #111111;
+  --main-bg:    #141414;
 
-  /* ── Nav */
-  --nav-icon-active:   #FF6B35;
-  --nav-icon-inactive: #555555;
-  --nav-active-bg:     rgba(255,107,53,0.10);
-  --nav-active-bar:    #FF6B35;
+  --nav-icon-active:   #E8E8E8;
+  --nav-icon-inactive: #444444;
+  --nav-active-bg:     rgba(232,232,232,0.07);
+  --nav-active-bar:    #E8E8E8;
 
-  /* ── Mobile tab bar */
-  --tabbar-bg:     #131313;
-  --tabbar-border: #333333;
-  --tab-active:    #FF6B35;
-  --tab-inactive:  #555555;
+  --tabbar-bg:     #0d0d0d;
+  --tabbar-border: #2E2E2E;
+  --tab-active:    #E8E8E8;
+  --tab-inactive:  #444444;
 
-  /* ── Scrollbar */
-  --scroll-thumb:       rgba(255,107,53,0.18);
-  --scroll-thumb-hover: rgba(255,107,53,0.35);
+  --scroll-thumb:       rgba(255,255,255,0.10);
+  --scroll-thumb-hover: rgba(255,255,255,0.22);
 
-  /* ── Glass */
-  --glass-bg:     rgba(19,19,19,0.80);
+  --glass-bg:     rgba(13,13,13,0.82);
   --glass-border: rgba(255,255,255,0.06);
   --glass-blur:   blur(20px) saturate(160%);
 }
@@ -218,11 +206,13 @@ html:not(.dark) {
   width: 100%; padding: 12px; border-radius: 12px; border: none; cursor: pointer;
   font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
   font-family: 'Inter', sans-serif;
-  background: #CC4A1A;
-  color: #fff;
+  background: #1a1a1a;
+  color: #E8E8E8;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
   transition: background 0.15s, opacity 0.15s, transform 0.1s;
 }
-.btn-auth:hover:not(:disabled) { background: #FF6B35; }
+.btn-auth:hover:not(:disabled) { background: #222; border-color: rgba(255,255,255,0.16); }
 .btn-auth:active:not(:disabled) { transform: scale(0.99); }
 .btn-auth:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -374,7 +364,7 @@ html:not(.dark) {
 /* ── File highlight ───────────────────────────────────── */
 @keyframes file-highlight-pulse {
   0%, 100% { box-shadow: none; background-color: transparent; }
-  30% { box-shadow: 0 0 0 2px rgba(255,107,53,0.35); background-color: var(--primary-lo); }
+  30% { box-shadow: 0 0 0 2px rgba(232,232,232,0.20); background-color: var(--primary-lo); }
 }
 .file-highlight { animation: file-highlight-pulse 2s ease-out forwards; border-radius: 10px; }
 
@@ -891,6 +881,7 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
 
 
 

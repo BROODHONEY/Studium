@@ -1,5 +1,8 @@
 const express = require('express');
 const multer = require('multer');
+const crypto = require('crypto');
+const path = require('path');
+const { fileTypeFromBuffer } = require('file-type');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
 const { uploadAndSign, removeFile, buildStoragePath } = require('../services/storageService');
@@ -7,23 +10,53 @@ const { uploadAndSign, removeFile, buildStoragePath } = require('../services/sto
 const router = express.Router();
 router.use(authMiddleware);
 
+// Allowed MIME types with their magic numbers
+const ALLOWED_TYPES = {
+  'application/pdf': { ext: 'pdf', maxSize: 10 * 1024 * 1024 }, // 10MB
+  'application/vnd.ms-powerpoint': { ext: 'ppt', maxSize: 10 * 1024 * 1024 },
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': { ext: 'pptx', maxSize: 10 * 1024 * 1024 },
+  'application/vnd.ms-excel': { ext: 'xls', maxSize: 10 * 1024 * 1024 },
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { ext: 'xlsx', maxSize: 10 * 1024 * 1024 },
+  'application/msword': { ext: 'doc', maxSize: 10 * 1024 * 1024 },
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { ext: 'docx', maxSize: 10 * 1024 * 1024 },
+  'image/jpeg': { ext: 'jpg', maxSize: 5 * 1024 * 1024 }, // 5MB for images
+  'image/png': { ext: 'png', maxSize: 5 * 1024 * 1024 }
+};
+
+// Validate file type by checking actual file content (magic numbers)
+const validateFileType = async (buffer, originalMimetype) => {
+  try {
+    const fileType = await fileTypeFromBuffer(buffer);
+    
+    if (!fileType) {
+      throw new Error('Could not determine file type');
+    }
+    
+    // Check if detected type matches claimed type
+    if (!ALLOWED_TYPES[fileType.mime]) {
+      throw new Error(`File type ${fileType.mime} is not allowed`);
+    }
+    
+    return fileType;
+  } catch (err) {
+    throw new Error('Invalid or unsupported file type');
+  }
+};
+
+// Generate safe filename
+const generateSafeFilename = (originalname) => {
+  const ext = path.extname(originalname).toLowerCase();
+  const randomName = crypto.randomBytes(16).toString('hex');
+  return `${randomName}${ext}`;
+};
+
 // Store file in memory as a buffer (not on disk)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   fileFilter: (req, file, cb) => {
-    const allowed = [
-      'application/pdf',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'image/jpeg',
-      'image/png'
-    ];
-    if (allowed.includes(file.mimetype)) {
+    // Basic MIME type check (will be validated again with magic numbers)
+    if (ALLOWED_TYPES[file.mimetype]) {
       cb(null, true);
     } else {
       cb(new Error('File type not allowed'), false);
@@ -52,16 +85,30 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
+    // Validate file type by checking actual content (magic numbers)
+    const { originalname, mimetype, buffer, size } = req.file;
+    const validatedType = await validateFileType(buffer, mimetype);
+
+    // Check file size against type-specific limits
+    const typeConfig = ALLOWED_TYPES[validatedType.mime];
+    if (size > typeConfig.maxSize) {
+      return res.status(400).json({ 
+        error: `File too large. Maximum size for ${validatedType.mime} is ${typeConfig.maxSize / (1024 * 1024)}MB` 
+      });
+    }
+
+    // Students can only upload images and PDFs
     const studentAllowed = ['application/pdf', 'image/jpeg', 'image/png'];
     const isStudent = membership.role === 'student';
 
-    if (isStudent && !studentAllowed.includes(req.file.mimetype)) {
+    if (isStudent && !studentAllowed.includes(validatedType.mime)) {
       return res.status(403).json({ error: 'Students can only upload images and PDFs' });
     }
 
-    const { originalname, mimetype, buffer, size } = req.file;
-    const storagePath = buildStoragePath(groupId, originalname);
-    const fileUrl = await uploadAndSign(storagePath, buffer, mimetype);
+    // Generate safe filename to prevent path traversal
+    const safeFilename = generateSafeFilename(originalname);
+    const storagePath = buildStoragePath(groupId, safeFilename);
+    const fileUrl = await uploadAndSign(storagePath, buffer, validatedType.mime);
 
     // Save file record to DB
     const { data: file, error: dbError } = await supabase
@@ -69,9 +116,9 @@ router.post('/:groupId', upload.single('file'), async (req, res) => {
       .insert({
         group_id: groupId,
         uploaded_by: req.user.id,
-        filename: originalname,
+        filename: originalname, // Keep original name for display
         file_url: fileUrl,
-        file_type: mimetype,
+        file_type: validatedType.mime,
         size_bytes: size,
         storage_path: storagePath,
         uploaded_by_role: membership.role

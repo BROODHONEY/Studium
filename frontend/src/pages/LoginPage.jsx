@@ -87,7 +87,7 @@ export default function LoginPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
           <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 300, color: '#666', margin: 0 }}>
             Don't have an account?{' '}
-            <Link to="/register" style={{ color: '#FF6B35', fontWeight: 500, textDecoration: 'none' }}>Sign up</Link>
+            <Link to="/register" style={{ color: '#FFAA6E', fontWeight: 500, textDecoration: 'none' }}>Sign up</Link>
           </p>
           <button onClick={() => { clearStoredInstitution(); navigate('/institution-select'); }}
             style={{ background: 'transparent', border: 'none', color: '#555', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif', textDecoration: 'underline', padding: 0 }}>

@@ -2,6 +2,7 @@ const express = require('express');
 const supabase = require('../config/db');
 const authMiddleware = require('../middleware/auth');
 const { getOrCreateConversation, getOtherId } = require('../services/dmService');
+const { sanitizeSearchTerm, sanitizeEmail } = require('../middleware/sqlSanitize');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -14,10 +15,17 @@ router.get('/search', async (req, res) => {
   }
 
   try {
+    // Sanitize email input to prevent SQL injection
+    const sanitizedEmail = sanitizeEmail(email);
+    
+    if (!sanitizedEmail) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
     const { data, error } = await supabase
       .from('users')
       .select('id, name, email, role, department')
-      .ilike('email', `%${email.trim()}%`)
+      .ilike('email', `%${sanitizedEmail}%`)
       .neq('id', req.user.id)
       .eq('institution_id', req.user.institutionId) // CRITICAL: Only search within same institution
       .limit(8);

@@ -23,20 +23,20 @@ const dueBadge = (days) => {
 
 const DS = {
   lbl: {
-    fontSize: 10, fontWeight: 700, color: '#55556E',
+    fontSize: 10, fontWeight: 700, color: '#555555',
     textTransform: 'uppercase', letterSpacing: '0.1em',
     display: 'block', marginBottom: 6,
   },
   inp: {
-    width: '100%', background: '#1C1C26',
-    border: '1px solid #2A2A36', borderRadius: 10,
-    padding: '12px 16px', fontSize: 14, color: '#EEEEF8',
+    width: '100%', background: '#252525',
+    border: '1px solid #333333', borderRadius: 10,
+    padding: '12px 16px', fontSize: 14, color: '#F0F0F0',
     outline: 'none', fontFamily: 'Inter, sans-serif',
     boxSizing: 'border-box', transition: 'border-color 0.15s',
   },
   primaryBtn: {
     width: '100%', padding: '14px',
-    background: '#6366F1',
+    background: '#FF6B35',
     border: 'none', borderRadius: 12,
     color: '#fff', fontSize: 13, fontWeight: 700,
     letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -46,7 +46,7 @@ const DS = {
   cancelBtn: {
     width: '100%', padding: '12px',
     background: 'none', border: 'none',
-    color: '#55556E', fontSize: 13, fontWeight: 400,
+    color: '#555555', fontSize: 13, fontWeight: 400,
     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
     transition: 'color 0.15s',
   },
@@ -119,14 +119,14 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
       onClick={handleCancel}
     >
       <div
-        style={{ width: '100%', maxWidth: 440, background: '#1A1A1F', borderRadius: 20, boxShadow: '0 32px 80px rgba(0,0,0,0.9)', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}
+        style={{ width: '100%', maxWidth: 440, background: '#1E1E1E', borderRadius: 20, boxShadow: '0 32px 80px rgba(0,0,0,0.9)', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ padding: '28px 28px 24px' }}>
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#EEEEF5', margin: '0 0 8px' }}>
+          <p style={{ fontSize: 24, fontWeight: 700, color: '#F0F0F0', margin: '0 0 8px' }}>
             {editing ? 'Edit Due Date' : 'Add Due Date'}
           </p>
-          <p style={{ fontSize: 13, fontWeight: 300, color: '#9898B0', margin: '0 0 24px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, fontWeight: 300, color: '#9E9E9E', margin: '0 0 24px', lineHeight: 1.5 }}>
             Set a deadline visible to all group members.
           </p>
 
@@ -135,8 +135,8 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
               <label style={DS.lbl}>Title</label>
               <input style={DS.inp} placeholder="e.g. Assignment 3 submission" required
                 value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = '#6366F1'}
-                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                onFocus={e => e.target.style.borderColor = '#FF6B35'}
+                onBlur={e => e.target.style.borderColor = '#333333'} />
             </div>
 
             <div>
@@ -145,8 +145,8 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
               </label>
               <input style={DS.inp} placeholder="Add more context   ·"
                 value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                onFocus={e => e.target.style.borderColor = '#6366F1'}
-                onBlur={e => e.target.style.borderColor = '#2A2A38'} />
+                onFocus={e => e.target.style.borderColor = '#FF6B35'}
+                onBlur={e => e.target.style.borderColor = '#333333'} />
             </div>
             <div>
               <label style={DS.lbl}>Category</label>
@@ -200,11 +200,11 @@ function DueForm({ groupId, onCreated, editing, onCancel }) {
               </button>
             </div>
 
-            <div style={{ borderLeft: '3px solid #2A2A38', background: '#1C1C26', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="#55556A" style={{ flexShrink: 0, marginTop: 1 }}>
+            <div style={{ borderLeft: '3px solid #333333', background: '#252525', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="#555555" style={{ flexShrink: 0, marginTop: 1 }}>
                 <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
               </svg>
-              <span style={{ fontSize: 12, fontWeight: 300, color: '#55556E', lineHeight: 1.5 }}>
+              <span style={{ fontSize: 12, fontWeight: 300, color: '#555555', lineHeight: 1.5 }}>
                 Due dates are visible to all group members.
               </span>
             </div>

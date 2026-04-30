@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const csrf = require('csurf');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -10,6 +13,7 @@ const messageRoutes = require('./routes/messages');
 const fileRoutes = require('./routes/files');
 const initSocket = require('./config/socket');
 const startAnnouncementScheduler = require('./config/announcementScheduler');
+const { authLimiter, apiLimiter } = require('./middleware/rateLimiter');
 
 const announcementRoutes = require('./routes/announcements');
 const dueRoutes          = require('./routes/dues');
@@ -46,6 +50,42 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+// Security headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL, process.env.SUPABASE_URL].filter(Boolean),
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
+
+// Force HTTPS in production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -61,11 +101,55 @@ app.use(
 
 app.use(express.json());
 
+// Cookie parser for CSRF tokens
+app.use(cookieParser());
+
+// CSRF Protection (skip for development, enable in production)
+const csrfProtection = csrf({ 
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  }
+});
+
+// CSRF token endpoint (must be before CSRF protection)
+app.get('/api/csrf-token', (req, res) => {
+  // Generate token without protection on this endpoint
+  const tempCsrf = csrf({ cookie: true });
+  tempCsrf(req, res, () => {
+    res.json({ csrfToken: req.csrfToken() });
+  });
+});
+
+// Apply CSRF protection to state-changing routes (skip in development for easier testing)
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api', (req, res, next) => {
+    // Skip CSRF for GET, HEAD, OPTIONS
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+      return next();
+    }
+    // Skip CSRF for auth endpoints (they use other protection)
+    if (req.path.startsWith('/auth/')) {
+      return next();
+    }
+    csrfProtection(req, res, next);
+  });
+}
+
 // Basic request logger
 app.use((req, _res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
+
+// Apply rate limiting to authentication routes (CRITICAL SECURITY)
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/superadmin-login', authLimiter);
+
+// Apply general rate limiting to all API routes
+app.use('/api', apiLimiter);
 
 app.use('/api/demo-requests', demoRequestRoutes);
 app.use('/api/institutions', institutionRoutes);

@@ -257,7 +257,7 @@ export default function DashboardPage() {
                 + Folder
               </button>
               <button onClick={() => setShowGroupModal(true)}
-                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(255,107,53,0.28)', background: 'rgba(255,107,53,0.08)', color: '#FF6B35', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)', color: '#E8E8E8', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 + Group
               </button>
             </div>
@@ -300,9 +300,9 @@ export default function DashboardPage() {
     if (activeNav === 'dues') return <GlobalDuesPanel onNavigateToGroup={(groupId) => { const g = groups.find(x => x.id === groupId); if (g) { setActiveGroup(g); setActiveTab('Dues'); setActiveNav('groups'); setMobileView('detail'); } }} />;
     if (!activeGroup) return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bg-page)' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(255,107,53,0.10) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.04) 0%, transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px' }}>
-          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(99,102,241,0.4)', margin: '0 auto 16px', display: 'block' }}>
+          <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'rgba(255,255,255,0.15)', margin: '0 auto 16px', display: 'block' }}>
             <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7 6s1 0 1-1-1-4-6-4c-.34 0-.66.02-.98.06A5.97 5.97 0 0 1 14 14h-1zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
           </svg>
           <p style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-2)', margin: '0 0 8px' }}>Select a group</p>
@@ -336,12 +336,12 @@ export default function DashboardPage() {
       <div className="hidden sm:flex" style={{ height: '100dvh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', backgroundColor: 'var(--void)', flexDirection: 'row' }}>
 
         {/* Left Sidebar */}
-        <div style={{ width: 210, flexShrink: 0, borderRight: '1px solid #333333', background: '#141414', display: 'flex', flexDirection: 'column', padding: '0 0 16px' }}>
+        <div style={{ width: 210, flexShrink: 0, borderRight: '1px solid #2E2E2E', background: '#111111', display: 'flex', flexDirection: 'column', padding: '0 0 16px' }}>
 
           {/* Brand */}
           <div style={{ padding: '24px 20px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,107,53,0.10)', border: '1px solid rgba(255,107,53,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <img src={logo} alt="logo" style={{ width: 20, height: 20, objectFit: 'contain' }} />
               </div>
               <div>
@@ -373,15 +373,15 @@ export default function DashboardPage() {
                 }} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: isActive ? 'rgba(255,107,53,0.10)' : 'none',
-                  color: isActive ? '#FF6B35' : '#9E9E9E',
-                  borderLeft: `2px solid ${isActive ? '#FF6B35' : 'transparent'}`,
+                  background: isActive ? 'rgba(232,232,232,0.07)' : 'none',
+                  color: isActive ? '#E8E8E8' : '#555',
+                  borderLeft: `2px solid ${isActive ? '#E8E8E8' : 'transparent'}`,
                   fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: isActive ? 600 : 400,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   transition: 'all 0.15s', textAlign: 'left',
                 }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; e.currentTarget.style.color = '#F0F0F0'; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; } }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(232,232,232,0.06)'; e.currentTarget.style.color = '#E8E8E8'; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555'; } }}
                 >
                   <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{navIcons[id]}</span>
                   {NAV_META[id].label}
@@ -397,15 +397,15 @@ export default function DashboardPage() {
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                     padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    background: showTeacherConfirm ? 'rgba(255,107,53,0.10)' : 'none',
-                    color: showTeacherConfirm ? '#FF6B35' : '#9E9E9E',
-                    borderLeft: `2px solid ${showTeacherConfirm ? '#FF6B35' : 'transparent'}`,
+                    background: showTeacherConfirm ? 'rgba(232,232,232,0.07)' : 'none',
+                    color: showTeacherConfirm ? '#E8E8E8' : '#555',
+                    borderLeft: `2px solid ${showTeacherConfirm ? '#E8E8E8' : 'transparent'}`,
                     fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                     transition: 'all 0.15s', textAlign: 'left',
                   }}
-                  onMouseEnter={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; e.currentTarget.style.color = '#F0F0F0'; } }}
-                  onMouseLeave={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; } }}
+                  onMouseEnter={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'rgba(232,232,232,0.06)'; e.currentTarget.style.color = '#E8E8E8'; } }}
+                  onMouseLeave={e => { if (!showTeacherConfirm) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555'; } }}
                 >
                   <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -415,16 +415,16 @@ export default function DashboardPage() {
                 {showTeacherConfirm && (
                   <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowTeacherConfirm(false)} />
-                    <div style={{ position: 'absolute', left: 16, top: 44, zIndex: 999, background: '#1E1E1E', border: '1px solid #333333', borderRadius: 12, padding: '14px 16px', width: 178, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', animation: 'popIn 180ms cubic-bezier(0.34,1.2,0.64,1) both' }}>
+                    <div style={{ position: 'absolute', left: 16, top: 44, zIndex: 999, background: '#181818', border: '1px solid #2E2E2E', borderRadius: 12, padding: '14px 16px', width: 178, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', animation: 'popIn 180ms cubic-bezier(0.34,1.2,0.64,1) both' }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#F0F0F0', marginBottom: 6, fontFamily: 'Manrope, Inter, sans-serif' }}>{user?.role === 'admin' ? 'Admin Panel' : 'Teacher Dashboard'}</div>
-                      <div style={{ fontSize: 11, color: '#9E9E9E', marginBottom: 14, lineHeight: 1.5 }}>Open in a new tab?</div>
+                      <div style={{ fontSize: 11, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>Open in a new tab?</div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => { setShowTeacherConfirm(false); window.open(user?.role === 'admin' ? '/admin/dashboard' : '/teacher', '_blank', 'noopener,noreferrer'); }}
-                          style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', background: '#FF6B35', color: '#131313', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                          style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', background: '#E8E8E8', color: '#111', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                           Open
                         </button>
                         <button onClick={() => setShowTeacherConfirm(false)}
-                          style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1px solid #333', background: 'none', color: '#9E9E9E', fontSize: 12, cursor: 'pointer' }}>
+                          style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1px solid #333', background: 'none', color: '#555', fontSize: 12, cursor: 'pointer' }}>
                           Cancel
                         </button>
                       </div>
@@ -443,13 +443,13 @@ export default function DashboardPage() {
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                background: 'none', color: '#9E9E9E',
+                background: 'none', color: '#555',
                 fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400,
                 letterSpacing: '0.06em', textTransform: 'uppercase',
                 transition: 'all 0.15s', textAlign: 'left',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; e.currentTarget.style.color = '#F0F0F0'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,232,232,0.06)'; e.currentTarget.style.color = '#E8E8E8'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555'; }}
             >
               <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -462,13 +462,13 @@ export default function DashboardPage() {
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                background: 'none', color: '#9E9E9E',
+                background: 'none', color: '#555',
                 fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400,
                 letterSpacing: '0.06em', textTransform: 'uppercase',
                 transition: 'all 0.15s', textAlign: 'left',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; e.currentTarget.style.color = '#F0F0F0'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,232,232,0.06)'; e.currentTarget.style.color = '#E8E8E8'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555'; }}
             >
               <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -481,15 +481,15 @@ export default function DashboardPage() {
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                background: settingsOpen ? 'rgba(255,107,53,0.10)' : 'none',
-                color: settingsOpen ? '#FF6B35' : '#9E9E9E',
-                borderLeft: `2px solid ${settingsOpen ? '#FF6B35' : 'transparent'}`,
+                background: settingsOpen ? 'rgba(232,232,232,0.07)' : 'none',
+                color: settingsOpen ? '#E8E8E8' : '#555',
+                borderLeft: `2px solid ${settingsOpen ? '#E8E8E8' : 'transparent'}`,
                 fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: settingsOpen ? 600 : 400,
                 letterSpacing: '0.06em', textTransform: 'uppercase',
                 transition: 'all 0.15s', textAlign: 'left',
               }}
-              onMouseEnter={e => { if (!settingsOpen) { e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; e.currentTarget.style.color = '#F0F0F0'; } }}
-              onMouseLeave={e => { if (!settingsOpen) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9E9E9E'; } }}
+              onMouseEnter={e => { if (!settingsOpen) { e.currentTarget.style.background = 'rgba(232,232,232,0.06)'; e.currentTarget.style.color = '#E8E8E8'; } }}
+              onMouseLeave={e => { if (!settingsOpen) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#555'; } }}
             >
               <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -502,9 +502,9 @@ export default function DashboardPage() {
 
             {/* User card */}
             <button onClick={() => guardedNav(() => setFullProfileUserId(user?.id))}
-              style={{ padding: '10px 12px', borderRadius: 10, background: '#252525', border: '1px solid #333333', display: 'flex', alignItems: 'center', gap: 10, width: '100%', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#2E2E2E'; e.currentTarget.style.borderColor = '#444444'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#252525'; e.currentTarget.style.borderColor = '#333333'; }}
+              style={{ padding: '10px 12px', borderRadius: 10, background: '#1a1a1a', border: '1px solid #2E2E2E', display: 'flex', alignItems: 'center', gap: 10, width: '100%', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#222'; e.currentTarget.style.borderColor = '#3D3D3D'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.borderColor = '#2E2E2E'; }}
             >
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatarBg(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                 {ini(user?.name)}
@@ -530,10 +530,10 @@ export default function DashboardPage() {
           <div style={{
             width: panelOpen && (settingsOpen || activeNav !== 'dues') && !supportOpen ? 220 : 0,
             flexShrink: 0, overflow: 'hidden',
-            borderRight: (panelOpen && (settingsOpen || activeNav !== 'dues') && !supportOpen) ? '1px solid #333333' : 'none',
+            borderRight: (panelOpen && (settingsOpen || activeNav !== 'dues') && !supportOpen) ? '1px solid #2E2E2E' : 'none',
             transition: 'width 0.22s ease, border-width 0.22s ease',
             display: 'flex', flexDirection: 'column',
-            background: '#1E1E1E',
+            background: '#181818',
           }}>
             <div style={{ width: 220, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
@@ -547,7 +547,7 @@ export default function DashboardPage() {
                   {activeNav === 'groups' && !settingsOpen && (
                     <div style={{ position: 'relative' }}>
                       <button onClick={() => setFabOpen(v => !v)}
-                        style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid rgba(255,107,53,0.28)', background: fabOpen ? 'rgba(255,107,53,0.18)' : 'rgba(255,107,53,0.08)', color: '#FF6B35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
+                        style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: fabOpen ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.05)', color: '#FFAA6E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
                       </button>
                       {fabOpen && (
@@ -556,7 +556,7 @@ export default function DashboardPage() {
                           <div style={{ position: 'absolute', top: 32, right: 0, zIndex: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
                             <button onClick={() => { setFabOpen(false); setNewFolderOpen(true); }}
                               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
-                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,107,53,0.08)'}
+                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,232,232,0.06)'}
                               onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                               <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
                                 <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
@@ -566,7 +566,7 @@ export default function DashboardPage() {
                             <div style={{ height: 1, background: 'var(--border-color)' }} />
                             <button onClick={() => { setFabOpen(false); setShowGroupModal(true); }}
                               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', fontSize: 13, fontWeight: 300, fontFamily: 'Inter, sans-serif' }}
-                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,107,53,0.08)'}
+                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,232,232,0.06)'}
                               onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                               <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style={{ color: 'var(--text-3)' }}>
                                 <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
@@ -668,5 +668,8 @@ export default function DashboardPage() {
     </NotificationProvider>
   );
 }
+
+
+
 
 

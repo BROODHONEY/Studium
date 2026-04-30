@@ -293,7 +293,7 @@ export default function ProfilePage({ userId, onClose }) {
                 </h1>
                 <p style={{ fontSize: 14, fontWeight: 300, color: T.text2, margin: 0 }}>
                   {profile?.department || 'No department set'}
-                  {profile?.year ? ` · ${profile.year}` : ''}
+                  {profile?.year ? ` · ${profile.year}${['st', 'nd', 'rd'][profile.year - 1] || 'th'} year` : ''}
                 </p>
               </div>
             </div>
@@ -372,13 +372,13 @@ export default function ProfilePage({ userId, onClose }) {
                   </div>{/* end left column */}
 
                   {/* Right: achievements column */}
-                  {achievements.length > 0 && (
-                    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                        <span style={{ color: T.primary, lineHeight: 0 }}>{ICONS.achievement}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Achievements</span>
-                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.primaryLo, color: T.primary, border: `1px solid ${T.primary}30`, marginLeft: 'auto' }}>{achievements.length}</span>
-                      </div>
+                  <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <span style={{ color: T.primary, lineHeight: 0 }}>{ICONS.achievement}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Achievements</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.primaryLo, color: T.primary, border: `1px solid ${T.primary}30`, marginLeft: 'auto' }}>{achievements.length}</span>
+                    </div>
+                    {achievements.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto', paddingRight: 2 }}>
                         {achievements.map((item, i) => (
                           <div key={i} onClick={() => setSelected({ item, type: 'achievement', accent: T.primary })} style={{ cursor: 'pointer' }}>
@@ -386,18 +386,22 @@ export default function ProfilePage({ userId, onClose }) {
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '32px 20px', color: T.text3, fontSize: 13 }}>
+                        No achievements added yet
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Certificates section */}
-                {certificates.length > 0 && (
-                  <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                      <span style={{ color: T.green, lineHeight: 0 }}>{ICONS.certificate}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Professional Certifications</span>
-                      <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.greenLo, color: T.green, border: `1px solid ${T.green}30`, marginLeft: 'auto' }}>{certificates.length}</span>
-                    </div>
+                <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                    <span style={{ color: T.green, lineHeight: 0 }}>{ICONS.certificate}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Professional Certifications</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.greenLo, color: T.green, border: `1px solid ${T.green}30`, marginLeft: 'auto' }}>{certificates.length}</span>
+                  </div>
+                  {certificates.length > 0 ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                       {certificates.map((item, i) => (
                         <div key={i} onClick={() => setSelected({ item, type: 'certificate', accent: T.green })} style={{ cursor: 'pointer' }}>
@@ -405,17 +409,21 @@ export default function ProfilePage({ userId, onClose }) {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '32px 20px', color: T.text3, fontSize: 13 }}>
+                      No certifications added yet
+                    </div>
+                  )}
+                </div>
 
                 {/* Internships section */}
-                {internships.length > 0 && (
-                  <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                      <span style={{ color: T.secondary, lineHeight: 0 }}>{ICONS.internship}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Internships</span>
-                      <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.secondaryLo, color: T.secondary, border: `1px solid ${T.secondary}30`, marginLeft: 'auto' }}>{internships.length}</span>
-                    </div>
+                <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                    <span style={{ color: T.secondary, lineHeight: 0 }}>{ICONS.internship}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Internships</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: T.secondaryLo, color: T.secondary, border: `1px solid ${T.secondary}30`, marginLeft: 'auto' }}>{internships.length}</span>
+                  </div>
+                  {internships.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {internships.map((item, i) => (
                         <div key={i} onClick={() => setSelected({ item, type: 'internship', accent: T.secondary })} style={{ cursor: 'pointer' }}>
@@ -423,7 +431,12 @@ export default function ProfilePage({ userId, onClose }) {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '32px 20px', color: T.text3, fontSize: 13 }}>
+                      No internships added yet
+                    </div>
+                  )}
+                </div>
                 )}
               </>
             )}

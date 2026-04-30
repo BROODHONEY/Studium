@@ -141,22 +141,21 @@ export default function AuthLayout({ children, tagline, sub, institution }) {
           {/* Institution badge in top right */}
           {institution && (
             <div style={{
-              position: 'absolute',
-              top: 24,
-              right: 24,
-              background: 'rgba(99,102,241,0.1)',
-              border: '1px solid rgba(99,102,241,0.2)',
-              borderRadius: 8,
-              padding: '6px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6
+              position: 'absolute', top: 24, right: 24,
+              background: 'linear-gradient(135deg, #1c1c1c 0%, #111 100%)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: 10,
+              padding: '7px 14px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 12px rgba(0,0,0,0.6)',
+              overflow: 'hidden',
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2">
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.04) 50%, transparent 65%)', pointerEvents: 'none' }} />
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
-              <span style={{ fontSize: 12, fontWeight: 500, color: '#FF6B35' }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.01em', position: 'relative' }}>
                 {institution.name}
               </span>
             </div>
