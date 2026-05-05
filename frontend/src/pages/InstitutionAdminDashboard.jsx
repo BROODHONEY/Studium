@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import logo from '../assets/logo.png';
+import ReportTemplatePanel from '../components/ReportTemplatePanel';
 
 // Design tokens matching TeacherDashboard
 const C = {
@@ -148,6 +149,7 @@ export default function InstitutionAdminDashboard() {
     { id: 'messages', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: 'Messages' },
     { id: 'faculty', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: 'Faculty Manager' },
     { id: 'departments', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: 'Departments' },
+    { id: 'reports', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>, label: 'Report Templates' },
   ];
 
   return (
@@ -249,6 +251,7 @@ export default function InstitutionAdminDashboard() {
           {activeTab === 'messages' && <MessagesTab />}
           {activeTab === 'faculty' && <FacultyTab users={users.filter(u => u.role === 'teacher')} departments={departments} onRefresh={fetchData} />}
           {activeTab === 'departments' && <DepartmentsTab departments={departments} users={users} onAdd={() => { setEditingDept(null); setShowDeptModal(true); }} onEdit={(dept) => { setEditingDept(dept); setShowDeptModal(true); }} onRefresh={fetchData} />}
+          {activeTab === 'reports' && <ReportTemplatePanel />}
         </div>
       </div>
 

@@ -11,7 +11,15 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, role, institutionId } now available in all protected routes
+    
+    // Normalize the user object to use snake_case for consistency
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+      institution_id: decoded.institutionId || decoded.institution_id,
+      email: decoded.email
+    };
+    
     next();
   } catch (err) {
     res.status(401).json({ error: 'Invalid or expired token' });
