@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { teacherAPI } from '../services/api';
+import { teacherAPI, groupsAPI } from '../services/api';
 import logo from '../assets/logo.png';
 import ProfilePage from '../components/ProfilePage';
 
@@ -869,11 +868,12 @@ function AdvancedFiltersModal({ filters, onChange, onApply, onClose }) {
 // ══════════════════════════════════════════════════════════
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
-  const [activeNav, setActiveNav] = useState('students');
+  const [activeNav, setActiveNav] = useState('overview');
   const [students, setStudents] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [groupsLoading, setGroupsLoading] = useState(false);
   const [searchQ, setSearchQ] = useState('');
   const [filters, setFilters] = useState({ name:'', roll_no:'', department:'', year:'', cgpa_min:'', cgpa_max:'', achievement_min:'', cert_min:'' });
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -900,13 +900,32 @@ export default function TeacherDashboard() {
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
+  
   const fetchGroups = useCallback(async () => {
+    setGroupsLoading(true);
+    try {
+      const res = await groupsAPI.list();
+      // Filter to only show groups where user is admin
+      const adminGroups = res.data.filter(g => g.my_role === 'admin' || g.my_role === 'teacher');
+      setGroups(adminGroups);
+    } catch (err) { console.error(err); }
+    finally { setGroupsLoading(false); }
+  }, []);
+  
+  const fetchSelectionGroups = useCallback(async () => {
     try { const res = await teacherAPI.getSelectionGroups(); setSelectionGroups(res.data); }
     catch (err) { console.error(err); }
   }, []);
 
-  useEffect(() => { fetchStudents({}); }, []);
-  useEffect(() => { fetchGroups(); }, [fetchGroups]);
+  useEffect(() => { 
+    if (activeNav === 'students') {
+      fetchStudents({}); 
+    } else if (activeNav === 'overview') {
+      fetchGroups();
+    }
+  }, [activeNav, fetchGroups]);
+  
+  useEffect(() => { fetchSelectionGroups(); }, [fetchSelectionGroups]);
 
   const handleSearch = (overrideFilters) => {
     const f = overrideFilters !== undefined ? overrideFilters : filters;
@@ -944,8 +963,6 @@ export default function TeacherDashboard() {
   const NAV = [
     { id:'overview',  icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>, label:'Overview' },
     { id:'students',  icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label:'Student Manager' },
-    { id:'faculty', icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label:'Faculty Manager' },
-    { id:'resources', icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>, label:'Resources' },
   ];
 
   const inputBase = { background: C.raised, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', color: C.text1, fontSize: 12, fontFamily: 'Inter, sans-serif', outline: 'none' };
@@ -976,7 +993,7 @@ export default function TeacherDashboard() {
         {/* Go Back Button */}
         <div style={{ padding: '0 10px', marginBottom: 12 }}>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => window.close()}
             style={{
               width: '100%',
               display: 'flex',
@@ -1072,6 +1089,64 @@ export default function TeacherDashboard() {
         {/* Scrollable content */}
         <div style={{ flex:1, minHeight:0, overflowY:'auto', padding:'28px 28px 28px' }}>
 
+          {/* Overview Panel */}
+          {activeNav === 'overview' && (
+            <>
+              <div style={{ marginBottom:24 }}>
+                <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.12em', fontWeight:600, marginBottom:8 }}>
+                  Academic Workspace / Overview
+                </div>
+                <h1 style={{ margin:0, fontSize:36, fontWeight:800, color: C.text1, fontFamily:'Manrope, Inter, sans-serif', letterSpacing:'-0.02em', lineHeight:1 }}>
+                  Educator Dashboard
+                </h1>
+              </div>
+
+              {groupsLoading ? (
+                <div style={{ padding:'48px 0', textAlign:'center', color: C.text3, fontSize:13 }}>Loading groups…</div>
+              ) : groups.length === 0 ? (
+                <div style={{ padding:'48px 0', textAlign:'center', color: C.text3, fontSize:13 }}>No groups found where you are an admin.</div>
+              ) : (
+                <div style={{ display:'grid', gap:20 }}>
+                  {groups.map(group => (
+                    <div key={group.id} style={{ background: C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:'20px 24px', transition:'border-color 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = C.borderHi}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
+                      
+                      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:16 }}>
+                        <div style={{ flex:1 }}>
+                          <h3 style={{ margin:0, fontSize:18, fontWeight:700, color: C.text1, fontFamily:'Manrope, Inter, sans-serif', marginBottom:4 }}>{group.name}</h3>
+                          <p style={{ margin:0, fontSize:12, color: C.text3 }}>{group.description || 'No description'}</p>
+                        </div>
+                        <button onClick={() => window.open(`/dashboard?group=${group.id}`, '_blank')}
+                          style={{ padding:'8px 18px', borderRadius:8, border:`1px solid ${C.primaryMid}`, background: C.primaryLo, color: C.primary, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'Inter, sans-serif', whiteSpace:'nowrap', marginLeft:16 }}>
+                          Open Group
+                        </button>
+                      </div>
+
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(140px, 1fr))', gap:12, marginBottom:16 }}>
+                        <div style={{ background: C.raised, borderRadius:9, padding:'12px 14px', border:`1px solid ${C.border}` }}>
+                          <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600, marginBottom:4 }}>Members</div>
+                          <div style={{ fontSize:20, fontWeight:700, color: C.primary, fontFamily:'Manrope, Inter, sans-serif' }}>{group.member_count || 0}</div>
+                        </div>
+                        <div style={{ background: C.raised, borderRadius:9, padding:'12px 14px', border:`1px solid ${C.border}` }}>
+                          <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600, marginBottom:4 }}>Role</div>
+                          <div style={{ fontSize:13, fontWeight:600, color: C.text1 }}>{group.my_role === 'admin' ? 'Admin' : 'Teacher'}</div>
+                        </div>
+                        <div style={{ background: C.raised, borderRadius:9, padding:'12px 14px', border:`1px solid ${C.border}` }}>
+                          <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600, marginBottom:4 }}>Created</div>
+                          <div style={{ fontSize:13, fontWeight:600, color: C.text1 }}>{new Date(group.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Student Manager Panel */}
+          {activeNav === 'students' && (
+            <>
           {/* Breadcrumb + title */}
           <div style={{ marginBottom:24 }}>
             <div style={{ fontSize:10, color: C.text3, textTransform:'uppercase', letterSpacing:'0.12em', fontWeight:600, marginBottom:8 }}>
@@ -1274,6 +1349,8 @@ export default function TeacherDashboard() {
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
       </div>
 

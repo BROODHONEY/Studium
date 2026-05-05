@@ -575,6 +575,28 @@ function ReportModal({ assignment, groupId, onClose }) {
     a.click();
   };
 
+  const downloadXLSX = () => {
+    if (!report) return;
+    // Create simple HTML table that Excel can open
+    const rows = [
+      '<tr><th>Name</th><th>Roll No.</th><th>Status</th><th>Attempts</th><th>Submitted At</th><th>File</th><th>Note</th></tr>',
+      ...report.map(r => `<tr>
+        <td>${r.name}</td>
+        <td>${r.roll_no}</td>
+        <td>${r.submitted ? (r.is_overdue ? 'Overdue' : 'Submitted') : 'Not Submitted'}</td>
+        <td>${r.attempts}</td>
+        <td>${fmtDate(r.last_submitted_at)}</td>
+        <td>${r.file_name || ' · · '}</td>
+        <td>${r.note || ''}</td>
+      </tr>`)
+    ];
+    const html = `<html><head><meta charset="utf-8"></head><body><table border="1">${rows.join('')}</table></body></html>`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], { type: 'application/vnd.ms-excel' }));
+    a.download = `${assignment.title.replace(/\s+/g, '_')}_report.xlsx`;
+    a.click();
+  };
+
   const submitted = report?.filter(r => r.submitted).length || 0;
   const total = report?.length || 0;
 
@@ -587,6 +609,10 @@ function ReportModal({ assignment, groupId, onClose }) {
           <OutlineBtn onClick={downloadCSV} hoverColor={C.green}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
             Export CSV
+          </OutlineBtn>
+          <OutlineBtn onClick={downloadXLSX} hoverColor={C.green}>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+            Export XLSX
           </OutlineBtn>
         </div>
         <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
@@ -693,6 +719,25 @@ function QuizReportModal({ quiz, groupId, onClose }) {
     a.click();
   };
 
+  const downloadXLSX = () => {
+    if (!report) return;
+    const rows = [
+      '<tr><th>Name</th><th>Roll No.</th><th>Completed</th><th>Score</th><th>Submitted At</th></tr>',
+      ...report.map(r => `<tr>
+        <td>${r.name}</td>
+        <td>${r.roll_no}</td>
+        <td>${r.completed ? 'Yes' : 'No'}</td>
+        <td>${r.score != null ? `${r.score}/${r.total}` : ' · · '}</td>
+        <td>${fmtDate(r.submitted_at)}</td>
+      </tr>`)
+    ];
+    const html = `<html><head><meta charset="utf-8"></head><body><table border="1">${rows.join('')}</table></body></html>`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], { type: 'application/vnd.ms-excel' }));
+    a.download = `${quiz.title.replace(/\s+/g, '_')}_quiz_report.xlsx`;
+    a.click();
+  };
+
   const completed = report?.filter(r => r.completed).length || 0;
   const total = report?.length || 0;
 
@@ -704,6 +749,10 @@ function QuizReportModal({ quiz, groupId, onClose }) {
         <OutlineBtn onClick={downloadCSV} hoverColor={C.green}>
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export CSV
+        </OutlineBtn>
+        <OutlineBtn onClick={downloadXLSX} hoverColor={C.green}>
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+          Export XLSX
         </OutlineBtn>
       </div>
       <div style={{ maxHeight: '55vh', overflowY: 'auto' }}>
