@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const C = {
   shell: '#0E0E0E',
@@ -23,12 +23,18 @@ export default function ReportTemplatePanel() {
     college_name: '',
     show_college_name: true,
     college_name_position: 'top-center',
+    subtitle: '',
+    show_subtitle: false,
     logo_url: null,
     logo_position: 'top-center',
     logo_size: 'medium',
     font_size: 12,
     header_color: '#FF6B35',
     show_logo: true,
+    header_text: '',
+    show_header_text: false,
+    footer_text: '',
+    show_footer_text: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,11 +47,7 @@ export default function ReportTemplatePanel() {
 
   const fetchTemplate = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${apiUrl}/report-templates`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/report-templates');
       setTemplate(res.data);
     } catch (error) {
       console.error('Error fetching template:', error);
@@ -58,11 +60,7 @@ export default function ReportTemplatePanel() {
     setSaving(true);
     setMessage(null);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const token = localStorage.getItem('token');
-      await axios.post(`${apiUrl}/report-templates`, template, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/report-templates', template);
       setMessage({ type: 'success', text: 'Template saved successfully!' });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
@@ -70,9 +68,9 @@ export default function ReportTemplatePanel() {
       const errorMsg = error.response?.data?.error || error.message || 'Failed to save template';
       
       if (error.response?.status === 500) {
-        setMessage({ 
-          type: 'error', 
-          text: 'Database error. Please ensure the report_templates table exists. Check SETUP_REPORT_TEMPLATES.md for instructions.' 
+        setMessage({
+          type: 'error',
+          text: 'Server error while saving the template. Please ensure the report_templates table migration has been run.'
         });
       } else {
         setMessage({ type: 'error', text: errorMsg });
@@ -94,16 +92,11 @@ export default function ReportTemplatePanel() {
     setUploading(true);
     setMessage(null);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await axios.post(`${apiUrl}/report-templates/upload-logo`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      const res = await api.post('/report-templates/upload-logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setTemplate(prev => ({ ...prev, logo_url: res.data.url }));
@@ -188,6 +181,34 @@ export default function ReportTemplatePanel() {
               </select>
             </div>
           )}
+
+          {/* Subtitle */}
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.text2, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Subtitle / Tagline
+            </label>
+            <input
+              type="text"
+              value={template.subtitle}
+              onChange={e => setTemplate(prev => ({ ...prev, subtitle: e.target.value }))}
+              placeholder="e.g., Excellence in Education"
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.raised, color: C.text1, fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box' }}
+              onFocus={e => e.target.style.borderColor = C.primary}
+              onBlur={e => e.target.style.borderColor = C.border}
+            />
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                id="show-subtitle"
+                checked={template.show_subtitle}
+                onChange={e => setTemplate(prev => ({ ...prev, show_subtitle: e.target.checked }))}
+                style={{ width: 16, height: 16, cursor: 'pointer' }}
+              />
+              <label htmlFor="show-subtitle" style={{ fontSize: 13, color: C.text2, cursor: 'pointer' }}>
+                Show subtitle in reports
+              </label>
+            </div>
+          </div>
 
           {/* Logo Upload */}
           <div>
@@ -307,6 +328,62 @@ export default function ReportTemplatePanel() {
               />
             </div>
           </div>
+
+          {/* Header Text */}
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.text2, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Header Text (Optional)
+            </label>
+            <textarea
+              value={template.header_text}
+              onChange={e => setTemplate(prev => ({ ...prev, header_text: e.target.value }))}
+              placeholder="Additional text to show at the top of reports"
+              rows={2}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.raised, color: C.text1, fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+              onFocus={e => e.target.style.borderColor = C.primary}
+              onBlur={e => e.target.style.borderColor = C.border}
+            />
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                id="show-header-text"
+                checked={template.show_header_text}
+                onChange={e => setTemplate(prev => ({ ...prev, show_header_text: e.target.checked }))}
+                style={{ width: 16, height: 16, cursor: 'pointer' }}
+              />
+              <label htmlFor="show-header-text" style={{ fontSize: 13, color: C.text2, cursor: 'pointer' }}>
+                Show header text in reports
+              </label>
+            </div>
+          </div>
+
+          {/* Footer Text */}
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.text2, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Footer Text (Optional)
+            </label>
+            <textarea
+              value={template.footer_text}
+              onChange={e => setTemplate(prev => ({ ...prev, footer_text: e.target.value }))}
+              placeholder="Additional text to show at the bottom of reports"
+              rows={2}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.raised, color: C.text1, fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+              onFocus={e => e.target.style.borderColor = C.primary}
+              onBlur={e => e.target.style.borderColor = C.border}
+            />
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                id="show-footer-text"
+                checked={template.show_footer_text}
+                onChange={e => setTemplate(prev => ({ ...prev, show_footer_text: e.target.checked }))}
+                style={{ width: 16, height: 16, cursor: 'pointer' }}
+              />
+              <label htmlFor="show-footer-text" style={{ fontSize: 13, color: C.text2, cursor: 'pointer' }}>
+                Show footer text in reports
+              </label>
+            </div>
+          </div>
         </div>
 
         {/* Right Column - Preview */}
@@ -379,6 +456,16 @@ function ReportPreview({ template }) {
             {template.college_name}
           </h1>
         )}
+        {template.show_subtitle && template.subtitle && (
+          <p style={{ fontSize: 13, fontWeight: 400, color: '#666', margin: '0 0 12px', fontFamily: 'Inter, sans-serif', textAlign: 'center', fontStyle: 'italic' }}>
+            {template.subtitle}
+          </p>
+        )}
+        {template.show_header_text && template.header_text && (
+          <p style={{ fontSize: 11, color: '#666', margin: '0 0 16px', fontFamily: 'Inter, sans-serif', textAlign: 'center', lineHeight: 1.5, padding: '8px 12px', background: '#F5F5F5', borderRadius: 6 }}>
+            {template.header_text}
+          </p>
+        )}
         <h2 style={{ fontSize: 16, fontWeight: 600, color: '#333', margin: 0, fontFamily: 'Inter, sans-serif', textAlign: 'center' }}>
           Student Report
         </h2>
@@ -418,6 +505,9 @@ function ReportPreview({ template }) {
       </table>
 
       <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #E5E5E5', fontSize: template.font_size - 2, color: '#666', textAlign: 'center' }}>
+        {template?.show_footer_text && template?.footer_text && (
+          <p style={{ margin: '0 0 8px', lineHeight: 1.5 }}>{template.footer_text}</p>
+        )}
         Generated on {new Date().toLocaleDateString()}
       </div>
     </div>

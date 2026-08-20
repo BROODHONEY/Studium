@@ -33,7 +33,7 @@ router.get('/', authenticate, async (req, res) => {
         *,
         head_teacher:users!head_teacher_id(name)
       `)
-      .eq('institution_id', req.user.institutionId)
+      .eq('institution_id', req.user.institution_id)
       .order('name', { ascending: true });
 
     if (error) throw error;
@@ -55,7 +55,7 @@ router.get('/:id', authenticate, async (req, res) => {
         head_teacher:users!head_teacher_id(name)
       `)
       .eq('id', req.params.id)
-      .eq('institution_id', req.user.institutionId)
+      .eq('institution_id', req.user.institution_id)
       .single();
 
     if (error) {
@@ -84,7 +84,7 @@ router.post('/', authenticate, async (req, res) => {
     const { data, error } = await db
       .from('departments')
       .insert({
-        institution_id: req.user.institutionId,
+        institution_id: req.user.institution_id,
         name,
         code,
         description,
@@ -120,7 +120,7 @@ router.put('/:id', authenticate, async (req, res) => {
         head_teacher_id: headTeacherId || null
       })
       .eq('id', req.params.id)
-      .eq('institution_id', req.user.institutionId)
+      .eq('institution_id', req.user.institution_id)
       .select();
 
     if (error) throw error;

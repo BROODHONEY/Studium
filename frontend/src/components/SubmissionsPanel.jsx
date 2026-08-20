@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useSocket } from '../context/SocketContext';
 import { submissionsAPI, quizzesAPI } from '../services/api';
 import QuizBuilder from './QuizBuilder';
 import ConfirmDialog from './ui/ConfirmDialog';
@@ -1042,6 +1043,7 @@ function SectionHeader({ label, count, color, dim }) {
 export default function SubmissionsPanel({ group }) {
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { socket } = useSocket();
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
   const [assignments, setAssignments] = useState([]);
@@ -1076,6 +1078,41 @@ export default function SubmissionsPanel({ group }) {
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
   }, []);
+
+  // Real-time socket listeners for assignment and quiz changes from other group members
+  useEffect(() => {
+    if (!socket || !group?.id) return;
+
+    const onNewAssignment    = (a) => setAssignments(prev => prev.find(x => x.id === a.id) ? prev : [a, ...prev]);
+    const onUpdateAssignment = (a) => setAssignments(prev => prev.map(x => x.id === a.id ? { ...x, ...a } : x));
+    const onCloseAssignment  = (a) => setAssignments(prev => prev.map(x => x.id === a.id ? { ...x, ...a } : x));
+    const onDeleteAssignment = ({ id }) => setAssignments(prev => prev.filter(x => x.id !== id));
+
+    const onNewQuiz    = (q) => setQuizzes(prev => prev.find(x => x.id === q.id) ? prev : [q, ...prev]);
+    const onUpdateQuiz = (q) => setQuizzes(prev => prev.map(x => x.id === q.id ? { ...x, ...q } : x));
+    const onCloseQuiz  = (q) => setQuizzes(prev => prev.map(x => x.id === q.id ? { ...x, ...q } : x));
+    const onDeleteQuiz = ({ id }) => setQuizzes(prev => prev.filter(x => x.id !== id));
+
+    socket.on('new_assignment',    onNewAssignment);
+    socket.on('update_assignment', onUpdateAssignment);
+    socket.on('close_assignment',  onCloseAssignment);
+    socket.on('delete_assignment', onDeleteAssignment);
+    socket.on('new_quiz',    onNewQuiz);
+    socket.on('update_quiz', onUpdateQuiz);
+    socket.on('close_quiz',  onCloseQuiz);
+    socket.on('delete_quiz', onDeleteQuiz);
+
+    return () => {
+      socket.off('new_assignment',    onNewAssignment);
+      socket.off('update_assignment', onUpdateAssignment);
+      socket.off('close_assignment',  onCloseAssignment);
+      socket.off('delete_assignment', onDeleteAssignment);
+      socket.off('new_quiz',    onNewQuiz);
+      socket.off('update_quiz', onUpdateQuiz);
+      socket.off('close_quiz',  onCloseQuiz);
+      socket.off('delete_quiz', onDeleteQuiz);
+    };
+  }, [socket, group?.id]);
 
   useEffect(() => {
     if (!group?.id) return;

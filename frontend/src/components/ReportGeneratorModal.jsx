@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 const C = {
   shell: '#0E0E0E',
@@ -19,6 +20,7 @@ const C = {
 };
 
 export default function ReportGeneratorModal({ students, reportType = 'student', onClose }) {
+  const { addToast } = useToast();
   const [step, setStep] = useState('format'); // 'format' or 'preview'
   const [format, setFormat] = useState('csv');
   const [template, setTemplate] = useState(null);
@@ -31,11 +33,7 @@ export default function ReportGeneratorModal({ students, reportType = 'student',
 
   const fetchTemplate = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${apiUrl}/report-templates/public`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/report-templates/public');
       setTemplate(res.data);
     } catch (error) {
       console.error('Error fetching template:', error);
@@ -46,23 +44,27 @@ export default function ReportGeneratorModal({ students, reportType = 'student',
 
   const generateCSV = (data) => {
     if (!data || data.length === 0) return '';
-    
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(row => 
-      Object.values(row).map(val => 
-        typeof val === 'string' && val.includes(',') ? `"${val}"` : val
-      ).join(',')
+
+    const escapeField = (val) => {
+      const str = val == null ? '' : String(val);
+      // Wrap in quotes if value contains comma, double-quote, newline, or carriage return
+      if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const headers = Object.keys(data[0]).map(escapeField).join(',');
+    const rows = data.map(row =>
+      Object.values(row).map(escapeField).join(',')
     );
-    
-    return [headers, ...rows].join('\n');
+
+    return [headers, ...rows].join('\r\n');
   };
 
   const handleDownload = async () => {
     setGenerating(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      const token = localStorage.getItem('token');
-
       if (format === 'csv') {
         const csvContent = generateCSV(students);
         const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -73,13 +75,10 @@ export default function ReportGeneratorModal({ students, reportType = 'student',
         a.click();
         window.URL.revokeObjectURL(url);
       } else {
-        const res = await axios.post(
-          `${apiUrl}/reports/generate`,
+        const res = await api.post(
+          '/reports/generate',
           { students, format, template, reportType },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            responseType: 'blob'
-          }
+          { responseType: 'blob' }
         );
 
         const blob = new Blob([res.data], {
@@ -98,7 +97,7 @@ export default function ReportGeneratorModal({ students, reportType = 'student',
       onClose();
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('Failed to generate report');
+      addToast({ type: 'error', message: 'Failed to generate report. Please try again.' });
     } finally {
       setGenerating(false);
     }
@@ -350,6 +349,16 @@ function ReportPreview({ format, students, template }) {
             {template.college_name}
           </h1>
         )}
+        {template?.show_subtitle && template?.subtitle && (
+          <p style={{ fontSize: 13, fontWeight: 400, color: '#666', margin: '0 0 12px', fontFamily: 'Inter, sans-serif', textAlign: 'center', fontStyle: 'italic' }}>
+            {template.subtitle}
+          </p>
+        )}
+        {template?.show_header_text && template?.header_text && (
+          <p style={{ fontSize: 11, color: '#666', margin: '0 0 16px', fontFamily: 'Inter, sans-serif', textAlign: 'center', lineHeight: 1.5, padding: '8px 12px', background: '#F5F5F5', borderRadius: 6 }}>
+            {template.header_text}
+          </p>
+        )}
         <h2 style={{ fontSize: 16, fontWeight: 600, color: '#333', margin: 0, fontFamily: 'Inter, sans-serif', textAlign: 'center' }}>
           Student Report
         </h2>
@@ -393,6 +402,9 @@ function ReportPreview({ format, students, template }) {
       )}
 
       <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #E5E5E5', fontSize: (template?.font_size || 12) - 2, color: '#666', textAlign: 'center' }}>
+        {template?.show_footer_text && template?.footer_text && (
+          <p style={{ margin: '0 0 8px', lineHeight: 1.5 }}>{template.footer_text}</p>
+        )}
         Generated on {new Date().toLocaleDateString()}
       </div>
     </div>

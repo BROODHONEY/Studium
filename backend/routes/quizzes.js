@@ -120,7 +120,10 @@ router.post('/:groupId', validate(schemas.createQuiz), async (req, res) => {
       .single();
 
     const io = req.app.get('io');
-    if (io && due) io.to(req.params.groupId).emit('new_due', { ...due, group_id: req.params.groupId });
+    if (io) {
+      if (due) io.to(req.params.groupId).emit('new_due', { ...due, group_id: req.params.groupId });
+      io.to(req.params.groupId).emit('new_quiz', { ...quiz, my_attempt: null });
+    }
 
     res.status(201).json(quiz);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create quiz' }); }
@@ -156,6 +159,9 @@ router.put('/:groupId/:quizId', async (req, res) => {
       .eq('ref_id', req.params.quizId)
       .eq('ref_type', 'quiz');
 
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('update_quiz', data);
+
     res.json(data);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to update quiz' }); }
 });
@@ -182,6 +188,9 @@ router.patch('/:groupId/:quizId/close', async (req, res) => {
       .eq('ref_id', req.params.quizId)
       .eq('ref_type', 'quiz');
 
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('close_quiz', data);
+
     res.json(data);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to close quiz' }); }
 });
@@ -203,6 +212,10 @@ router.delete('/:groupId/:quizId', async (req, res) => {
       .eq('ref_type', 'quiz');
 
     await supabase.from('quizzes').delete().eq('id', req.params.quizId).eq('group_id', req.params.groupId);
+
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('delete_quiz', { id: req.params.quizId });
+
     res.json({ success: true });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed' }); }
 });
@@ -212,6 +225,26 @@ router.post('/:groupId/:quizId/attempt', async (req, res) => {
   try {
     const m = await getMembership(req.params.groupId, req.user.id);
     if (!m || m.role !== 'student') return res.status(403).json({ error: 'Students only' });
+
+    // Validate quiz window before anything else
+    const { data: quizMeta, error: quizMetaError } = await supabase
+      .from('quizzes')
+      .select('starts_at, ends_at, closed_at, show_score')
+      .eq('id', req.params.quizId)
+      .eq('group_id', req.params.groupId)
+      .single();
+
+    if (quizMetaError || !quizMeta) return res.status(404).json({ error: 'Quiz not found' });
+
+    if (quizMeta.closed_at) return res.status(400).json({ error: 'Quiz is closed' });
+
+    const now = new Date();
+    if (quizMeta.starts_at && now < new Date(quizMeta.starts_at)) {
+      return res.status(400).json({ error: 'Quiz has not started yet' });
+    }
+    if (quizMeta.ends_at && now > new Date(quizMeta.ends_at)) {
+      return res.status(400).json({ error: 'Quiz has already ended' });
+    }
 
     // One attempt only
     const { data: existing } = await supabase
@@ -236,15 +269,11 @@ router.post('/:groupId/:quizId/attempt', async (req, res) => {
       .select().single();
     if (error) throw error;
 
-    // Fetch quiz to check show_score setting
-    const { data: quiz } = await supabase
-      .from('quizzes').select('show_score').eq('id', req.params.quizId).single();
-
     res.status(201).json({
       ...data,
-      score: quiz?.show_score !== false ? data.score : null,
-      total: quiz?.show_score !== false ? data.total : null,
-      show_score: quiz?.show_score !== false,
+      score: quizMeta.show_score !== false ? data.score : null,
+      total: quizMeta.show_score !== false ? data.total : null,
+      show_score: quizMeta.show_score !== false,
     });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to submit' }); }
 });

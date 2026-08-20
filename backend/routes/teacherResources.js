@@ -26,7 +26,7 @@ router.get('/resources', authenticate, async (req, res) => {
         department:department_id (id, name),
         folder:folder_id (id, name)
       `)
-      .eq('institution_id', req.user.institutionId)
+      .eq('institution_id', req.user.institution_id)
       .order('created_at', { ascending: false });
 
     if (departmentId) query = query.eq('department_id', departmentId);
@@ -52,7 +52,7 @@ router.post('/resources', authenticate, upload.single('file'), async (req, res) 
     if (!title) return res.status(400).json({ error: 'Title is required' });
 
     const storagePath = buildStoragePath(
-      `${BUCKET_FOLDER}/${req.user.institutionId}`,
+      `${BUCKET_FOLDER}/${req.user.institution_id}`,
       req.file.originalname
     );
     const fileUrl = await uploadAndSign(storagePath, req.file.buffer, req.file.mimetype);
@@ -60,7 +60,7 @@ router.post('/resources', authenticate, upload.single('file'), async (req, res) 
     const { data, error } = await supabase
       .from('teacher_resources')
       .insert({
-        institution_id: req.user.institutionId,
+        institution_id: req.user.institution_id,
         uploaded_by: req.user.id,
         department_id: departmentId || null,
         folder_id: folderId || null,
@@ -95,7 +95,7 @@ router.delete('/resources/:id', authenticate, async (req, res) => {
       .single();
 
     if (fetchErr || !resource) return res.status(404).json({ error: 'Resource not found' });
-    if (resource.institution_id !== req.user.institutionId) return res.status(403).json({ error: 'Forbidden' });
+    if (resource.institution_id !== req.user.institution_id) return res.status(403).json({ error: 'Forbidden' });
     if (resource.uploaded_by !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorised' });
     }
@@ -120,7 +120,7 @@ router.get('/folders', authenticate, async (req, res) => {
     let query = supabase
       .from('resource_folders')
       .select(`id, name, description, created_at, creator:created_by (id, name), department:department_id (id, name)`)
-      .eq('institution_id', req.user.institutionId)
+      .eq('institution_id', req.user.institution_id)
       .order('name', { ascending: true });
 
     if (departmentId)   query = query.eq('department_id', departmentId);
@@ -145,7 +145,7 @@ router.post('/folders', authenticate, async (req, res) => {
     const { data, error } = await supabase
       .from('resource_folders')
       .insert({
-        institution_id: req.user.institutionId,
+        institution_id: req.user.institution_id,
         created_by: req.user.id,
         name,
         description: description || null,

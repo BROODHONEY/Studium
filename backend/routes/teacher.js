@@ -21,7 +21,7 @@ router.get('/students', auth, teacherOnly, async (req, res) => {
       .from('users')
       .select('id, name, email, roll_no, department, year, cgpa, achievements, internships, certificates, semester_marks, created_at')
       .eq('role', 'student')
-      .eq('institution_id', req.user.institutionId); // CRITICAL: Filter by institution
+      .eq('institution_id', req.user.institution_id); // CRITICAL: Filter by institution
 
     if (name)        query = query.ilike('name', `%${name}%`);
     if (roll_no)     query = query.ilike('roll_no', `%${roll_no}%`);
@@ -57,7 +57,7 @@ router.get('/students/:id', auth, teacherOnly, async (req, res) => {
       .select('id, name, email, roll_no, department, year, cgpa, achievements, internships, certificates, semester_marks, created_at')
       .eq('id', req.params.id)
       .eq('role', 'student')
-      .eq('institution_id', req.user.institutionId) // CRITICAL: Filter by institution
+      .eq('institution_id', req.user.institution_id) // CRITICAL: Filter by institution
       .single();
 
     if (error || !student) return res.status(404).json({ error: 'Student not found' });

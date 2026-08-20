@@ -109,7 +109,19 @@ router.post('/:groupId', validate(schemas.createAssignment), async (req, res) =>
       .single();
 
     const io = req.app.get('io');
-    if (io && due) io.to(req.params.groupId).emit('new_due', { ...due, group_id: req.params.groupId });
+    if (io) {
+      if (due) io.to(req.params.groupId).emit('new_due', { ...due, group_id: req.params.groupId });
+      // Emit with student-default fields so non-creator group members render it correctly
+      io.to(req.params.groupId).emit('new_assignment', {
+        ...data,
+        my_submissions: 0,
+        my_overdue: false,
+        my_file_url: null,
+        my_file_name: null,
+        my_file_type: null,
+        my_file_size: null,
+      });
+    }
 
     res.status(201).json(data);
   } catch (err) {
@@ -146,6 +158,9 @@ router.put('/:groupId/:assignmentId', async (req, res) => {
       .eq('ref_id', req.params.assignmentId)
       .eq('ref_type', 'assignment');
 
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('update_assignment', data);
+
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -174,6 +189,9 @@ router.patch('/:groupId/:assignmentId/close', async (req, res) => {
       .delete()
       .eq('ref_id', req.params.assignmentId)
       .eq('ref_type', 'assignment');
+
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('close_assignment', data);
 
     res.json(data);
   } catch (err) {
@@ -205,6 +223,10 @@ router.delete('/:groupId/:assignmentId', async (req, res) => {
       .eq('group_id', req.params.groupId);
 
     if (error) throw error;
+
+    const io = req.app.get('io');
+    if (io) io.to(req.params.groupId).emit('delete_assignment', { id: req.params.assignmentId });
+
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -283,21 +305,7 @@ router.post('/:groupId/:assignmentId/submit', async (req, res) => {
     if (!membership) return res.status(403).json({ error: 'Not a member' });
     if (membership.role !== 'student') return res.status(403).json({ error: 'Only students can submit' });
 
-    // Count existing submissions
-    const { data: existing } = await supabase
-      .from('assignment_submissions')
-      .select('id, attempt')
-      .eq('assignment_id', req.params.assignmentId)
-      .eq('user_id', req.user.id)
-      .order('attempt', { ascending: false });
-
-    if (existing && existing.length >= 2) {
-      return res.status(400).json({ error: 'Maximum 2 submissions allowed' });
-    }
-
-    const attempt = (existing?.length || 0) + 1;
-
-    // Check if submitting after due date
+    // Check assignment state before counting existing submissions
     const { data: assignment } = await supabase
       .from('assignments').select('due_date, closed_at').eq('id', req.params.assignmentId).single();
 
@@ -305,25 +313,36 @@ router.post('/:groupId/:assignmentId/submit', async (req, res) => {
       return res.status(400).json({ error: 'Assignment is closed' });
     }
 
-    const { note, file_url, file_name, file_type, file_size } = req.body;
+    // Fetch existing submissions ordered by attempt number ascending
+    const { data: existing } = await supabase
+      .from('assignment_submissions')
+      .select('id, attempt')
+      .eq('assignment_id', req.params.assignmentId)
+      .eq('user_id', req.user.id)
+      .order('attempt', { ascending: true });
 
-    // If already submitted once, UPDATE the existing record (latest overrides previous)
-    if (existing && existing.length > 0) {
-      const existingId = existing[existing.length - 1].id;
-      const { data, error } = await supabase
-        .from('assignment_submissions')
-        .update({ note, file_url, file_name, file_type, file_size, submitted_at: new Date().toISOString() })
-        .eq('id', existingId)
-        .select()
-        .single();
-      if (error) throw error;
-      return res.json(data);
+    const attemptCount = existing?.length || 0;
+
+    if (attemptCount >= 2) {
+      return res.status(400).json({ error: 'Maximum 2 submissions allowed' });
     }
 
-    // First submission — insert
+    const attemptNumber = attemptCount + 1;
+    const { note, file_url, file_name, file_type, file_size } = req.body;
+
+    // Always insert a new record so both attempts are preserved
     const { data, error } = await supabase
       .from('assignment_submissions')
-      .insert({ assignment_id: req.params.assignmentId, user_id: req.user.id, attempt: 1, note, file_url, file_name, file_type, file_size })
+      .insert({
+        assignment_id: req.params.assignmentId,
+        user_id: req.user.id,
+        attempt: attemptNumber,
+        note,
+        file_url,
+        file_name,
+        file_type,
+        file_size,
+      })
       .select()
       .single();
 

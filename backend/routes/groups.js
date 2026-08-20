@@ -28,7 +28,7 @@ router.post('/', validate(schemas.createGroup), async (req, res) => {
         .from('groups')
         .select('id')
         .eq('invite_code', invite_code)
-        .eq('institution_id', req.user.institutionId)
+        .eq('institution_id', req.user.institution_id)
         .single();
       if (!data) isUnique = true;
     }
@@ -42,7 +42,7 @@ router.post('/', validate(schemas.createGroup), async (req, res) => {
         description, 
         created_by: req.user.id, 
         invite_code,
-        institution_id: req.user.institutionId 
+        institution_id: req.user.institution_id
       })
       .select()
       .single();
@@ -76,7 +76,7 @@ router.post('/join', async (req, res) => {
       .from('groups')
       .select('*')
       .eq('invite_code', invite_code.toUpperCase())
-      .eq('institution_id', req.user.institutionId)
+      .eq('institution_id', req.user.institution_id)
       .single();
 
     if (groupError || !group) {

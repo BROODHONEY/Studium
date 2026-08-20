@@ -85,12 +85,18 @@ router.post('/', async (req, res) => {
       college_name,
       show_college_name,
       college_name_position,
+      subtitle,
+      show_subtitle,
       logo_url,
       logo_position,
       logo_size,
       font_size,
       header_color,
       show_logo,
+      header_text,
+      show_header_text,
+      footer_text,
+      show_footer_text,
     } = req.body;
 
     console.log('Saving template for institution:', req.user.institution_id);
@@ -112,12 +118,18 @@ router.post('/', async (req, res) => {
       college_name: college_name || '',
       show_college_name: show_college_name !== false,
       college_name_position: college_name_position || 'top-center',
+      subtitle: subtitle || '',
+      show_subtitle: show_subtitle === true,
       logo_url: logo_url || null,
       logo_position: logo_position || 'top-center',
       logo_size: logo_size || 'medium',
       font_size: parseInt(font_size) || 12,
       header_color: header_color || '#FF6B35',
       show_logo: show_logo !== false,
+      header_text: header_text || '',
+      show_header_text: show_header_text === true,
+      footer_text: footer_text || '',
+      show_footer_text: show_footer_text === true,
     };
 
     let data, error;

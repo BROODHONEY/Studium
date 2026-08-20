@@ -27,7 +27,7 @@ router.get('/search', async (req, res) => {
       .select('id, name, email, role, department')
       .ilike('email', `%${sanitizedEmail}%`)
       .neq('id', req.user.id)
-      .eq('institution_id', req.user.institutionId) // CRITICAL: Only search within same institution
+      .eq('institution_id', req.user.institution_id) // CRITICAL: Only search within same institution
       .limit(8);
 
     if (error) throw error;
@@ -58,7 +58,7 @@ router.post('/conversations', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (targetUser.institution_id !== req.user.institutionId) {
+    if (targetUser.institution_id !== req.user.institution_id) {
       return res.status(403).json({ error: 'Cannot message users from other institutions' });
     }
 

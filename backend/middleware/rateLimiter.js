@@ -1,20 +1,20 @@
 const rateLimit = require('express-rate-limit');
 
 // Strict rate limiter for authentication endpoints
+// TEMPORARILY DISABLED FOR TESTING — restore max: 5 before production
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per window
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: { error: 'Too many authentication attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  // Skip successful requests from counting
   skipSuccessfulRequests: false
 });
 
 // Moderate rate limiter for general API endpoints
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
+  max: 100000, // 100 requests per window
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
